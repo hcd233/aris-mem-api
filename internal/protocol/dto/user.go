@@ -11,19 +11,11 @@ type User struct {
 	Avatar string `json:"avatar" doc:"URL or path to the user's avatar image"`
 }
 
-// CreateUser 创建用户实体
-//
-//	@author centonhuang
-//	@update 2025-11-07 02:44:24
-type CreateUser struct {
-	User
-}
-
-// DisplayUser 显示用户实体
+// DetailedUser 显示用户实体
 //
 //	@author centonhuang
 //	@update 2025-11-07 02:43:56
-type DisplayUser struct {
+type DetailedUser struct {
 	User
 	ID         uint   `json:"id" doc:"Unique identifier for the user"`
 	CreatedAt  string `json:"createdAt,omitempty" doc:"Timestamp when the user account was created"`
@@ -44,7 +36,7 @@ type GetCurUserInfoReq struct {
 //	author centonhuang
 //	update 2025-01-04 21:00:59
 type GetCurUserInfoResp struct {
-	User *DisplayUser `json:"user" doc:"Complete user information including permissions"`
+	User *DetailedUser `json:"user" doc:"Complete user information including permissions"`
 }
 
 // GetUserInfoReq represents a request to get a specific user's public information
@@ -60,7 +52,7 @@ type GetUserInfoReq struct {
 //	author centonhuang
 //	update 2025-01-04 21:19:44
 type GetUserInfoResp struct {
-	User *DisplayUser `json:"user" doc:"Public user information"`
+	User *DetailedUser `json:"user" doc:"Public user information"`
 }
 
 // UpdateUserInfoReq represents a request to update the current user's information

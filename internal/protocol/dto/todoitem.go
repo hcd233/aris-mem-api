@@ -16,16 +16,11 @@ type TodoItem struct {
 	Priority enum.TodoItemPriority `json:"priority" enum:"low,medium,high,urgent" doc:"Priority of the todo item"`
 }
 
-// CreateTodoItem 创建待办事项实体
-type CreateTodoItem struct {
-	TodoItem
-}
-
-// DisplayTodoItem 显示待办事项实体
+// DatailedTodoItem 详细待办事项实体
 //
 //	@author centonhuang
 //	@update 2025-11-07 02:45:30
-type DisplayTodoItem struct {
+type DatailedTodoItem struct {
 	TodoItem
 	ID        uint                `json:"id" doc:"Unique identifier for the todo item"`
 	Status    enum.TodoItemStatus `json:"status" enum:"pending,completed,cancelled,timeout" doc:"Status of the todo item"`
@@ -46,7 +41,7 @@ type CreateTodoItemsReq struct {
 //	@author centonhuang
 //	@update 2025-11-07 01:37:12
 type CreateTodoItemsReqBody struct {
-	TodoItems []*CreateTodoItem `json:"todoItems" minItems:"1" maxItems:"100" doc:"Items to create"`
+	TodoItems []*TodoItem `json:"todoItems" minItems:"1" maxItems:"100" doc:"Items to create"`
 }
 
 // ListTodoItemsReq 获取待办事项列表请求
@@ -63,6 +58,6 @@ type ListTodoItemsReq struct {
 //	@author centonhuang
 //	@update 2025-11-07 01:43:02
 type ListTodoItemsResp struct {
-	TodoItems []*DisplayTodoItem `json:"todoItems" doc:"Items to list"`
-	PageInfo  *model.PageInfo    `json:"pageInfo" doc:"Page info"`
+	TodoItems []*DatailedTodoItem `json:"todoItems" doc:"Items to list"`
+	PageInfo  *model.PageInfo     `json:"pageInfo" doc:"Page info"`
 }

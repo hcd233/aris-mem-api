@@ -51,7 +51,7 @@ func (s *todoItemService) CreateTodoItems(ctx context.Context, req *dto.CreateTo
 
 	logger := logger.WithCtx(ctx)
 
-	todoItems := lo.Map(req.Body.TodoItems, func(item *dto.CreateTodoItem, _ int) *model.TodoItem {
+	todoItems := lo.Map(req.Body.TodoItems, func(item *dto.TodoItem, _ int) *model.TodoItem {
 		return &model.TodoItem{
 			Name:     item.Name,
 			Summary:  item.Summary,
@@ -102,8 +102,8 @@ func (s *todoItemService) ListTodoItems(ctx context.Context, req *dto.ListTodoIt
 		return
 	}
 
-	rsp.TodoItems = lo.Map(todoItems, func(item *model.TodoItem, _ int) *dto.DisplayTodoItem {
-		return &dto.DisplayTodoItem{
+	rsp.TodoItems = lo.Map(todoItems, func(item *model.TodoItem, _ int) *dto.DatailedTodoItem {
+		return &dto.DatailedTodoItem{
 			ID:        item.ID,
 			Status:    item.Status,
 			CreatedAt: item.CreatedAt.Format(time.RFC3339),

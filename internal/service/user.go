@@ -68,7 +68,7 @@ func (s *userService) GetCurUserInfo(ctx context.Context, _ *dto.EmptyReq) (rsp 
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.User = &dto.DisplayUser{
+	rsp.User = &dto.DetailedUser{
 		ID:         user.ID,
 		CreatedAt:  user.CreatedAt.Format(time.DateTime),
 		LastLogin:  user.LastLogin.Format(time.DateTime),
@@ -122,7 +122,7 @@ func (s *userService) GetUserInfo(ctx context.Context, req *dto.GetUserInfoReq) 
 		zap.Time("createdAt", user.CreatedAt),
 		zap.Time("lastLogin", user.LastLogin))
 
-	rsp.User = &dto.DisplayUser{
+	rsp.User = &dto.DetailedUser{
 		ID:         user.ID,
 		CreatedAt:  user.CreatedAt.Format(time.DateTime),
 		LastLogin:  user.LastLogin.Format(time.DateTime),
