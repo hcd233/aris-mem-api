@@ -12,8 +12,18 @@ func init() {
 		OpenAPI: &huma.OpenAPI{
 			OpenAPI: "3.1.0",
 			Info: &huma.Info{
-				Title:   "Aris-blog",
-				Version: "1.0",
+				Title:       "Aris Mem API",
+				Description: "Aris Mem API is a RESTful API for Aris Mem.",
+				Version:     "1.0",
+				Contact: &huma.Contact{
+					Name:  "hcd233",
+					Email: "lvlvko233@qq.com",
+					URL:   "https://github.com/hcd233",
+				},
+				License: &huma.License{
+					Name: "Apache 2.0",
+					URL:  "https://www.apache.org/licenses/LICENSE-2.0.html",
+				},
 			},
 			Components: &huma.Components{
 				Schemas: huma.NewMapRegistry("#/components/schemas/", huma.DefaultSchemaNamer),

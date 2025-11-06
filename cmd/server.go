@@ -4,20 +4,14 @@ import (
 	"fmt"
 	"os"
 	"runtime/debug"
-	"time"
 
-	"github.com/bytedance/sonic"
-	"github.com/gofiber/fiber/v2"
-	"github.com/hcd233/aris-mem-api/internal/config"
-	"github.com/hcd233/aris-mem-api/internal/cron"
+	"github.com/hcd233/aris-mem-api/internal/api"
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"go.uber.org/zap"
 
 	"github.com/hcd233/aris-mem-api/internal/middleware"
-	"github.com/hcd233/aris-mem-api/internal/resource/cache"
 	"github.com/hcd233/aris-mem-api/internal/resource/database"
 	"github.com/hcd233/aris-mem-api/internal/resource/llm"
-	"github.com/hcd233/aris-mem-api/internal/resource/storage"
 	"github.com/hcd233/aris-mem-api/internal/router"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
@@ -44,19 +38,12 @@ var startServerCmd = &cobra.Command{
 		host, port := lo.Must1(cmd.Flags().GetString("host")), lo.Must1(cmd.Flags().GetString("port"))
 
 		database.InitDatabase()
-		cache.InitCache()
-		storage.InitObjectStorage()
+		// cache.InitCache()
+		// storage.InitObjectStorage()
 		llm.InitOpenAIClient()
-		cron.InitCronJobs()
+		// cron.InitCronJobs()
 
-		app := fiber.New(fiber.Config{
-			Prefork:      false,
-			ReadTimeout:  config.ReadTimeout,
-			WriteTimeout: config.WriteTimeout,
-			IdleTimeout:  120 * time.Second,
-			JSONEncoder:  sonic.Marshal,
-			JSONDecoder:  sonic.Unmarshal,
-		})
+		app := api.GetFiberApp()
 
 		// 中间件
 		app.Use(
@@ -68,7 +55,7 @@ var startServerCmd = &cobra.Command{
 			middleware.CompressMiddleware(),
 		)
 
-		router.RegisterRouter(app)
+		router.RegisterRouter()
 
 		lo.Must0(app.Listen(fmt.Sprintf("%s:%s", host, port)))
 	},
