@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/hcd233/go-backend-tmpl/internal/handler"
+	"github.com/hcd233/aris-mem-api/internal/handler"
 )
 
 func initTokenRouter(tokenGroup *huma.Group) {

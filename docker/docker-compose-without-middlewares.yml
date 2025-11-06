@@ -7,18 +7,18 @@ networks:
 services:
 
   db-migrate:
-    image: ghcr.io/hcd233/go-backend-tmpl:master # go-backend-tmpl:latest
+    image: ghcr.io/hcd233/aris-mem-api:master # aris-mem-api:latest
     container_name: db-migrate
     restart: no
     networks:
       - 1panel-network
     env_file:
       - ../env/api.env
-    command: ["/app/go-backend-tmpl", "database", "migrate"]
+    command: ["/app/aris-mem-api", "database", "migrate"]
 
-  go-backend-tmpl:
-    image: ghcr.io/hcd233/go-backend-tmpl:master # go-backend-tmpl:latest
-    container_name: go-backend-tmpl
+  aris-mem-api:
+    image: ghcr.io/hcd233/aris-mem-api:master # aris-mem-api:latest
+    container_name: aris-mem-api
     restart: always
     networks:
       - 1panel-network
@@ -35,6 +35,6 @@ services:
       timeout: 5s
       retries: 5
 
-    command: ["/app/go-backend-tmpl", "server", "start", "--host", "0.0.0.0", "--port", "8080"]
+    command: ["/app/aris-mem-api", "server", "start", "--host", "0.0.0.0", "--port", "8080"]
 
 # docker compose -f docker/docker-compose-without-middlewares.yml up -d

@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/hcd233/go-backend-tmpl/internal/handler"
-	"github.com/hcd233/go-backend-tmpl/internal/middleware"
+	"github.com/hcd233/aris-mem-api/internal/handler"
+	"github.com/hcd233/aris-mem-api/internal/middleware"
 )
 
 func initUserRouter(userGroup *huma.Group) {

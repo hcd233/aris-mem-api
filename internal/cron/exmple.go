@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/hcd233/go-backend-tmpl/internal/constant"
-	"github.com/hcd233/go-backend-tmpl/internal/logger"
+	"github.com/hcd233/aris-mem-api/internal/constant"
+	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
 )

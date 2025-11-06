@@ -1,6 +1,6 @@
 package jwt
 
-import "github.com/hcd233/go-backend-tmpl/internal/config"
+import "github.com/hcd233/aris-mem-api/internal/config"
 
 var (
 	accessTokenSvc  *tokenSigner

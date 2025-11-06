@@ -1,4 +1,4 @@
-module github.com/hcd233/go-backend-tmpl
+module github.com/hcd233/aris-mem-api
 
 go 1.25.1
 

@@ -6,8 +6,8 @@ package storage
 import (
 	"context"
 
-	"github.com/hcd233/go-backend-tmpl/internal/config"
-	"github.com/hcd233/go-backend-tmpl/internal/logger"
+	"github.com/hcd233/aris-mem-api/internal/config"
+	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/samber/lo"

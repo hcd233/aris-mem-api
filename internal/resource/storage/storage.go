@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/hcd233/go-backend-tmpl/internal/config"
+	"github.com/hcd233/aris-mem-api/internal/config"
 )
 
 // Provider 存储提供商

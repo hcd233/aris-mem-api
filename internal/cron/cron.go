@@ -6,7 +6,7 @@ package cron
 import (
 	"fmt"
 
-	"github.com/hcd233/go-backend-tmpl/internal/logger"
+	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 )

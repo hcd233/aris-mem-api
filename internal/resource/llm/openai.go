@@ -4,8 +4,8 @@
 package llm
 
 import (
-	"github.com/hcd233/go-backend-tmpl/internal/config"
-	"github.com/hcd233/go-backend-tmpl/internal/logger"
+	"github.com/hcd233/aris-mem-api/internal/config"
+	"github.com/hcd233/aris-mem-api/internal/logger"
 	openai "github.com/sashabaranov/go-openai"
 	"go.uber.org/zap"
 )

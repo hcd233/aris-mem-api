@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/hcd233/go-backend-tmpl/internal/config"
-	"github.com/hcd233/go-backend-tmpl/internal/logger"
+	"github.com/hcd233/aris-mem-api/internal/config"
+	"github.com/hcd233/aris-mem-api/internal/logger"
 	"go.uber.org/zap"
 
 	"github.com/samber/lo"

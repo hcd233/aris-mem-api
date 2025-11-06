@@ -12,7 +12,7 @@ services:
     volumes:
       - postgresql-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U hcd233 -d tmpl-db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DATABASE}"]
       interval: 5s
       retries: 10
 
@@ -31,28 +31,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-
-  minio:
-    image: minio/minio:latest
-    container_name: minio
-    restart: always
-    ports:
-    #   - 9000:9000
-      - 9090:9090
-    env_file:
-      - ../env/minio.env
-    volumes:
-      - minio-data:/data
-    command: server /data --console-address ":9090"
-    healthcheck: 
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    
-
+  
   db-migrate:
-    image: ghcr.io/hcd233/go-backend-tmpl:master
+    image: ghcr.io/hcd233/aris-mem-api:master
     container_name: db-migrate
     restart: no
     env_file:
@@ -60,11 +41,11 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
-    command: ["/app/go-backend-tmpl", "database", "migrate"]
+    command: ["/app/aris-mem-api", "database", "migrate"]
 
-  go-backend-tmpl:
-    image: ghcr.io/hcd233/go-backend-tmpl:master
-    container_name: go-backend-tmpl
+  aris-mem-api:
+    image: ghcr.io/hcd233/aris-mem-api:master
+    container_name: aris-mem-api
     restart: always
     ports:
       - 8170:8080
@@ -80,12 +61,12 @@ services:
       db-migrate:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://0.0.0.0:8080"]
+      test: ["CMD", "curl", "-f", "http://0.0.0.0:${PORT}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-    command: ["/app/go-backend-tmpl", "server", "start", "--host", "0.0.0.0", "--port", "8080"]
+    command: ["/app/aris-mem-api", "server", "start", "--host", "0.0.0.0", "--port", "${PORT}"]
 
 volumes:
   postgresql-data:
@@ -94,11 +75,7 @@ volumes:
   redis-data:
     name: redis-data
     external: true
-  minio-data:
-    name: minio-data
-    external: true
 
 # docker volume create postgresql-data 
 # docker volume create redis-data
-# docker volume create minio-data
 # docker compose -f docker/docker-compose.yml up -d

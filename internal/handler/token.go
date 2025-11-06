@@ -3,10 +3,10 @@ package handler
 import (
 	"context"
 
-	"github.com/hcd233/go-backend-tmpl/internal/protocol"
-	"github.com/hcd233/go-backend-tmpl/internal/protocol/dto"
-	"github.com/hcd233/go-backend-tmpl/internal/service"
-	"github.com/hcd233/go-backend-tmpl/internal/util"
+	"github.com/hcd233/aris-mem-api/internal/protocol"
+	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
+	"github.com/hcd233/aris-mem-api/internal/service"
+	"github.com/hcd233/aris-mem-api/internal/util"
 )
 
 // TokenHandler 令牌处理器

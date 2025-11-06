@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"github.com/hcd233/go-backend-tmpl/internal/resource/database/model"
+	"github.com/hcd233/aris-mem-api/internal/resource/database/model"
 	"gorm.io/gorm"
 )
 

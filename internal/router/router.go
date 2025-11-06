@@ -7,7 +7,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humafiber"
 	"github.com/gofiber/fiber/v2"
-	"github.com/hcd233/go-backend-tmpl/internal/handler"
+	"github.com/hcd233/aris-mem-api/internal/handler"
 )
 
 // RegisterRouter 注册路由
@@ -15,7 +15,7 @@ import (
 //	param app *fiber.App
 //	author centonhuang
 //	update 2025-01-04 15:32:40
-func RegisterRouter(app *fiber.App){
+func RegisterRouter(app *fiber.App) {
 	pingService := handler.NewPingHandler()
 
 	api := humafiber.New(app, huma.Config{
@@ -62,5 +62,4 @@ func RegisterRouter(app *fiber.App){
 		Description: "Check service if available.",
 		Tags:        []string{"ping"},
 	}, pingService.HandlePing)
-
 }

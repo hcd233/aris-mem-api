@@ -5,7 +5,7 @@
 __debug*
 
 # Binary files
-go-backend-tmpl
+aris-mem-api
 *.exe
 *.dll
 *.so

@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/hcd233/go-backend-tmpl/internal/config"
-	"github.com/hcd233/go-backend-tmpl/internal/constant"
+	"github.com/hcd233/aris-mem-api/internal/config"
+	"github.com/hcd233/aris-mem-api/internal/constant"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -21,9 +21,9 @@ import (
 var defaultLogger *zap.Logger
 
 const (
-	infoLogFile  = "go-backend-tmpl.log"
-	errLogFile   = "go-backend-tmpl-error.log"
-	panicLogFile = "go-backend-tmpl-panic.log"
+	infoLogFile  = "aris-mem-api.log"
+	errLogFile   = "aris-mem-api-error.log"
+	panicLogFile = "aris-mem-api-panic.log"
 
 	logLevelDebug  = "DEBUG"
 	logLevelInfo   = "INFO"

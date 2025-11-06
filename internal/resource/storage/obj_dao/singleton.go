@@ -1,8 +1,8 @@
 package objdao
 
 import (
-	"github.com/hcd233/go-backend-tmpl/internal/config"
-	"github.com/hcd233/go-backend-tmpl/internal/resource/storage"
+	"github.com/hcd233/aris-mem-api/internal/config"
+	"github.com/hcd233/aris-mem-api/internal/resource/storage"
 )
 
 var (

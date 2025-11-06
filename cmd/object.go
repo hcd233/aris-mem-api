@@ -3,9 +3,9 @@ package cmd
 import (
 	"context"
 
-	"github.com/hcd233/go-backend-tmpl/internal/logger"
-	"github.com/hcd233/go-backend-tmpl/internal/resource/storage"
-	objdao "github.com/hcd233/go-backend-tmpl/internal/resource/storage/obj_dao"
+	"github.com/hcd233/aris-mem-api/internal/logger"
+	"github.com/hcd233/aris-mem-api/internal/resource/storage"
+	objdao "github.com/hcd233/aris-mem-api/internal/resource/storage/obj_dao"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"

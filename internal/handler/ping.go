@@ -3,8 +3,8 @@ package handler
 import (
 	"context"
 
-	"github.com/hcd233/go-backend-tmpl/internal/protocol"
-	"github.com/hcd233/go-backend-tmpl/internal/util"
+	"github.com/hcd233/aris-mem-api/internal/protocol"
+	"github.com/hcd233/aris-mem-api/internal/util"
 )
 
 // PingHandler 健康检查处理器

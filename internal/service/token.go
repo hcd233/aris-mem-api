@@ -7,12 +7,12 @@ import (
 	"context"
 	"errors"
 
-	"github.com/hcd233/go-backend-tmpl/internal/jwt"
-	"github.com/hcd233/go-backend-tmpl/internal/logger"
-	"github.com/hcd233/go-backend-tmpl/internal/protocol"
-	"github.com/hcd233/go-backend-tmpl/internal/protocol/dto"
-	"github.com/hcd233/go-backend-tmpl/internal/resource/database"
-	"github.com/hcd233/go-backend-tmpl/internal/resource/database/dao"
+	"github.com/hcd233/aris-mem-api/internal/jwt"
+	"github.com/hcd233/aris-mem-api/internal/logger"
+	"github.com/hcd233/aris-mem-api/internal/protocol"
+	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
+	"github.com/hcd233/aris-mem-api/internal/resource/database"
+	"github.com/hcd233/aris-mem-api/internal/resource/database/dao"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )

@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hcd233/go-backend-tmpl/internal/config"
-	"github.com/hcd233/go-backend-tmpl/internal/logger"
+	"github.com/hcd233/aris-mem-api/internal/config"
+	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/redis/go-redis/v9"
 	"github.com/samber/lo"
 	"go.uber.org/zap"

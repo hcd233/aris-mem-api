@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/bytedance/sonic"
-	"github.com/hcd233/go-backend-tmpl/internal/config"
+	"github.com/hcd233/aris-mem-api/internal/config"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
