@@ -14,8 +14,8 @@ import (
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 type Oauth2Handler interface {
-	HandleLogin(ctx context.Context, req *dto.LoginReq) (*protocol.HumaHTTPResponse[*dto.LoginResp], error)
-	HandleCallback(ctx context.Context, req *dto.CallbackReq) (*protocol.HumaHTTPResponse[*dto.CallbackResp], error)
+	HandleLogin(ctx context.Context, req *dto.LoginReq) (*protocol.HTTPResponse[*dto.LoginResp], error)
+	HandleCallback(ctx context.Context, req *dto.CallbackReq) (*protocol.HTTPResponse[*dto.CallbackResp], error)
 }
 
 type oauth2Handler struct{}
@@ -38,7 +38,7 @@ func NewOauth2Handler() Oauth2Handler {
 //	return error
 //	author centonhuang
 //	update 2025-01-05 21:00:00
-func (h *oauth2Handler) HandleLogin(ctx context.Context, req *dto.LoginReq) (*protocol.HumaHTTPResponse[*dto.LoginResp], error) {
+func (h *oauth2Handler) HandleLogin(ctx context.Context, req *dto.LoginReq) (*protocol.HTTPResponse[*dto.LoginResp], error) {
 	svc := h.getService(req.Provider)
 	return util.WrapHTTPResponse(svc.Login(ctx, req))
 }
@@ -52,7 +52,7 @@ func (h *oauth2Handler) HandleLogin(ctx context.Context, req *dto.LoginReq) (*pr
 //	return error
 //	author centonhuang
 //	update 2025-01-05 21:00:00
-func (h *oauth2Handler) HandleCallback(ctx context.Context, req *dto.CallbackReq) (*protocol.HumaHTTPResponse[*dto.CallbackResp], error) {
+func (h *oauth2Handler) HandleCallback(ctx context.Context, req *dto.CallbackReq) (*protocol.HTTPResponse[*dto.CallbackResp], error) {
 	svc := h.getService(req.Provider)
 	return util.WrapHTTPResponse(svc.Callback(ctx, req))
 }

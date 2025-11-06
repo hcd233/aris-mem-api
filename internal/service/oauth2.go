@@ -44,10 +44,10 @@ type oauth2Service struct {
 // NewGithubOauth2Service 创建Github OAuth2服务
 func NewGithubOauth2Service() Oauth2Service {
 	return &oauth2Service{
-		provider:           oauth2.NewGithubProvider(),
-		userDAO:            dao.GetUserDAO(),
-		imageObjDAO:        objdao.GetImageObjDAO(),
-		thumbnailObjDAO:    objdao.GetThumbnailObjDAO(),
+		provider: oauth2.NewGithubProvider(),
+		userDAO:  dao.GetUserDAO(),
+		// imageObjDAO:        objdao.GetImageObjDAO(),
+		// thumbnailObjDAO:    objdao.GetThumbnailObjDAO(),
 		accessTokenSigner:  jwt.GetAccessTokenSigner(),
 		refreshTokenSigner: jwt.GetRefreshTokenSigner(),
 	}
@@ -56,10 +56,10 @@ func NewGithubOauth2Service() Oauth2Service {
 // NewGoogleOauth2Service 创建Google OAuth2服务
 func NewGoogleOauth2Service() Oauth2Service {
 	return &oauth2Service{
-		provider:           oauth2.NewGoogleProvider(),
-		userDAO:            dao.GetUserDAO(),
-		imageObjDAO:        objdao.GetImageObjDAO(),
-		thumbnailObjDAO:    objdao.GetThumbnailObjDAO(),
+		provider: oauth2.NewGoogleProvider(),
+		userDAO:  dao.GetUserDAO(),
+		// imageObjDAO:        objdao.GetImageObjDAO(),
+		// thumbnailObjDAO:    objdao.GetThumbnailObjDAO(),
 		accessTokenSigner:  jwt.GetAccessTokenSigner(),
 		refreshTokenSigner: jwt.GetRefreshTokenSigner(),
 	}
@@ -180,16 +180,16 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 			return nil, protocol.ErrInternalError
 		}
 
-		_, err = s.imageObjDAO.CreateDir(ctx, user.ID)
-		if err != nil {
-			logger.Error("[Oauth2Service] failed to create image dir",
-				zap.String("provider", req.Provider),
-				zap.Error(err))
-			return nil, protocol.ErrInternalError
-		}
-		logger.Info("[Oauth2Service] image dir created", zap.String("provider", req.Provider))
+		// _, err = s.imageObjDAO.CreateDir(ctx, user.ID)
+		// if err != nil {
+		// 	logger.Error("[Oauth2Service] failed to create image dir",
+		// 		zap.String("provider", req.Provider),
+		// 		zap.Error(err))
+		// 	return nil, protocol.ErrInternalError
+		// }
+		// logger.Info("[Oauth2Service] image dir created", zap.String("provider", req.Provider))
 
-		_, err = s.thumbnailObjDAO.CreateDir(ctx, user.ID)
+		// _, err = s.thumbnailObjDAO.CreateDir(ctx, user.ID)
 		if err != nil {
 			logger.Error("[Oauth2Service] failed to create thumbnail dir",
 				zap.String("provider", req.Provider),

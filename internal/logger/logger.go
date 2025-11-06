@@ -9,7 +9,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-mem-api/internal/config"
-	"github.com/hcd233/aris-mem-api/internal/constant"
+	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"

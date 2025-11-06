@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/hcd233/aris-mem-api/internal/constant"
+	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/protocol"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
@@ -68,13 +68,16 @@ func (s *userService) GetCurUserInfo(ctx context.Context, _ *dto.EmptyReq) (rsp 
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.User = &dto.User{
-		UserID:     user.ID,
-		Name:       user.Name,
-		Email:      user.Email,
-		Avatar:     user.Avatar,
+	rsp.User = &dto.DisplayUser{
+		ID:         user.ID,
 		CreatedAt:  user.CreatedAt.Format(time.DateTime),
+		LastLogin:  user.LastLogin.Format(time.DateTime),
 		Permission: string(user.Permission),
+		User: dto.User{
+			Name:   user.Name,
+			Email:  user.Email,
+			Avatar: user.Avatar,
+		},
 	}
 
 	logger.Info("[UserService] get cur user info",
@@ -119,13 +122,16 @@ func (s *userService) GetUserInfo(ctx context.Context, req *dto.GetUserInfoReq) 
 		zap.Time("createdAt", user.CreatedAt),
 		zap.Time("lastLogin", user.LastLogin))
 
-	rsp.User = &dto.User{
-		UserID:    user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		Avatar:    user.Avatar,
-		CreatedAt: user.CreatedAt.Format(time.DateTime),
-		LastLogin: user.LastLogin.Format(time.DateTime),
+	rsp.User = &dto.DisplayUser{
+		ID:         user.ID,
+		CreatedAt:  user.CreatedAt.Format(time.DateTime),
+		LastLogin:  user.LastLogin.Format(time.DateTime),
+		Permission: string(user.Permission),
+		User: dto.User{
+			Name:   user.Name,
+			Email:  user.Email,
+			Avatar: user.Avatar,
+		},
 	}
 
 	return rsp, nil

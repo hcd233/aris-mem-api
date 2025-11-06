@@ -3,7 +3,7 @@ package middleware
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/hcd233/aris-mem-api/internal/constant"
+	"github.com/hcd233/aris-mem-api/internal/common/constant"
 )
 
 // TraceMiddleware 追踪中间件

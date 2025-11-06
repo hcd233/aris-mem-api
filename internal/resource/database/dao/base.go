@@ -6,7 +6,10 @@ package dao
 import (
 	"time"
 
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
+	"github.com/hcd233/aris-mem-api/internal/common/model"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // baseDAO 基础DAO
@@ -15,44 +18,6 @@ import (
 //	update 2024-10-17 02:32:22
 type baseDAO[ModelT interface{}] struct{}
 
-// PageInfo 分页信息
-//
-//	author centonhuang
-//	update 2024-11-01 05:17:51
-type PageInfo struct {
-	Page     int   `json:"page"`
-	PageSize int   `json:"pageSize"`
-	Total    int64 `json:"total"`
-}
-
-// PageParam 列表参数
-//
-//	author centonhuang
-//	update 2024-09-21 09:00:57
-type PageParam struct {
-	Page     int `form:"page" binding:"required,gte=1"`
-	PageSize int `form:"pageSize" binding:"min=1,max=50"`
-}
-
-
-// QueryParam 查询参数
-//
-//	author centonhuang
-//	update 2024-09-18 02:56:39
-type QueryParam struct {
-	Query string `form:"query"`
-	QueryFields []string `form:"queryFields"`
-}
-
-// PaginateParam 分页查询参数
-//
-//	@author centonhuang
-//	@update 2025-08-25 12:30:17
-type PaginateParam struct {
-	*PageParam
-	*QueryParam
-}
-
 // Create 创建数据
 //
 //	param dao *BaseDAO[T]
@@ -60,6 +25,17 @@ type PaginateParam struct {
 //	author centonhuang
 //	update 2024-10-17 02:51:49
 func (dao *baseDAO[ModelT]) Create(db *gorm.DB, data *ModelT) (err error) {
+	err = db.Create(&data).Error
+	return
+}
+
+// BatchCreate 批量创建数据
+//
+//	@param dao *baseDAO[ModelT]
+//	@return BatchCreate
+//	@author centonhuang
+//	@update 2025-11-07 01:57:42
+func (dao *baseDAO[ModelT]) BatchCreate(db *gorm.DB, data []*ModelT) (err error) {
 	err = db.Create(&data).Error
 	return
 }
@@ -129,7 +105,7 @@ func (dao *baseDAO[ModelT]) BatchGetByIDs(db *gorm.DB, ids []uint, fields []stri
 //	return Paginate
 //	author centonhuang
 //	update 2024-10-17 03:09:11
-func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, fields []string, preloads []string, param *PaginateParam) (data *[]ModelT, pageInfo *PageInfo, err error) {
+func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, fields []string, preloads []string, param *CommonParam) (data []*ModelT, pageInfo *model.PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)
@@ -138,17 +114,33 @@ func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, fields []string, preloads []st
 	}
 
 	if param.Query != "" && len(param.QueryFields) > 0 {
-		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
-		for _, field := range param.QueryFields[1:] {
-			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
+		like := "%" + param.Query + "%"
+		expressions := make([]clause.Expression, 0, len(param.QueryFields))
+		for _, field := range param.QueryFields {
+			if field == "" {
+				continue
+			}
+			expressions = append(expressions, clause.Like{Column: clause.Column{Name: field}, Value: like})
+		}
+
+		if len(expressions) > 0 {
+			sql = sql.Where(expressions[0])
+			for _, expr := range expressions[1:] {
+				sql = sql.Or(expr)
+			}
 		}
 	}
+
+	if param.Sort != "" && param.SortField != "" {
+		sql = sql.Order(clause.OrderByColumn{Column: clause.Column{Name: param.SortField}, Desc: param.Sort == enum.SortDesc})
+	}
+
 	err = sql.Limit(limit).Offset(offset).Find(&data).Error
 	if err != nil {
 		return
 	}
 
-	pageInfo = &PageInfo{
+	pageInfo = &model.PageInfo{
 		Page:     param.Page,
 		PageSize: param.PageSize,
 	}

@@ -26,6 +26,9 @@ func RegisterRouter() {
 	userGroup := huma.NewGroup(v1Group, "/user")
 	initUserRouter(userGroup)
 
+	todoItemGroup := huma.NewGroup(v1Group, "/todoItem")
+	initTodoItemRouter(todoItemGroup)
+
 	tokenGroup := huma.NewGroup(v1Group, "/token")
 	initTokenRouter(tokenGroup)
 

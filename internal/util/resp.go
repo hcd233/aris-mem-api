@@ -14,7 +14,7 @@ import (
 //	@return error
 //	@author centonhuang
 //	@update 2025-10-31 01:47:14
-func WrapHTTPResponse[rspT any](rsp rspT, err error) (*protocol.HumaHTTPResponse[rspT], huma.StatusError) {
+func WrapHTTPResponse[rspT any](rsp rspT, err error) (*protocol.HTTPResponse[rspT], huma.StatusError) {
 	switch err {
 	case protocol.ErrDataNotExists: // 404
 		return nil, huma.Error404NotFound(err.Error())
@@ -31,7 +31,7 @@ func WrapHTTPResponse[rspT any](rsp rspT, err error) (*protocol.HumaHTTPResponse
 	case protocol.ErrNoImplement: // 501
 		return nil, huma.Error501NotImplemented(err.Error())
 	case nil:
-		return &protocol.HumaHTTPResponse[rspT]{
+		return &protocol.HTTPResponse[rspT]{
 			Body: rsp,
 		}, nil
 	default:

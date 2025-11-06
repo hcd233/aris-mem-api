@@ -1,0 +1,9 @@
+package dto
+
+// PingResponse 健康检查响应
+//
+//	@author centonhuang
+//	@update 2025-11-07 01:36:32
+type PingResponse struct {
+	Status string `json:"status" doc:"Status of the ping response"`
+}
