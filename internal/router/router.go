@@ -31,4 +31,7 @@ func RegisterRouter() {
 
 	oauth2Group := huma.NewGroup(v1Group, "/oauth2")
 	initOauth2Router(oauth2Group)
+
+	agentGroup := huma.NewGroup(v1Group, "/agent")
+	initAgentRouter(agentGroup)
 }

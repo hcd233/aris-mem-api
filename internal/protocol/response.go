@@ -1,5 +1,7 @@
 package protocol
 
+import "github.com/hcd233/aris-mem-api/internal/common/enum"
+
 // HTTPResponse HTTP响应
 //
 //	author centonhuang
@@ -15,4 +17,13 @@ type HTTPResponse[BodyT any] struct {
 type RedirectResponse struct {
 	Status int    `json:"status" doc:"Status code"`
 	Url    string `json:"url" doc:"URL for redirect"`
+}
+
+// SSEResponse SSE响应
+//
+//	@author centonhuang
+//	@update 2025-11-08 04:20:42
+type SSEResponse struct {
+	DataType enum.SSEDataType `json:"dataType" doc:"Data type"`
+	Data     string           `json:"data" doc:"Data"`
 }

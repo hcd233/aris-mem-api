@@ -8,7 +8,6 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
-	"github.com/hcd233/aris-mem-api/internal/service"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
@@ -17,6 +16,12 @@ const (
 	createTodoItemsToolName        = "createTodoItems"
 	createTodoItemsToolDescription = "基于用户输入创建一系列待办事项，返回创建结果"
 )
+
+// CreateTodoItemsHandler 创建待办事项处理器
+//
+//	@author centonhuang
+//	@update 2025-11-08 17:37:08
+type CreateTodoItemsHandler func(ctx context.Context, req *dto.CreateTodoItemsReq) (output *dto.EmptyResp, err error)
 
 // TodoItem 待办事项实体
 //
@@ -54,15 +59,14 @@ type CreateTodoItemsOutput struct {
 	Hint string `json:"hint" jsonschema:"description=提示信息"`
 }
 
-// NewCreateTodoItemsTool
+// NewCreateTodoItemsTool 创建创建待办事项工具
 //
 //	创建创建待办事项工具
 //	@return tool.InvokableTool 创建待办事项工具
 //	@return error
 //	@author centonhuang
 //	@update 2025-11-07 17:36:16
-func NewCreateTodoItemsTool() (tool.InvokableTool, error) {
-	todoItemService := service.NewTodoItemService()
+func NewCreateTodoItemsTool(handler CreateTodoItemsHandler) (tool.InvokableTool, error) {
 	return utils.InferTool(
 		createTodoItemsToolName,
 		createTodoItemsToolDescription,
@@ -80,7 +84,7 @@ func NewCreateTodoItemsTool() (tool.InvokableTool, error) {
 				},
 			}
 
-			_, err = todoItemService.CreateTodoItems(ctx, req)
+			_, err = handler(ctx, req)
 			if err != nil {
 				logger.Error("[CreateTodoItemsTool] create todo items error", zap.Error(err))
 				output.Hint = "创建待办事项失败，出现系统内部错误"
