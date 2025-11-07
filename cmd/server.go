@@ -11,7 +11,6 @@ import (
 
 	"github.com/hcd233/aris-mem-api/internal/middleware"
 	"github.com/hcd233/aris-mem-api/internal/resource/database"
-	"github.com/hcd233/aris-mem-api/internal/resource/llm"
 	"github.com/hcd233/aris-mem-api/internal/router"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
@@ -40,7 +39,6 @@ var startServerCmd = &cobra.Command{
 		database.InitDatabase()
 		// cache.InitCache()
 		// storage.InitObjectStorage()
-		llm.InitOpenAIClient()
 		// cron.InitCronJobs()
 
 		app := api.GetFiberApp()
@@ -48,10 +46,10 @@ var startServerCmd = &cobra.Command{
 		app.Use(
 			middleware.RecoverMiddleware(),
 			middleware.FgprofMiddleware(),
-			middleware.TraceMiddleware(),
-			middleware.LogMiddleware(),
 			middleware.CORSMiddleware(),
 			middleware.CompressMiddleware(),
+			middleware.TraceMiddleware(),
+			middleware.LogMiddleware(),
 		)
 
 		router.RegisterRouter()
