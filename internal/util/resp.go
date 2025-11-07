@@ -15,26 +15,34 @@ import (
 //	@author centonhuang
 //	@update 2025-10-31 01:47:14
 func WrapHTTPResponse[rspT any](rsp rspT, err error) (*protocol.HTTPResponse[rspT], huma.StatusError) {
+	if statusErr := transformError(err); statusErr != nil {
+		return nil, statusErr
+	}
+	return &protocol.HTTPResponse[rspT]{
+		Body: rsp,
+	}, nil
+}
+
+func transformError(err error) (statusErr huma.StatusError) {
 	switch err {
 	case protocol.ErrDataNotExists: // 404
-		return nil, huma.Error404NotFound(err.Error())
+		statusErr = huma.Error404NotFound(err.Error())
 	case protocol.ErrDataExists, protocol.ErrBadRequest, protocol.ErrInsufficientQuota: // 400
-		return nil, huma.Error400BadRequest(err.Error())
+		statusErr = huma.Error400BadRequest(err.Error())
 	case protocol.ErrUnauthorized: // 401
-		return nil, huma.Error401Unauthorized(err.Error())
+		statusErr = huma.Error401Unauthorized(err.Error())
 	case protocol.ErrNoPermission: // 403
-		return nil, huma.Error403Forbidden(err.Error())
+		statusErr = huma.Error403Forbidden(err.Error())
 	case protocol.ErrTooManyRequests: // 429
-		return nil, huma.Error429TooManyRequests(err.Error())
+		statusErr = huma.Error429TooManyRequests(err.Error())
 	case protocol.ErrInternalError: // 500
-		return nil, huma.Error500InternalServerError(err.Error())
+		statusErr = huma.Error500InternalServerError(err.Error())
 	case protocol.ErrNoImplement: // 501
-		return nil, huma.Error501NotImplemented(err.Error())
+		statusErr = huma.Error501NotImplemented(err.Error())
 	case nil:
-		return &protocol.HTTPResponse[rspT]{
-			Body: rsp,
-		}, nil
+		statusErr = nil
 	default:
-		return nil, huma.Error500InternalServerError("Unknown error: " + err.Error())
+		statusErr = huma.Error500InternalServerError("Unknown error: " + err.Error())
 	}
+	return
 }

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/config"
 	"github.com/hcd233/aris-mem-api/internal/jwt"
 	"github.com/hcd233/aris-mem-api/internal/logger"
@@ -168,7 +169,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 			Name:       userName,
 			Email:      email,
 			Avatar:     avatar,
-			Permission: model.PermissionReader,
+			Permission: enum.PermissionReader,
 			LastLogin:  time.Now().UTC(),
 		}
 
@@ -190,13 +191,13 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 		// logger.Info("[Oauth2Service] image dir created", zap.String("provider", req.Provider))
 
 		// _, err = s.thumbnailObjDAO.CreateDir(ctx, user.ID)
-		if err != nil {
-			logger.Error("[Oauth2Service] failed to create thumbnail dir",
-				zap.String("provider", req.Provider),
-				zap.Error(err))
-			return nil, protocol.ErrInternalError
-		}
-		logger.Info("[Oauth2Service] thumbnail dir created", zap.String("provider", req.Provider))
+		// if err != nil {
+		// 	logger.Error("[Oauth2Service] failed to create thumbnail dir",
+		// 		zap.String("provider", req.Provider),
+		// 		zap.Error(err))
+		// 	return nil, protocol.ErrInternalError
+		// }
+		// logger.Info("[Oauth2Service] thumbnail dir created", zap.String("provider", req.Provider))
 	}
 
 	// 更新第三方平台绑定ID

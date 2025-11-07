@@ -8,7 +8,7 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/middleware"
 )
 
-func initUserRouter(userGroup *huma.Group) {
+func initUserRouter(userGroup huma.API) {
 	userHandler := handler.NewUserHandler()
 
 	userGroup.UseMiddleware(middleware.JwtMiddleware())
@@ -38,17 +38,4 @@ func initUserRouter(userGroup *huma.Group) {
 			{"jwtAuth": {}},
 		},
 	}, userHandler.HandleUpdateInfo)
-
-	// 获取指定用户信息
-	huma.Register(userGroup, huma.Operation{
-		OperationID: "getUserInfo",
-		Method:      http.MethodGet,
-		Path:        "/{userID}",
-		Summary:     "GetUserInfo",
-		Description: "Get the public information of the specified user by user ID, including user ID, username, and avatar",
-		Tags:        []string{"user"},
-		Security: []map[string][]string{
-			{"jwtAuth": {}},
-		},
-	}, userHandler.HandleGetUserInfo)
 }

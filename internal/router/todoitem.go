@@ -8,7 +8,7 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/middleware"
 )
 
-func initTodoItemRouter(todoItemGroup *huma.Group) {
+func initTodoItemRouter(todoItemGroup huma.API) {
 	todoItemHandler := handler.NewTodoItemHandler()
 
 	todoItemGroup.UseMiddleware(middleware.JwtMiddleware())

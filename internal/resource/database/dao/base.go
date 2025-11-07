@@ -4,10 +4,12 @@
 package dao
 
 import (
+	"reflect"
 	"time"
 
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/common/model"
+	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -47,8 +49,15 @@ func (dao *baseDAO[ModelT]) BatchCreate(db *gorm.DB, data []*ModelT) (err error)
 //	author centonhuang
 //	update 2024-10-17 02:52:18
 func (dao *baseDAO[ModelT]) Update(db *gorm.DB, data *ModelT, info map[string]interface{}) (err error) {
-	info["updated_at"] = time.Now().UTC()
-	err = db.Model(&data).Updates(info).Error
+	updateAtField := "updated_at"
+	info[updateAtField] = time.Now().UTC()
+
+	sql := db.Model(data)
+	selectFields := lo.Filter(lo.Keys(info), func(item string, _ int) bool {
+		return !reflect.ValueOf(info[item]).IsZero()
+	})
+	sql = sql.Select(selectFields)
+	err = sql.Updates(info).Error
 	return
 }
 

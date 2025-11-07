@@ -45,7 +45,6 @@ var startServerCmd = &cobra.Command{
 
 		app := api.GetFiberApp()
 
-		// 中间件
 		app.Use(
 			middleware.RecoverMiddleware(),
 			middleware.FgprofMiddleware(),

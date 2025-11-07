@@ -7,7 +7,7 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/handler"
 )
 
-func initTokenRouter(tokenGroup *huma.Group) {
+func initTokenRouter(tokenGroup huma.API) {
 	tokenHandler := handler.NewTokenHandler()
 
 	// 刷新令牌

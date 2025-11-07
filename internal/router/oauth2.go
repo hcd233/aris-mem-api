@@ -7,7 +7,7 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/handler"
 )
 
-func initOauth2Router(oauth2Group *huma.Group) {
+func initOauth2Router(oauth2Group huma.API) {
 	oauth2Handler := handler.NewOauth2Handler()
 
 	// OAuth2登录

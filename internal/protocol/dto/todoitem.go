@@ -16,16 +16,25 @@ type TodoItem struct {
 	Priority enum.TodoItemPriority `json:"priority" enum:"low,medium,high,urgent" doc:"Priority of the todo item"`
 }
 
+// UpdatedTodoItem 更新待办事项实体
+//
+//	@author centonhuang
+//	@update 2025-11-07 15:21:39
+type UpdatedTodoItem struct {
+	ID uint `json:"id" doc:"Unique identifier for the todo item"`
+	TodoItem
+}
+
 // DatailedTodoItem 详细待办事项实体
 //
 //	@author centonhuang
 //	@update 2025-11-07 02:45:30
 type DatailedTodoItem struct {
-	TodoItem
 	ID        uint                `json:"id" doc:"Unique identifier for the todo item"`
-	Status    enum.TodoItemStatus `json:"status" enum:"pending,completed,cancelled,timeout" doc:"Status of the todo item"`
 	CreatedAt string              `json:"createdAt,omitempty" doc:"Timestamp when the todo item was created"`
 	UpdatedAt string              `json:"updatedAt,omitempty" doc:"Timestamp when the todo item was updated"`
+	Status    enum.TodoItemStatus `json:"status" enum:"pending,completed,cancelled,timeout" doc:"Status of the todo item"`
+	TodoItem
 }
 
 // CreateTodoItemsReq 创建待办事项请求
