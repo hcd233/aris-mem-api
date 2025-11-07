@@ -6,7 +6,6 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/logger"
-	"github.com/hcd233/aris-mem-api/internal/protocol"
 	"github.com/hcd233/aris-mem-api/internal/util"
 	"go.uber.org/zap"
 )
@@ -24,7 +23,7 @@ func LimitUserPermissionMiddleware(serviceName string, requiredPermission enum.P
 	return func(ctx huma.Context, next func(huma.Context)) {
 		permission, ok := ctx.Context().Value(constant.CtxKeyPermission).(enum.Permission)
 		if !ok {
-			_, err := util.WrapHTTPResponse[any](nil, protocol.ErrNoPermission)
+			_, err := util.WrapHTTPResponse[any](nil, constant.ErrNoPermission)
 			huma.WriteErr(api.GetHumaAPI(), ctx, err.GetStatus(), err.Error(), err)
 			return
 		}
@@ -34,7 +33,7 @@ func LimitUserPermissionMiddleware(serviceName string, requiredPermission enum.P
 				zap.String("serviceName", serviceName),
 				zap.String("requiredPermission", string(requiredPermission)),
 				zap.String("permission", string(permission)))
-			_, err := util.WrapHTTPResponse[any](nil, protocol.ErrNoPermission)
+			_, err := util.WrapHTTPResponse[any](nil, constant.ErrNoPermission)
 			huma.WriteErr(api.GetHumaAPI(), ctx, err.GetStatus(), err.Error(), err)
 			return
 		}

@@ -8,7 +8,6 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/api"
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/logger"
-	"github.com/hcd233/aris-mem-api/internal/protocol"
 	"github.com/hcd233/aris-mem-api/internal/resource/cache"
 	"github.com/hcd233/aris-mem-api/internal/util"
 	"github.com/samber/lo"
@@ -57,7 +56,7 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 				keyValue = key
 				value = fmt.Sprintf("%v", ctxValue)
 			} else {
-				_, err := util.WrapHTTPResponse[any](nil, protocol.ErrUnauthorized)
+				_, err := util.WrapHTTPResponse[any](nil, constant.ErrUnauthorized)
 				huma.WriteErr(api.GetHumaAPI(), ctx, err.GetStatus(), err.Error(), err)
 				return
 			}
@@ -69,7 +68,7 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 		result, err := instance.Get(ctx.Context(), limiterKey)
 		if err != nil {
 			logger.WithCtx(ctx.Context()).Error("[RateLimiterMiddleware] failed to get rate limit", zap.Error(err))
-			_, err := util.WrapHTTPResponse[any](nil, protocol.ErrInternalError)
+			_, err := util.WrapHTTPResponse[any](nil, constant.ErrInternalError)
 			huma.WriteErr(api.GetHumaAPI(), ctx, err.GetStatus(), err.Error(), err)
 			return
 		}
@@ -83,7 +82,7 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 			}
 
 			logger.WithCtx(ctx.Context()).Error("[RateLimiterMiddleware] rate limit reached", fields...)
-			_, err := util.WrapHTTPResponse[any](nil, protocol.ErrTooManyRequests)
+			_, err := util.WrapHTTPResponse[any](nil, constant.ErrTooManyRequests)
 			huma.WriteErr(api.GetHumaAPI(), ctx, err.GetStatus(), err.Error(), err)
 			return
 		}

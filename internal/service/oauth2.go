@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/config"
 	"github.com/hcd233/aris-mem-api/internal/jwt"
 	"github.com/hcd233/aris-mem-api/internal/logger"
-	"github.com/hcd233/aris-mem-api/internal/protocol"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
 	"github.com/hcd233/aris-mem-api/internal/resource/database"
 	"github.com/hcd233/aris-mem-api/internal/resource/database/dao"
@@ -108,7 +108,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 			zap.String("provider", req.Provider),
 			zap.String("state", req.State),
 			zap.String("expectedState", config.Oauth2StateString))
-		return nil, protocol.ErrUnauthorized
+		return nil, constant.ErrUnauthorized
 	}
 
 	logger.Info("[Oauth2Service] exchanging token",
@@ -122,7 +122,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 			zap.String("provider", req.Provider),
 			zap.String("code", req.Code),
 			zap.Error(err))
-		return nil, protocol.ErrUnauthorized
+		return nil, constant.ErrUnauthorized
 	}
 
 	logger.Info("[Oauth2Service] token exchange successful",
@@ -135,7 +135,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 		logger.Error("[Oauth2Service] failed to get user info",
 			zap.String("provider", req.Provider),
 			zap.Error(err))
-		return nil, protocol.ErrInternalError
+		return nil, constant.ErrInternalError
 	}
 
 	thirdPartyID := userInfo.GetID()
@@ -147,7 +147,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 			zap.String("provider", req.Provider),
 			zap.String("email", email),
 			zap.Error(err))
-		return nil, protocol.ErrInternalError
+		return nil, constant.ErrInternalError
 	}
 
 	if user.ID != 0 {
@@ -158,7 +158,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 			logger.Error("[Oauth2Service] failed to update user login time",
 				zap.String("provider", req.Provider),
 				zap.Error(err))
-			return nil, protocol.ErrInternalError
+			return nil, constant.ErrInternalError
 		}
 	} else {
 		// 创建新用户
@@ -178,7 +178,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 				zap.String("provider", req.Provider),
 				zap.String("userName", userName),
 				zap.Error(err))
-			return nil, protocol.ErrInternalError
+			return nil, constant.ErrInternalError
 		}
 
 		// _, err = s.imageObjDAO.CreateDir(ctx, user.ID)
@@ -212,7 +212,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 			zap.String("bindField", bindField),
 			zap.String("thirdPartyID", thirdPartyID),
 			zap.Error(err))
-		return nil, protocol.ErrInternalError
+		return nil, constant.ErrInternalError
 	}
 
 	accessToken, err := s.accessTokenSigner.EncodeToken(user.ID)
@@ -220,7 +220,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 		logger.Error("[Oauth2Service] failed to encode access token",
 			zap.String("provider", req.Provider),
 			zap.Error(err))
-		return nil, protocol.ErrInternalError
+		return nil, constant.ErrInternalError
 	}
 
 	refreshToken, err := s.refreshTokenSigner.EncodeToken(user.ID)
@@ -228,7 +228,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 		logger.Error("[Oauth2Service] failed to encode refresh token",
 			zap.String("provider", req.Provider),
 			zap.Error(err))
-		return nil, protocol.ErrInternalError
+		return nil, constant.ErrInternalError
 	}
 
 	logger.Info("[Oauth2Service] callback success",

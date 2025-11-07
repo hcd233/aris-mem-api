@@ -7,9 +7,9 @@ import (
 	"context"
 	"errors"
 
+	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/jwt"
 	"github.com/hcd233/aris-mem-api/internal/logger"
-	"github.com/hcd233/aris-mem-api/internal/protocol"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
 	"github.com/hcd233/aris-mem-api/internal/resource/database"
 	"github.com/hcd233/aris-mem-api/internal/resource/database/dao"
@@ -62,29 +62,29 @@ func (s *tokenService) RefreshToken(ctx context.Context, req *dto.RefreshTokenRe
 	userID, err := s.refreshTokenSigner.DecodeToken(req.Body.RefreshToken)
 	if err != nil {
 		logger.Error("[TokenService] failed to decode refresh token", zap.String("refreshToken", req.Body.RefreshToken), zap.Error(err))
-		return nil, protocol.ErrUnauthorized
+		return nil, constant.ErrUnauthorized
 	}
 
 	_, err = s.userDAO.GetByID(db, userID, []string{"id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[TokenService] user not found", zap.Uint("userID", userID))
-			return nil, protocol.ErrDataNotExists
+			return nil, constant.ErrDataNotExists
 		}
 		logger.Error("[TokenService] failed to get user by id", zap.Error(err))
-		return nil, protocol.ErrInternalError
+		return nil, constant.ErrInternalError
 	}
 
 	accessToken, err := s.accessTokenSigner.EncodeToken(userID)
 	if err != nil {
 		logger.Error("[TokenService] failed to encode access token", zap.Error(err))
-		return nil, protocol.ErrInternalError
+		return nil, constant.ErrInternalError
 	}
 
 	refreshToken, err := s.refreshTokenSigner.EncodeToken(userID)
 	if err != nil {
 		logger.Error("[TokenService] failed to encode refresh token", zap.Error(err))
-		return nil, protocol.ErrInternalError
+		return nil, constant.ErrInternalError
 	}
 
 	logger.Info("[TokenService] refresh token success", zap.Uint("userID", userID))

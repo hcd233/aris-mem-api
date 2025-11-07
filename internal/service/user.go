@@ -7,7 +7,6 @@ import (
 
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/logger"
-	"github.com/hcd233/aris-mem-api/internal/protocol"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
 	"github.com/hcd233/aris-mem-api/internal/resource/database"
 	"github.com/hcd233/aris-mem-api/internal/resource/database/dao"
@@ -61,10 +60,10 @@ func (s *userService) GetCurUserInfo(ctx context.Context, _ *dto.EmptyReq) (rsp 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[UserService] user not found")
-			return nil, protocol.ErrDataNotExists
+			return nil, constant.ErrDataNotExists
 		}
 		logger.Error("[UserService] failed to get user by id", zap.Error(err))
-		return nil, protocol.ErrInternalError
+		return nil, constant.ErrInternalError
 	}
 
 	rsp.User = &dto.DetailedUser{
@@ -104,7 +103,7 @@ func (s *userService) UpdateUserInfo(ctx context.Context, req *dto.UpdateUserInf
 		"avatar": req.Body.User.Avatar,
 	}); err != nil {
 		logger.Error("[UserService] failed to update user", zap.Error(err))
-		return nil, protocol.ErrInternalError
+		return nil, constant.ErrInternalError
 	}
 
 	return rsp, nil

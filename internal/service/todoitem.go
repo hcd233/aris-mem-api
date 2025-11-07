@@ -96,7 +96,7 @@ func (s *todoItemService) ListTodoItems(ctx context.Context, req *dto.ListTodoIt
 		},
 	}
 
-	todoItems, pageInfo, err := s.todoItemDAO.Paginate(db, []string{"id", "name", "summary", "content", "status", "priority"}, []string{}, commonParam)
+	todoItems, pageInfo, err := s.todoItemDAO.Paginate(db, []string{"id", "created_at", "updated_at", "name", "summary", "content", "status", "priority"}, []string{}, commonParam)
 	if err != nil {
 		logger.Error("[TodoItemService] failed to list todo items", zap.Error(err))
 		return

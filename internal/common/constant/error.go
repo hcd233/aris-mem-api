@@ -1,7 +1,4 @@
-// Package protocol API协议
-//
-//	update 2024-09-18 02:33:08
-package protocol
+package constant
 
 import "errors"
 
