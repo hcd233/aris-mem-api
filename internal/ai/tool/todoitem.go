@@ -51,14 +51,6 @@ type CreateTodoItemsInput struct {
 	TodoItems []*TodoItem `json:"todoItems" jsonschema:"description=待办事项列表"`
 }
 
-// CreateTodoItemsOutput 创建待办事项输出
-//
-//	@author centonhuang
-//	@update 2025-11-07 17:33:08
-type CreateTodoItemsOutput struct {
-	Hint string `json:"hint" jsonschema:"description=提示信息"`
-}
-
 // NewCreateTodoItemsTool 创建创建待办事项工具
 //
 //	创建创建待办事项工具
@@ -70,11 +62,11 @@ func NewCreateTodoItemsTool(handler CreateTodoItemsHandler) (tool.InvokableTool,
 	return utils.InferTool(
 		createTodoItemsToolName,
 		createTodoItemsToolDescription,
-		func(ctx context.Context, input *CreateTodoItemsInput) (output *CreateTodoItemsOutput, err error) {
+		func(ctx context.Context, input *CreateTodoItemsInput) (output *CommonToolOutput, err error) {
 			logger := logger.WithCtx(ctx)
 			logger.Info("[CreateTodoItemsTool] create todo items", zap.Any("input", input))
 
-			output = &CreateTodoItemsOutput{}
+			output = &CommonToolOutput{}
 
 			req := &dto.CreateTodoItemsReq{
 				Body: &dto.CreateTodoItemsReqBody{
@@ -87,11 +79,11 @@ func NewCreateTodoItemsTool(handler CreateTodoItemsHandler) (tool.InvokableTool,
 			_, err = handler(ctx, req)
 			if err != nil {
 				logger.Error("[CreateTodoItemsTool] create todo items error", zap.Error(err))
-				output.Hint = "创建待办事项失败，出现系统内部错误"
+				output.Result = "创建待办事项失败，出现系统内部错误"
 				return output, nil
 			}
 			logger.Info("[CreateTodoItemsTool] create todo items success")
-			output.Hint = "创建待办事项成功"
+			output.Result = "创建待办事项成功"
 			return output, nil
 		},
 	)

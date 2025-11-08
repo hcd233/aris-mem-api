@@ -4,19 +4,26 @@
 package service
 
 import (
+	"bufio"
 	"context"
+	"fmt"
+	"strconv"
+	"time"
 
+	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/adk"
 	etool "github.com/cloudwego/eino/components/tool"
-	"github.com/cloudwego/eino/schema"
-	"github.com/danielgtaylor/huma/v2/sse"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/hcd233/aris-mem-api/internal/ai/agent"
 	"github.com/hcd233/aris-mem-api/internal/ai/llm"
 	"github.com/hcd233/aris-mem-api/internal/ai/tool"
+	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/protocol"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
+	"github.com/samber/lo"
+	"github.com/valyala/fasthttp"
 	"go.uber.org/zap"
 )
 
@@ -25,7 +32,7 @@ import (
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 type AgentService interface {
-	HandleChat(ctx context.Context, req *dto.ChatReq, sender sse.Sender)
+	HandleChat(ctx context.Context, req *dto.ChatReq) (*huma.StreamResponse, error)
 }
 
 type agentService struct {
@@ -48,54 +55,100 @@ func NewAgentService() AgentService {
 //	receiver s *agentService
 //	param ctx context.Context
 //	param req *dto.ChatReq
-//	param sender sse.Sender
-func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq, sender sse.Sender) {
+//	return *huma.StreamResponse, error
+func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (*huma.StreamResponse, error) {
 	logger := logger.WithCtx(ctx)
 
 	chatModel, err := llm.NewOpenAIChatModel(ctx)
 	if err != nil {
 		logger.Error("[AgentService] failed to create model", zap.Error(err))
-		return
+		return nil, err
 	}
 
 	createTodoItemsTool, err := tool.NewCreateTodoItemsTool(s.todoItemService.CreateTodoItems)
 	todoAgent, err := agent.NewTodoAgent(ctx, chatModel, []etool.BaseTool{createTodoItemsTool})
 	if err != nil {
 		logger.Error("[AgentService] failed to create agent", zap.Error(err))
-		return
+		return nil, err
 	}
 
-	iter := todoAgent.Run(ctx, &adk.AgentInput{
-		Messages: []*schema.Message{
-			schema.UserMessage(req.Body.Message),
-		},
+	runner := adk.NewRunner(ctx, adk.RunnerConfig{
+		Agent:           todoAgent,
 		EnableStreaming: true,
 	})
-	for {
-		event, ok := iter.Next()
-		if !ok {
-			logger.Info("[AgentService] reach iter end")
-			sender.Data(protocol.SSEResponse{
-				DataType: enum.SSEDataTypeText,
-				Data:     "",
-			})
-			break
-		}
-		sr := event.Output.MessageOutput.MessageStream
-		for {
-			message, err := sr.Recv()
-			if err != nil {
-				logger.Error("[AgentService] failed to recv message", zap.Error(err))
-				sender.Data(protocol.SSEResponse{
-					DataType: enum.SSEDataTypeError,
-					Data:     err.Error(),
-				})
-				break
-			}
-			sender.Data(protocol.SSEResponse{
-				DataType: enum.SSEDataTypeText,
-				Data:     message.Content,
-			})
-		}
-	}
+
+	iter := runner.Query(ctx, req.Body.Message)
+
+	return &huma.StreamResponse{
+		Body: func(hctx huma.Context) {
+			hctx.SetHeader("Content-Type", "text/event-stream")
+			hctx.SetHeader("Cache-Control", "no-cache")
+			hctx.SetHeader("Connection", "keep-alive")
+
+			ctx := hctx.BodyWriter().(*fasthttp.RequestCtx)
+			ctx.SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
+				ticker := time.NewTicker(constant.HeartbeatInterval)
+				defer ticker.Stop()
+				go func() {
+					heartBeatCount := 0
+					for {
+						select {
+						case <-ctx.Done():
+							return
+						case <-ticker.C:
+							data := lo.Must1(sonic.Marshal(protocol.SSEResponse{
+								DataType: enum.SSEDataTypeHeartBeat,
+								Data:     strconv.Itoa(heartBeatCount),
+							}))
+							heartBeatCount++
+							fmt.Fprintf(w, "id: %d\n", heartBeatCount)
+							fmt.Fprintf(w, "event: heartbeat\n")
+							fmt.Fprintf(w, "data: %s\n\n", data)
+							w.Flush()
+						}
+					}
+				}()
+
+				for {
+					event, ok := iter.Next()
+					if !ok {
+						logger.Info("[AgentService] reach iter end")
+						return
+					}
+					if event.Err != nil {
+						logger.Error("[AgentService] agent run error", zap.Error(event.Err))
+						data := lo.Must1(sonic.Marshal(protocol.SSEResponse{
+							DataType: enum.SSEDataTypeError,
+							Data:     event.Err.Error(),
+						}))
+						fmt.Fprintf(w, "event: error\n")
+						fmt.Fprintf(w, "data: %s\n\n", data)
+						w.Flush()
+						return
+					}
+					message, err := event.Output.MessageOutput.GetMessage()
+					if err != nil {
+						logger.Error("[AgentService] failed to get message", zap.Error(err))
+						data := lo.Must1(sonic.Marshal(protocol.SSEResponse{
+							DataType: enum.SSEDataTypeError,
+							Data:     err.Error(),
+						}))
+						fmt.Fprintf(w, "event: error\n")
+						fmt.Fprintf(w, "data: %s\n\n", data)
+						w.Flush()
+						return
+					}
+					messageData := lo.Must1(sonic.Marshal(message))
+					logger.Info("[AgentService] receive event message", zap.ByteString("message", messageData))
+					data := lo.Must1(sonic.Marshal(protocol.SSEResponse{
+						DataType: enum.SSEDataTypeMessage,
+						Data:     string(messageData),
+					}))
+					fmt.Fprintf(w, "event: message\n")
+					fmt.Fprintf(w, "data: %s\n\n", data)
+					w.Flush()
+				}
+			}))
+		},
+	}, nil
 }
