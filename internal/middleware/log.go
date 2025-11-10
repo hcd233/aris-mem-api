@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"strings"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -35,13 +36,6 @@ func LogMiddleware() fiber.Handler {
 			}
 		}
 
-		response := make(map[string]interface{})
-		if respBody := c.Response().Body(); respBody != nil {
-			if err := sonic.Unmarshal(respBody, &response); err != nil {
-				logger.Warn("[LogMiddleware] unmarshal response error", zap.ByteString("response", respBody), zap.Error(err))
-			}
-		}
-
 		fields := []zap.Field{
 			zap.Int("status", c.Response().StatusCode()),
 			zap.String("method", c.Method()),
@@ -53,9 +47,21 @@ func LogMiddleware() fiber.Handler {
 			zap.Dict("request", lo.MapToSlice(request, func(key string, value interface{}) zap.Field {
 				return zap.Any(key, value)
 			})...),
-			zap.Dict("response", lo.MapToSlice(response, func(key string, value interface{}) zap.Field {
+		}
+
+		// FIXME: get response body will break sse
+		// reference: https://github.com/gofiber/fiber/issues/429
+		// reference: https://github.com/samber/slog-fiber/issues/68
+		if !strings.Contains(string(c.Response().Header.ContentType()), "text/event-stream") { // response header content-type is not text/event-stream
+			response := make(map[string]interface{})
+			if respBody := c.Response().Body(); respBody != nil {
+				if err := sonic.Unmarshal(respBody, &response); err != nil {
+					logger.Warn("[LogMiddleware] unmarshal response error", zap.ByteString("response", respBody), zap.Error(err))
+				}
+			}
+			fields = append(fields, zap.Dict("response", lo.MapToSlice(response, func(key string, value interface{}) zap.Field {
 				return zap.Any(key, value)
-			})...),
+			})...))
 		}
 
 		if err != nil {

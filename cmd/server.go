@@ -7,9 +7,9 @@ import (
 
 	"github.com/hcd233/aris-mem-api/internal/api"
 	"github.com/hcd233/aris-mem-api/internal/logger"
+	"github.com/hcd233/aris-mem-api/internal/middleware"
 	"go.uber.org/zap"
 
-	"github.com/hcd233/aris-mem-api/internal/middleware"
 	"github.com/hcd233/aris-mem-api/internal/resource/database"
 	"github.com/hcd233/aris-mem-api/internal/router"
 	"github.com/samber/lo"
@@ -47,7 +47,7 @@ var startServerCmd = &cobra.Command{
 			middleware.RecoverMiddleware(),
 			middleware.FgprofMiddleware(),
 			middleware.CORSMiddleware(),
-			// middleware.CompressMiddleware(),
+			// // middleware.CompressMiddleware(),
 			middleware.TraceMiddleware(),
 			middleware.LogMiddleware(),
 		)

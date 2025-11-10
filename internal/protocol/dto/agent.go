@@ -5,7 +5,7 @@ package dto
 //	@author centonhuang
 //	@update 2025-11-08 04:20:42
 type ChatReq struct {
-	Body ChatReqBody `json:"body" doc:"Body"`
+	Body *ChatReqBody `json:"body" doc:"Body"`
 }
 
 // ChatReqBody 聊天请求体

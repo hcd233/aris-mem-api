@@ -57,7 +57,7 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 				keyValue = key
 				value = fmt.Sprintf("%v", ctxValue)
 			} else {
-				lo.Must0(util.WriteErrorResponse(ctx, constant.ErrUnauthorized))
+				lo.Must0(util.WriteErrorResponse(ctx.BodyWriter(), constant.ErrUnauthorized))
 				return
 			}
 		}
@@ -82,7 +82,7 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 			}
 
 			logger.WithCtx(ctx.Context()).Error("[RateLimiterMiddleware] rate limit reached", fields...)
-			lo.Must0(util.WriteErrorResponse(ctx, constant.ErrTooManyRequests))
+			lo.Must0(util.WriteErrorResponse(ctx.BodyWriter(), constant.ErrTooManyRequests))
 			return
 		}
 		next(ctx)

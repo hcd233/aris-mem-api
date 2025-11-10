@@ -23,7 +23,7 @@ func LimitUserPermissionMiddleware(serviceName string, requiredPermission enum.P
 	return func(ctx huma.Context, next func(huma.Context)) {
 		permission, ok := ctx.Context().Value(constant.CtxKeyPermission).(enum.Permission)
 		if !ok {
-			lo.Must0(util.WriteErrorResponse(ctx, constant.ErrNoPermission))
+			lo.Must0(util.WriteErrorResponse(ctx.BodyWriter(), constant.ErrNoPermission))
 			return
 		}
 
@@ -32,7 +32,7 @@ func LimitUserPermissionMiddleware(serviceName string, requiredPermission enum.P
 				zap.String("serviceName", serviceName),
 				zap.String("requiredPermission", string(requiredPermission)),
 				zap.String("permission", string(permission)))
-			lo.Must0(util.WriteErrorResponse(ctx, constant.ErrNoPermission))
+			lo.Must0(util.WriteErrorResponse(ctx.BodyWriter(), constant.ErrNoPermission))
 			return
 		}
 

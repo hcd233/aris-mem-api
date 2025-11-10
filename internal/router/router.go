@@ -64,8 +64,11 @@ func RegisterAPIRouter() {
 //	@update 2025-11-10 18:39:27
 func RegisterSSERouter() {
 	app := api.GetFiberApp()
+
 	sseGroup := app.Group("/sse")
 	v1Group := sseGroup.Group("/v1")
+
+	initSSEHealthRouter(app)
 
 	agentGroup := v1Group.Group("/agent")
 	initAgentRouter(agentGroup)
