@@ -10,6 +10,7 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
 	"github.com/hcd233/aris-mem-api/internal/resource/cache"
+	"github.com/hcd233/aris-mem-api/internal/util"
 	"github.com/samber/lo"
 	"github.com/ulule/limiter/v3"
 	"github.com/ulule/limiter/v3/drivers/store/redis"
@@ -56,8 +57,7 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 				keyValue = key
 				value = fmt.Sprintf("%v", ctxValue)
 			} else {
-				rsp := &dto.CommonRsp{Error: constant.ErrUnauthorized}
-				_ = lo.Must1(ctx.BodyWriter().Write(lo.Must1(sonic.Marshal(rsp))))
+				lo.Must0(util.WriteErrorResponse(ctx, constant.ErrUnauthorized))
 				return
 			}
 		}
@@ -82,8 +82,7 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 			}
 
 			logger.WithCtx(ctx.Context()).Error("[RateLimiterMiddleware] rate limit reached", fields...)
-			rsp := &dto.CommonRsp{Error: constant.ErrTooManyRequests}
-			_ = lo.Must1(ctx.BodyWriter().Write(lo.Must1(sonic.Marshal(rsp))))
+			lo.Must0(util.WriteErrorResponse(ctx, constant.ErrTooManyRequests))
 			return
 		}
 		next(ctx)

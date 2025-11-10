@@ -4,13 +4,12 @@
 package middleware
 
 import (
-	"github.com/bytedance/sonic"
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/jwt"
-	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
 	"github.com/hcd233/aris-mem-api/internal/resource/database"
 	"github.com/hcd233/aris-mem-api/internal/resource/database/dao"
+	"github.com/hcd233/aris-mem-api/internal/util"
 	"github.com/samber/lo"
 )
 
@@ -30,20 +29,17 @@ func JwtMiddlewareHuma() func(ctx huma.Context, next func(huma.Context)) {
 
 		tokenString := ctx.Header("Authorization")
 		if tokenString == "" {
-			rsp := &dto.CommonRsp{Error: constant.ErrUnauthorized}
-			_ = lo.Must1(ctx.BodyWriter().Write(lo.Must1(sonic.Marshal(rsp))))
+			lo.Must0(util.WriteErrorResponse(ctx, constant.ErrUnauthorized))
 			return
 		}
 		userID, err := accessTokenSvc.DecodeToken(tokenString)
 		if err != nil {
-			rsp := &dto.CommonRsp{Error: constant.ErrUnauthorized}
-			_ = lo.Must1(ctx.BodyWriter().Write(lo.Must1(sonic.Marshal(rsp))))
+			lo.Must0(util.WriteErrorResponse(ctx, constant.ErrUnauthorized))
 			return
 		}
 		user, err := dao.GetByID(db, userID, []string{"id", "name", "permission"}, []string{})
 		if err != nil {
-			rsp := &dto.CommonRsp{Error: constant.ErrInternalError}
-			_ = lo.Must1(ctx.BodyWriter().Write(lo.Must1(sonic.Marshal(rsp))))
+			lo.Must0(util.WriteErrorResponse(ctx, constant.ErrInternalError))
 			return
 		}
 		ctx = huma.WithValue(ctx, constant.CtxKeyUserID, user.ID)
