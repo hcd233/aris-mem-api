@@ -15,7 +15,7 @@ import (
 //	update 2025-01-05 21:00:00
 type Oauth2Handler interface {
 	HandleLogin(ctx context.Context, req *dto.LoginReq) (*protocol.HTTPResponse[*dto.LoginResp], error)
-	HandleCallback(ctx context.Context, req *dto.CallbackReq) (*protocol.HTTPResponse[*dto.CallbackResp], error)
+	HandleCallback(ctx context.Context, req *dto.CallbackReq) (*protocol.HTTPResponse[*dto.CallbackRsp], error)
 }
 
 type oauth2Handler struct{}
@@ -48,11 +48,11 @@ func (h *oauth2Handler) HandleLogin(ctx context.Context, req *dto.LoginReq) (*pr
 //	receiver h *oauth2Handler
 //	param ctx context.Context
 //	param req *dto.CallbackRequest
-//	return *protocol.HumaHTTPResponse[*dto.CallbackResp]
+//	return *protocol.HumaHTTPResponse[*dto.CallbackRsp]
 //	return error
 //	author centonhuang
 //	update 2025-01-05 21:00:00
-func (h *oauth2Handler) HandleCallback(ctx context.Context, req *dto.CallbackReq) (*protocol.HTTPResponse[*dto.CallbackResp], error) {
+func (h *oauth2Handler) HandleCallback(ctx context.Context, req *dto.CallbackReq) (*protocol.HTTPResponse[*dto.CallbackRsp], error) {
 	svc := h.getService(req.Provider)
 	return util.WrapHTTPResponse(svc.Callback(ctx, req))
 }

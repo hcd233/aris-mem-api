@@ -14,6 +14,7 @@ type LoginReq struct {
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 type LoginResp struct {
+	CommonRsp
 	RedirectURL string `json:"redirectURL" doc:"URL to redirect the user to for OAuth2 authorization"`
 }
 
@@ -27,11 +28,12 @@ type CallbackReq struct {
 	State    string `json:"state" query:"state" doc:"State parameter for CSRF protection, must match the initial state"`
 }
 
-// CallbackResp represents the response containing access and refresh tokens after successful OAuth2 authentication
+// CallbackRsp represents the response containing access and refresh tokens after successful OAuth2 authentication
 //
 //	author centonhuang
 //	update 2025-01-05 21:00:00
-type CallbackResp struct {
+type CallbackRsp struct {
+	CommonRsp
 	AccessToken  string `json:"accessToken" doc:"JWT access token for API authentication"`
 	RefreshToken string `json:"refreshToken" doc:"JWT refresh token for obtaining future access tokens"`
 }

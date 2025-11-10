@@ -16,10 +16,11 @@ type ChatReqBody struct {
 	Message string `json:"message" doc:"Message to chat"`
 }
 
-// ChatResp 聊天响应
+// ChatRsp 聊天响应
 //
 //	@author centonhuang
 //	@update 2025-11-08 04:20:42
-type ChatResp struct {
+type ChatRsp struct {
+	CommonRsp
 	Message string `json:"message" doc:"Message to chat"`
 }

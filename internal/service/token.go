@@ -22,7 +22,7 @@ import (
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 type TokenService interface {
-	RefreshToken(ctx context.Context, req *dto.RefreshTokenReq) (rsp *dto.RefreshTokenResp, err error)
+	RefreshToken(ctx context.Context, req *dto.RefreshTokenReq) (rsp *dto.RefreshTokenRsp, err error)
 }
 
 type tokenService struct {
@@ -53,8 +53,8 @@ func NewTokenService() TokenService {
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 21:00:00
-func (s *tokenService) RefreshToken(ctx context.Context, req *dto.RefreshTokenReq) (rsp *dto.RefreshTokenResp, err error) {
-	rsp = &dto.RefreshTokenResp{}
+func (s *tokenService) RefreshToken(ctx context.Context, req *dto.RefreshTokenReq) (*dto.RefreshTokenRsp, error) {
+	rsp := &dto.RefreshTokenRsp{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
@@ -62,29 +62,34 @@ func (s *tokenService) RefreshToken(ctx context.Context, req *dto.RefreshTokenRe
 	userID, err := s.refreshTokenSigner.DecodeToken(req.Body.RefreshToken)
 	if err != nil {
 		logger.Error("[TokenService] failed to decode refresh token", zap.String("refreshToken", req.Body.RefreshToken), zap.Error(err))
-		return nil, constant.ErrUnauthorized
+		rsp.Error = constant.ErrUnauthorized
+		return rsp, nil
 	}
 
 	_, err = s.userDAO.GetByID(db, userID, []string{"id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[TokenService] user not found", zap.Uint("userID", userID))
-			return nil, constant.ErrDataNotExists
+			rsp.Error = constant.ErrDataNotExists
+			return rsp, nil
 		}
 		logger.Error("[TokenService] failed to get user by id", zap.Error(err))
-		return nil, constant.ErrInternalError
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
 	}
 
 	accessToken, err := s.accessTokenSigner.EncodeToken(userID)
 	if err != nil {
 		logger.Error("[TokenService] failed to encode access token", zap.Error(err))
-		return nil, constant.ErrInternalError
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
 	}
 
 	refreshToken, err := s.refreshTokenSigner.EncodeToken(userID)
 	if err != nil {
 		logger.Error("[TokenService] failed to encode refresh token", zap.Error(err))
-		return nil, constant.ErrInternalError
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
 	}
 
 	logger.Info("[TokenService] refresh token success", zap.Uint("userID", userID))

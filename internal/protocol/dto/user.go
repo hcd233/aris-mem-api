@@ -23,26 +23,28 @@ type DetailedUser struct {
 	User
 }
 
-// GetCurUserInfoResp represents the response containing the current user's detailed information
+// GetCurUserRsp represents the response containing the current user's detailed information
 //
 //	author centonhuang
 //	update 2025-01-04 21:00:59
-type GetCurUserInfoResp struct {
+type GetCurUserRsp struct {
+	CommonRsp
 	User *DetailedUser `json:"user" doc:"Complete user information including permissions"`
 }
 
-// UpdateUserInfoReq represents a request to update the current user's information
+// UpdateUserReq represents a request to update the current user's information
 //
 //	author centonhuang
 //	update 2025-01-04 21:19:47
-type UpdateUserInfoReq struct {
-	Body *UpdateUserInfoReqBody `json:"body" doc:"Request body containing fields to update"`
+type UpdateUserReq struct {
+	Body *UpdateUserReqBody `json:"body" doc:"Request body containing fields to update"`
 }
 
-// UpdateUserInfoReqBody contains the fields that can be updated for a user
+// UpdateUserReqBody contains the fields that can be updated for a user
 //
 //	author centonhuang
 //	update 2025-10-31 02:33:48
-type UpdateUserInfoReqBody struct {
+type UpdateUserReqBody struct {
+	CommonRsp
 	User *User `json:"user" doc:"User information to update"`
 }

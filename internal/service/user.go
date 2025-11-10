@@ -20,8 +20,8 @@ import (
 //	author centonhuang
 //	update 2025-01-04 21:04:00
 type UserService interface {
-	GetCurUserInfo(ctx context.Context, req *dto.EmptyReq) (rsp *dto.GetCurUserInfoResp, err error)
-	UpdateUserInfo(ctx context.Context, req *dto.UpdateUserInfoReq) (rsp *dto.EmptyResp, err error)
+	GetCurUser(ctx context.Context, req *dto.EmptyReq) (rsp *dto.GetCurUserRsp, err error)
+	UpdateUser(ctx context.Context, req *dto.UpdateUserReq) (rsp *dto.EmptyRsp, err error)
 }
 
 type userService struct {
@@ -39,7 +39,7 @@ func NewUserService() UserService {
 	}
 }
 
-// GetCurUserInfo 获取当前用户信息
+// GetCurUser 获取当前用户信息
 //
 //	receiver s *userService
 //	param ctx context.Context
@@ -48,8 +48,8 @@ func NewUserService() UserService {
 //	return err error
 //	author centonhuang
 //	update 2025-01-04 21:04:03
-func (s *userService) GetCurUserInfo(ctx context.Context, _ *dto.EmptyReq) (rsp *dto.GetCurUserInfoResp, err error) {
-	rsp = &dto.GetCurUserInfoResp{}
+func (s *userService) GetCurUser(ctx context.Context, _ *dto.EmptyReq) (*dto.GetCurUserRsp, error) {
+	rsp := &dto.GetCurUserRsp{}
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
@@ -60,10 +60,12 @@ func (s *userService) GetCurUserInfo(ctx context.Context, _ *dto.EmptyReq) (rsp 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[UserService] user not found")
-			return nil, constant.ErrDataNotExists
+			rsp.Error = constant.ErrDataNotExists
+			return rsp, nil
 		}
 		logger.Error("[UserService] failed to get user by id", zap.Error(err))
-		return nil, constant.ErrInternalError
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
 	}
 
 	rsp.User = &dto.DetailedUser{
@@ -88,8 +90,8 @@ func (s *userService) GetCurUserInfo(ctx context.Context, _ *dto.EmptyReq) (rsp 
 	return rsp, nil
 }
 
-func (s *userService) UpdateUserInfo(ctx context.Context, req *dto.UpdateUserInfoReq) (rsp *dto.EmptyResp, err error) {
-	rsp = &dto.EmptyResp{}
+func (s *userService) UpdateUser(ctx context.Context, req *dto.UpdateUserReq) (*dto.EmptyRsp, error) {
+	rsp := &dto.EmptyRsp{}
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
@@ -103,7 +105,8 @@ func (s *userService) UpdateUserInfo(ctx context.Context, req *dto.UpdateUserInf
 		"avatar": req.Body.User.Avatar,
 	}); err != nil {
 		logger.Error("[UserService] failed to update user", zap.Error(err))
-		return nil, constant.ErrInternalError
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
 	}
 
 	return rsp, nil

@@ -62,11 +62,12 @@ type ListTodoItemsReq struct {
 	SortField string `query:"sortField" enum:"id,createdAt,updatedAt" doc:"Sort field"`
 }
 
-// ListTodoItemsResp 获取待办事项列表响应
+// ListTodoItemsRsp 获取待办事项列表响应
 //
 //	@author centonhuang
 //	@update 2025-11-07 01:43:02
-type ListTodoItemsResp struct {
+type ListTodoItemsRsp struct {
+	CommonRsp
 	TodoItems []*DatailedTodoItem `json:"todoItems" doc:"Items to list"`
 	PageInfo  *model.PageInfo     `json:"pageInfo" doc:"Page info"`
 }

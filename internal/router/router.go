@@ -34,11 +34,11 @@ func RegisterDocsRouter() {
 	})
 }
 
-// RegisterBusinessRouter 注册业务路由
+// RegisterAPIRouter 注册API路由
 //
 //	@author centonhuang
 //	@update 2025-11-10 17:26:08
-func RegisterBusinessRouter() {
+func RegisterAPIRouter() {
 	api := api.GetHumaAPI()
 	apiGroup := huma.NewGroup(api, "/api")
 	v1Group := huma.NewGroup(apiGroup, "/v1")
@@ -56,7 +56,17 @@ func RegisterBusinessRouter() {
 
 	oauth2Group := huma.NewGroup(v1Group, "/oauth2")
 	initOauth2Router(oauth2Group)
+}
 
-	agentGroup := huma.NewGroup(v1Group, "/agent")
+// RegisterSSERouter 注册SSE路由
+//
+//	@author centonhuang
+//	@update 2025-11-10 18:39:27
+func RegisterSSERouter() {
+	app := api.GetFiberApp()
+	sseGroup := app.Group("/sse")
+	v1Group := sseGroup.Group("/v1")
+
+	agentGroup := v1Group.Group("/agent")
 	initAgentRouter(agentGroup)
 }

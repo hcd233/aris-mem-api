@@ -14,8 +14,8 @@ import (
 //	author centonhuang
 //	update 2025-01-04 15:56:20
 type TodoItemHandler interface {
-	HandleCreateTodoItems(ctx context.Context, req *dto.CreateTodoItemsReq) (*protocol.HTTPResponse[*dto.EmptyResp], error)
-	HandleListTodoItems(ctx context.Context, req *dto.ListTodoItemsReq) (*protocol.HTTPResponse[*dto.ListTodoItemsResp], error)
+	HandleCreateTodoItems(ctx context.Context, req *dto.CreateTodoItemsReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error)
+	HandleListTodoItems(ctx context.Context, req *dto.ListTodoItemsReq) (*protocol.HTTPResponse[*dto.ListTodoItemsRsp], error)
 }
 
 type todoItemHandler struct {
@@ -33,10 +33,10 @@ func NewTodoItemHandler() TodoItemHandler {
 	}
 }
 
-func (h *todoItemHandler) HandleCreateTodoItems(ctx context.Context, req *dto.CreateTodoItemsReq) (*protocol.HTTPResponse[*dto.EmptyResp], error) {
+func (h *todoItemHandler) HandleCreateTodoItems(ctx context.Context, req *dto.CreateTodoItemsReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error) {
 	return util.WrapHTTPResponse(h.svc.CreateTodoItems(ctx, req))
 }
 
-func (h *todoItemHandler) HandleListTodoItems(ctx context.Context, req *dto.ListTodoItemsReq) (*protocol.HTTPResponse[*dto.ListTodoItemsResp], error) {
+func (h *todoItemHandler) HandleListTodoItems(ctx context.Context, req *dto.ListTodoItemsReq) (*protocol.HTTPResponse[*dto.ListTodoItemsRsp], error) {
 	return util.WrapHTTPResponse(h.svc.ListTodoItems(ctx, req))
 }

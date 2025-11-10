@@ -1,51 +1,53 @@
 package constant
 
-import "errors"
+import (
+	"github.com/hcd233/aris-mem-api/internal/common/model"
+)
 
 var (
 
 	// ErrInternalError 内部错误
 	//
 	//	update 2025-01-04 17:35:44
-	ErrInternalError = errors.New("InternalError")
+	ErrInternalError = model.NewError(10000, "InternalError")
 
 	// ErrUnauthorized 未授权错误
 	//
 	//	update 2025-01-04 17:36:00
-	ErrUnauthorized = errors.New("Unauthorized")
+	ErrUnauthorized = model.NewError(10001, "Unauthorized")
 
 	// ErrNoPermission 没有权限错误
 	//
 	//	update 2025-01-04 17:36:00
-	ErrNoPermission = errors.New("NoPermission")
+	ErrNoPermission = model.NewError(10002, "NoPermission")
 
 	// ErrDataNotExists 数据不存在错误
 	//
 	//	update 2025-01-04 17:36:00
-	ErrDataNotExists = errors.New("DataNotExists")
+	ErrDataNotExists = model.NewError(10003, "DataNotExists")
 
 	// ErrDataExists 数据已存在错误
 	//
 	//	update 2025-01-04 17:36:00
-	ErrDataExists = errors.New("DataExists")
+	ErrDataExists = model.NewError(10004, "DataExists")
 
 	// ErrTooManyRequests 请求过于频繁错误
 	//
 	//	update 2025-01-04 17:36:00
-	ErrTooManyRequests = errors.New("TooManyRequests")
+	ErrTooManyRequests = model.NewError(10005, "TooManyRequests")
 
 	// ErrBadRequest 请求错误
 	//
 	//	update 2025-01-04 17:36:00
-	ErrBadRequest = errors.New("BadRequest")
+	ErrBadRequest = model.NewError(10006, "BadRequest")
 
 	// ErrInsufficientQuota 配额不足错误
 	//
 	//	update 2025-01-05 18:41:32
-	ErrInsufficientQuota = errors.New("InsufficientQuota")
+	ErrInsufficientQuota = model.NewError(10007, "InsufficientQuota")
 
 	// ErrNoImplement 未实现错误
 	//
 	//	update 2025-01-05 18:41:32
-	ErrNoImplement = errors.New("NoImplement")
+	ErrNoImplement = model.NewError(10008, "NoImplement")
 )

@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/bytedance/sonic"
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"github.com/hcd233/aris-mem-api/internal/api"
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/logger"
+	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
 	"github.com/hcd233/aris-mem-api/internal/resource/cache"
-	"github.com/hcd233/aris-mem-api/internal/util"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
 
@@ -36,8 +37,8 @@ func RedisLockMiddleware(serviceName, key string, expire time.Duration) func(ctx
 		success, err := redis.SetNX(ctx.Context(), lockKey, lockValue, expire).Result()
 		if err != nil {
 			logger.WithCtx(ctx.Context()).Error("[RedisLockMiddleware] failed to get lock", zap.Error(err))
-			_, err := util.WrapHTTPResponse[any](nil, constant.ErrInternalError)
-			huma.WriteErr(api.GetHumaAPI(), ctx, err.GetStatus(), err.Error(), err)
+			rsp := &dto.CommonRsp{Error: constant.ErrInternalError}
+			_ = lo.Must1(ctx.BodyWriter().Write(lo.Must1(sonic.Marshal(rsp))))
 			return
 		}
 
@@ -46,14 +47,14 @@ func RedisLockMiddleware(serviceName, key string, expire time.Duration) func(ctx
 			if err != nil {
 				logger.WithCtx(ctx.Context()).Error("[RedisLockMiddleware] failed to get lock info",
 					zap.String("lockKey", lockKey), zap.Error(err))
-				_, err := util.WrapHTTPResponse[any](nil, constant.ErrInternalError)
-				huma.WriteErr(api.GetHumaAPI(), ctx, err.GetStatus(), err.Error(), err)
+				rsp := &dto.CommonRsp{Error: constant.ErrInternalError}
+				_ = lo.Must1(ctx.BodyWriter().Write(lo.Must1(sonic.Marshal(rsp))))
 				return
 			}
 			logger.WithCtx(ctx.Context()).Info("[RedisLockMiddleware] resource is locked",
 				zap.String("lockKey", lockKey), zap.String("lockValue", lockValue))
-			_, err := util.WrapHTTPResponse[any](nil, constant.ErrTooManyRequests)
-			huma.WriteErr(api.GetHumaAPI(), ctx, err.GetStatus(), err.Error(), err)
+			rsp := &dto.CommonRsp{Error: constant.ErrTooManyRequests}
+			_ = lo.Must1(ctx.BodyWriter().Write(lo.Must1(sonic.Marshal(rsp))))
 			return
 		}
 

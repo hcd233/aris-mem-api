@@ -21,7 +21,7 @@ const (
 //
 //	@author centonhuang
 //	@update 2025-11-08 17:37:08
-type CreateTodoItemsHandler func(ctx context.Context, req *dto.CreateTodoItemsReq) (output *dto.EmptyResp, err error)
+type CreateTodoItemsHandler func(ctx context.Context, req *dto.CreateTodoItemsReq) (output *dto.EmptyRsp, err error)
 
 // TodoItem 待办事项实体
 //

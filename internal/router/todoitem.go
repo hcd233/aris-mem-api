@@ -11,7 +11,7 @@ import (
 func initTodoItemRouter(todoItemGroup huma.API) {
 	todoItemHandler := handler.NewTodoItemHandler()
 
-	todoItemGroup.UseMiddleware(middleware.JwtMiddleware())
+	todoItemGroup.UseMiddleware(middleware.JwtMiddlewareHuma())
 
 	// 创建待办事项
 	huma.Register(todoItemGroup, huma.Operation{

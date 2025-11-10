@@ -29,7 +29,7 @@ import (
 //	update 2025-01-05 21:00:00
 type Oauth2Service interface {
 	Login(ctx context.Context, req *dto.LoginReq) (rsp *dto.LoginResp, err error)
-	Callback(ctx context.Context, req *dto.CallbackReq) (rsp *dto.CallbackResp, err error)
+	Callback(ctx context.Context, req *dto.CallbackReq) (rsp *dto.CallbackRsp, err error)
 }
 
 // oauth2Service OAuth2服务基础实现
@@ -97,8 +97,8 @@ func (s *oauth2Service) Login(ctx context.Context, req *dto.LoginReq) (rsp *dto.
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 21:00:00
-func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp *dto.CallbackResp, err error) {
-	rsp = &dto.CallbackResp{}
+func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dto.CallbackRsp, error) {
+	rsp := &dto.CallbackRsp{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
@@ -108,7 +108,8 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 			zap.String("provider", req.Provider),
 			zap.String("state", req.State),
 			zap.String("expectedState", config.Oauth2StateString))
-		return nil, constant.ErrUnauthorized
+		rsp.Error = constant.ErrUnauthorized
+		return rsp, nil
 	}
 
 	logger.Info("[Oauth2Service] exchanging token",
@@ -122,7 +123,8 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 			zap.String("provider", req.Provider),
 			zap.String("code", req.Code),
 			zap.Error(err))
-		return nil, constant.ErrUnauthorized
+		rsp.Error = constant.ErrUnauthorized
+		return rsp, nil
 	}
 
 	logger.Info("[Oauth2Service] token exchange successful",
@@ -135,7 +137,8 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 		logger.Error("[Oauth2Service] failed to get user info",
 			zap.String("provider", req.Provider),
 			zap.Error(err))
-		return nil, constant.ErrInternalError
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
 	}
 
 	thirdPartyID := userInfo.GetID()
@@ -147,7 +150,8 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 			zap.String("provider", req.Provider),
 			zap.String("email", email),
 			zap.Error(err))
-		return nil, constant.ErrInternalError
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
 	}
 
 	if user.ID != 0 {
@@ -158,7 +162,8 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 			logger.Error("[Oauth2Service] failed to update user login time",
 				zap.String("provider", req.Provider),
 				zap.Error(err))
-			return nil, constant.ErrInternalError
+			rsp.Error = constant.ErrInternalError
+			return rsp, nil
 		}
 	} else {
 		// 创建新用户
@@ -178,7 +183,8 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 				zap.String("provider", req.Provider),
 				zap.String("userName", userName),
 				zap.Error(err))
-			return nil, constant.ErrInternalError
+			rsp.Error = constant.ErrInternalError
+			return rsp, nil
 		}
 
 		// _, err = s.imageObjDAO.CreateDir(ctx, user.ID)
@@ -212,7 +218,8 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 			zap.String("bindField", bindField),
 			zap.String("thirdPartyID", thirdPartyID),
 			zap.Error(err))
-		return nil, constant.ErrInternalError
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
 	}
 
 	accessToken, err := s.accessTokenSigner.EncodeToken(user.ID)
@@ -220,7 +227,8 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 		logger.Error("[Oauth2Service] failed to encode access token",
 			zap.String("provider", req.Provider),
 			zap.Error(err))
-		return nil, constant.ErrInternalError
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
 	}
 
 	refreshToken, err := s.refreshTokenSigner.EncodeToken(user.ID)
@@ -228,7 +236,8 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (rsp
 		logger.Error("[Oauth2Service] failed to encode refresh token",
 			zap.String("provider", req.Provider),
 			zap.Error(err))
-		return nil, constant.ErrInternalError
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
 	}
 
 	logger.Info("[Oauth2Service] callback success",

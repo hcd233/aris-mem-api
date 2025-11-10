@@ -14,8 +14,8 @@ import (
 //	author centonhuang
 //	update 2025-01-04 15:56:20
 type UserHandler interface {
-	HandleGetCurUserInfo(ctx context.Context, req *dto.EmptyReq) (*protocol.HTTPResponse[*dto.GetCurUserInfoResp], error)
-	HandleUpdateInfo(ctx context.Context, req *dto.UpdateUserInfoReq) (*protocol.HTTPResponse[*dto.EmptyResp], error)
+	HandleGetCurUser(ctx context.Context, req *dto.EmptyReq) (*protocol.HTTPResponse[*dto.GetCurUserRsp], error)
+	HandleUpdateUser(ctx context.Context, req *dto.UpdateUserReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error)
 }
 
 type userHandler struct {
@@ -33,10 +33,10 @@ func NewUserHandler() UserHandler {
 	}
 }
 
-func (h *userHandler) HandleGetCurUserInfo(ctx context.Context, req *dto.EmptyReq) (*protocol.HTTPResponse[*dto.GetCurUserInfoResp], error) {
-	return util.WrapHTTPResponse(h.svc.GetCurUserInfo(ctx, req))
+func (h *userHandler) HandleGetCurUser(ctx context.Context, req *dto.EmptyReq) (*protocol.HTTPResponse[*dto.GetCurUserRsp], error) {
+	return util.WrapHTTPResponse(h.svc.GetCurUser(ctx, req))
 }
 
-func (h *userHandler) HandleUpdateInfo(ctx context.Context, req *dto.UpdateUserInfoReq) (*protocol.HTTPResponse[*dto.EmptyResp], error) {
-	return util.WrapHTTPResponse(h.svc.UpdateUserInfo(ctx, req))
+func (h *userHandler) HandleUpdateUser(ctx context.Context, req *dto.UpdateUserReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error) {
+	return util.WrapHTTPResponse(h.svc.UpdateUser(ctx, req))
 }
