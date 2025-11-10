@@ -8,11 +8,11 @@ import (
 
 	"github.com/cloudwego/eino/adk"
 	etool "github.com/cloudwego/eino/components/tool"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/hcd233/aris-mem-api/internal/ai/agent"
 	"github.com/hcd233/aris-mem-api/internal/ai/llm"
 	"github.com/hcd233/aris-mem-api/internal/ai/tool"
 	"github.com/hcd233/aris-mem-api/internal/logger"
-	"github.com/hcd233/aris-mem-api/internal/protocol"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
 	"github.com/hcd233/aris-mem-api/internal/util"
 	"go.uber.org/zap"
@@ -23,7 +23,7 @@ import (
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 type AgentService interface {
-	HandleChat(ctx context.Context, req *dto.ChatReq) (ch chan *protocol.SSEResponse, err error)
+	HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *huma.StreamResponse, err error)
 }
 
 type agentService struct {
@@ -47,7 +47,7 @@ func NewAgentService() AgentService {
 //	param ctx context.Context
 //	param req *dto.ChatReq
 //	return *huma.StreamResponse, error
-func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (ch chan *protocol.SSEResponse, err error) {
+func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *huma.StreamResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
 	chatModel, err := llm.NewOpenAIChatModel(ctx)

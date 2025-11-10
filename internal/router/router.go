@@ -45,31 +45,18 @@ func RegisterAPIRouter() {
 
 	initHealthRouter(api)
 
+	oauth2Group := huma.NewGroup(v1Group, "/oauth2")
+	initOauth2Router(oauth2Group)
+
 	userGroup := huma.NewGroup(v1Group, "/user")
 	initUserRouter(userGroup)
-
-	todoItemGroup := huma.NewGroup(v1Group, "/todoItem")
-	initTodoItemRouter(todoItemGroup)
 
 	tokenGroup := huma.NewGroup(v1Group, "/token")
 	initTokenRouter(tokenGroup)
 
-	oauth2Group := huma.NewGroup(v1Group, "/oauth2")
-	initOauth2Router(oauth2Group)
-}
+	todoItemGroup := huma.NewGroup(v1Group, "/todoItem")
+	initTodoItemRouter(todoItemGroup)
 
-// RegisterSSERouter 注册SSE路由
-//
-//	@author centonhuang
-//	@update 2025-11-10 18:39:27
-func RegisterSSERouter() {
-	app := api.GetFiberApp()
-
-	sseGroup := app.Group("/sse")
-	v1Group := sseGroup.Group("/v1")
-
-	initSSEHealthRouter(app)
-
-	agentGroup := v1Group.Group("/agent")
+	agentGroup := huma.NewGroup(v1Group, "/agent")
 	initAgentRouter(agentGroup)
 }

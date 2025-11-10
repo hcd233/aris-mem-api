@@ -54,7 +54,6 @@ var startServerCmd = &cobra.Command{
 
 		router.RegisterDocsRouter()
 		router.RegisterAPIRouter()
-		router.RegisterSSERouter()
 
 		lo.Must0(app.Listen(fmt.Sprintf("%s:%s", host, port)))
 	},

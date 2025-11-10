@@ -34,6 +34,15 @@ func initHealthRouter(healthGroup huma.API) {
 		Description: "Check the server health",
 		Tags:        []string{"health"},
 	}, pingHandler.HandlePing)
+
+	huma.Register(healthGroup, huma.Operation{
+		OperationID: "sseHealthCheck",
+		Method:      http.MethodGet,
+		Path:        "/ssehealth",
+		Summary:     "SSEHealthCheck",
+		Description: "Check the server health",
+		Tags:        []string{"health"},
+	}, pingHandler.HandleSSEPing)
 }
 
 func initSSEHealthRouter(sseGroup fiber.Router) {

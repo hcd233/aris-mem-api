@@ -164,8 +164,8 @@ func initEnvironment() {
 	config := viper.New()
 	config.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	config.SetDefault("read.timeout", 10)
-	config.SetDefault("write.timeout", 10)
+	config.SetDefault("read.timeout", 10*time.Second)
+	config.SetDefault("write.timeout", 10*time.Second)
 	config.SetDefault("max.header.bytes", 1<<20)
 
 	config.SetDefault("log.level", "info")
@@ -175,8 +175,8 @@ func initEnvironment() {
 
 	config.AutomaticEnv()
 
-	ReadTimeout = time.Duration(config.GetInt("read.timeout")) * time.Second
-	WriteTimeout = time.Duration(config.GetInt("write.timeout")) * time.Second
+	ReadTimeout = config.GetDuration("read.timeout")
+	WriteTimeout = config.GetDuration("write.timeout")
 	MaxHeaderBytes = config.GetInt("max.header.bytes")
 
 	LogLevel = config.GetString("log.level")

@@ -1,7 +1,9 @@
 package router
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"net/http"
+
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/hcd233/aris-mem-api/internal/handler"
 	"github.com/hcd233/aris-mem-api/internal/middleware"
 )
@@ -11,12 +13,17 @@ import (
 //	@param agentGroup
 //	@author centonhuang
 //	@update 2025-11-10 18:39:15
-func initAgentRouter(agentGroup fiber.Router) {
+func initAgentRouter(agentGroup huma.API) {
 	agentHandler := handler.NewAgentHandler()
 
-	agentGroup.Use(middleware.JwtMiddlewareFiber())
+	agentGroup.UseMiddleware(middleware.JwtMiddlewareHuma())
 
-	agentGroup.Post("chat",
-		// middleware.RedisLockMiddleware("agentChat", constant.CtxKeyUserID, constant.AgentChatLockExpire),
-		agentHandler.HandleChat)
+	huma.Register(agentGroup, huma.Operation{
+		OperationID: "chat",
+		Method:      http.MethodPost,
+		Path:        "/chat",
+		Summary:     "Chat",
+		Description: "Chat with the agent",
+		Tags:        []string{"agent"},
+	}, agentHandler.HandleChat)
 }
