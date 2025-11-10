@@ -34,13 +34,13 @@ func NewTokenHandler() TokenHandler {
 
 // HandleRefreshToken 刷新令牌
 //
-//	receiver h *tokenHandler
-//	param ctx context.Context
-//	param req *dto.RefreshTokenRequest
-//	return *protocol.HumaHTTPResponse[*dto.RefreshTokenRsp]
-//	return error
-//	author centonhuang
-//	update 2025-01-05 21:00:00
+//	@receiver h *tokenHandler
+//	@param ctx context.Context
+//	@param req *dto.RefreshTokenReq
+//	@return *protocol.HTTPResponse[*dto.RefreshTokenRsp]
+//	@return error
+//	@author centonhuang
+//	@update 2025-11-11 04:58:25
 func (h *tokenHandler) HandleRefreshToken(ctx context.Context, req *dto.RefreshTokenReq) (*protocol.HTTPResponse[*dto.RefreshTokenRsp], error) {
 	return util.WrapHTTPResponse(h.svc.RefreshToken(ctx, req))
 }

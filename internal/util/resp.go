@@ -15,10 +15,10 @@ import (
 //
 //	@param rsp rspT
 //	@param err error
-//	@return *protocol.HumaHTTPResponse[rspT]
+//	@return *protocol.HTTPResponse[rspT]
 //	@return error
 //	@author centonhuang
-//	@update 2025-10-31 01:47:14
+//	@update 2025-11-11 04:58:31
 func WrapHTTPResponse[rspT any](rsp rspT, err error) (*protocol.HTTPResponse[rspT], error) {
 	return &protocol.HTTPResponse[rspT]{
 		Body: rsp,

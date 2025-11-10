@@ -16,29 +16,29 @@ services:
       interval: 5s
       retries: 10
 
-  # redis:
-  #   image: bitnami/redis:latest
-  #   container_name: redis
-  #   restart: always
-  #   # ports:
-  #   #   - 6379:6379
-  #   env_file:
-  #     - ../env/redis.env
-  #   volumes:
-  #     - redis-data:/bitnami/redis/data
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "ping"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 3
+  redis:
+    image: bitnami/redis:latest
+    container_name: redis
+    restart: always
+    # ports:
+    #   - 6379:6379
+    env_file:
+      - ../env/redis.env
+    volumes:
+      - redis-data:/bitnami/redis/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
   postgresql-data:
     name: postgresql-data
     external: true
-  # redis-data:
-  #   name: redis-data
-  #   external: true
+  redis-data:
+    name: redis-data
+    external: true
 
 # docker volume create postgresql-data 
 # docker volume create redis-data

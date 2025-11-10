@@ -31,27 +31,27 @@ func NewOauth2Handler() Oauth2Handler {
 
 // HandleLogin OAuth2登录
 //
-//	receiver h *oauth2Handler
-//	param ctx context.Context
-//	param req *dto.LoginRequest
-//	return *protocol.HumaHTTPResponse[*dto.LoginResp]
-//	return error
-//	author centonhuang
-//	update 2025-01-05 21:00:00
+//	@receiver h *oauth2Handler
+//	@param ctx context.Context
+//	@param req *dto.LoginReq
+//	@return *protocol.HTTPResponse[*dto.LoginResp]
+//	@return error
+//	@author centonhuang
+//	@update 2025-11-11 04:57:58
 func (h *oauth2Handler) HandleLogin(ctx context.Context, req *dto.LoginReq) (*protocol.HTTPResponse[*dto.LoginResp], error) {
 	svc := h.getService(req.Provider)
 	return util.WrapHTTPResponse(svc.Login(ctx, req))
 }
 
-// HandleCallback OAuth2回调
+// HandleCallback OAuth2回调 
 //
-//	receiver h *oauth2Handler
-//	param ctx context.Context
-//	param req *dto.CallbackRequest
-//	return *protocol.HumaHTTPResponse[*dto.CallbackRsp]
-//	return error
-//	author centonhuang
-//	update 2025-01-05 21:00:00
+//	@receiver h *oauth2Handler 
+//	@param ctx context.Context 
+//	@param req *dto.CallbackReq 
+//	@return *protocol.HTTPResponse[*dto.CallbackRsp] 
+//	@return error 
+//	@author centonhuang 
+//	@update 2025-11-11 04:58:11 
 func (h *oauth2Handler) HandleCallback(ctx context.Context, req *dto.CallbackReq) (*protocol.HTTPResponse[*dto.CallbackRsp], error) {
 	svc := h.getService(req.Provider)
 	return util.WrapHTTPResponse(svc.Callback(ctx, req))

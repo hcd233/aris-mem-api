@@ -41,13 +41,13 @@ func NewUserService() UserService {
 
 // GetCurUser 获取当前用户信息
 //
-//	receiver s *userService
-//	param ctx context.Context
-//	param req *protocol.GetCurUserInfoRequest
-//	return rsp *protocol.GetCurUserInfoResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-04 21:04:03
+//	@receiver s *userService
+//	@param ctx context.Context
+//	@param _ *dto.EmptyReq
+//	@return *dto.GetCurUserRsp
+//	@return error
+//	@author centonhuang
+//	@update 2025-11-11 04:59:13
 func (s *userService) GetCurUser(ctx context.Context, _ *dto.EmptyReq) (*dto.GetCurUserRsp, error) {
 	rsp := &dto.GetCurUserRsp{}
 

@@ -11,7 +11,7 @@ import (
 func initUserRouter(userGroup huma.API) {
 	userHandler := handler.NewUserHandler()
 
-	userGroup.UseMiddleware(middleware.JwtMiddlewareHuma())
+	userGroup.UseMiddleware(middleware.JwtMiddleware())
 
 	// 获取当前用户信息
 	huma.Register(userGroup, huma.Operation{

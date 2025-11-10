@@ -10,6 +10,7 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/middleware"
 	"go.uber.org/zap"
 
+	"github.com/hcd233/aris-mem-api/internal/resource/cache"
 	"github.com/hcd233/aris-mem-api/internal/resource/database"
 	"github.com/hcd233/aris-mem-api/internal/router"
 	"github.com/samber/lo"
@@ -37,7 +38,7 @@ var startServerCmd = &cobra.Command{
 		host, port := lo.Must1(cmd.Flags().GetString("host")), lo.Must1(cmd.Flags().GetString("port"))
 
 		database.InitDatabase()
-		// cache.InitCache()
+		cache.InitCache()
 		// storage.InitObjectStorage()
 		// cron.InitCronJobs()
 
