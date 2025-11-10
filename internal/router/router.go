@@ -3,19 +3,44 @@ package router
 
 import (
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-mem-api/internal/api"
 )
 
-// RegisterRouter 注册路由
+// RegisterDocsRouter 注册文档路由
 //
-//	param app *fiber.App
-//	author centonhuang
-//	update 2025-01-04 15:32:40
-func RegisterRouter() {
+//	@author centonhuang
+//	@update 2025-11-10 17:26:08
+func RegisterDocsRouter() {
+	app := api.GetFiberApp()
+	app.Get("/docs", func(c *fiber.Ctx) error {
+		html := `<!doctype html>
+<html>
+  <head>
+    <title>API Reference</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <script
+      id="api-reference"
+      data-url="/openapi.json"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+  </body>
+</html>`
+		return c.Type("html").SendString(html)
+	})
+}
+
+// RegisterBusinessRouter 注册业务路由
+//
+//	@author centonhuang
+//	@update 2025-11-10 17:26:08
+func RegisterBusinessRouter() {
 	api := api.GetHumaAPI()
-
 	apiGroup := huma.NewGroup(api, "/api")
-
 	v1Group := huma.NewGroup(apiGroup, "/v1")
 
 	initHealthRouter(api)
