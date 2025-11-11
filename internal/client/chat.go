@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/hcd233/aris-mem-api/internal/config"
 )
 
@@ -37,7 +36,7 @@ func (h *ChatHandler) Execute() error {
 	tokenData, err := LoadToken()
 	if err != nil || tokenData == nil {
 		errorColor.Println("\n✗ Not logged in")
-		infoColor.Println("  Please run 'login' command first")
+		infoColor.Println("  Please run `client login` command first")
 		return fmt.Errorf("not logged in")
 	}
 
@@ -68,6 +67,8 @@ func (h *ChatHandler) Execute() error {
 	fmt.Println()
 	infoColor.Println("💡 Type your message and press Enter to chat")
 	infoColor.Println("   Type 'exit' or 'quit' to end the session")
+	warningColor.Println("   Notice: This is a demo version, only support `SINGLE TURN DIALOG` now!")
+
 	fmt.Println()
 
 	// Step 3: Enter chat loop
@@ -147,7 +148,7 @@ func (h *ChatHandler) sendMessage(message string) error {
 
 	// Display AI label
 	fmt.Println()
-	color.New(color.FgCyan, color.Bold).Print("AI: ")
+	commandColor.Print("AI: ")
 
 	// Stream and render SSE response
 	return h.renderSSEStream(resp.Body)
@@ -156,10 +157,6 @@ func (h *ChatHandler) sendMessage(message string) error {
 // renderSSEStream parses and renders SSE events
 func (h *ChatHandler) renderSSEStream(reader io.Reader) error {
 	scanner := bufio.NewScanner(reader)
-
-	// For accumulating tool call arguments
-	toolCallBuffer := make(map[int]*ToolCallInfo)
-	lastWasToolCall := false
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -191,6 +188,8 @@ func (h *ChatHandler) renderSSEStream(reader io.Reader) error {
 
 			// Skip tool role messages (tool output)
 			if msg.Role == "tool" {
+				toolCallColor.Println("🔧 Tool Call Done!")
+				fmt.Println()
 				continue
 			}
 
@@ -199,38 +198,12 @@ func (h *ChatHandler) renderSSEStream(reader io.Reader) error {
 				// Handle tool calls
 				if len(msg.ToolCalls) > 0 {
 					for _, tc := range msg.ToolCalls {
-						if tc.ID != "" && tc.Function.Name != "" {
-							// Start of a new tool call
-							if !lastWasToolCall {
-								fmt.Println()
-								lastWasToolCall = true
-							}
-							toolCallBuffer[tc.Index] = &ToolCallInfo{
-								ID:        tc.ID,
-								Name:      tc.Function.Name,
-								Arguments: tc.Function.Arguments,
-							}
-						} else if tc.Function.Arguments != "" {
-							// Accumulate arguments
-							if info, exists := toolCallBuffer[tc.Index]; exists {
-								info.Arguments += tc.Function.Arguments
-								toolCallBuffer[tc.Index] = info
-							}
+						if tc.Function.Name != "" {
+							toolCallColor.Printf("\n\n🔧 Tool Call: %s\n", tc.Function.Name)
 						}
-					}
-
-					// Check if tool call is complete (has finish_reason)
-					if msg.ResponseMeta.FinishReason == "tool_calls" {
-						h.renderToolCalls(toolCallBuffer)
-						toolCallBuffer = make(map[int]*ToolCallInfo)
-						lastWasToolCall = false
 					}
 				} else if msg.Content != "" {
 					// Regular content message
-					if lastWasToolCall {
-						fmt.Println()
-						lastWasToolCall = false
-					}
 					fmt.Print(msg.Content)
 				}
 
@@ -259,8 +232,8 @@ func (h *ChatHandler) renderToolCalls(toolCalls map[int]*ToolCallInfo) {
 			formatted, _ := json.MarshalIndent(args, "  ", "  ")
 
 			fmt.Println()
-			color.New(color.FgYellow, color.Bold).Printf("🔧 Tool Call: %s\n", info.Name)
-			color.New(color.FgYellow).Println("  Parameters:")
+			toolCallColor.Printf("🔧 Tool Call: %s\n", info.Name)
+			toolCallColor.Println("  Parameters:")
 			fmt.Printf("  %s\n", string(formatted))
 		}
 	}

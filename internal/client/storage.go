@@ -33,7 +33,13 @@ func getTokenFilePath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(homeDir, TokenFileName), nil
+
+	tokenFilePath := filepath.Join(homeDir, TokenFileName)
+	if err := os.MkdirAll(filepath.Dir(tokenFilePath), 0o700); err != nil {
+		return "", err
+	}
+
+	return tokenFilePath, nil
 }
 
 // LoadToken loads and decrypts token from local storage

@@ -23,6 +23,9 @@ var (
 	warningColor = color.New(color.FgYellow)
 	promptColor  = color.New(color.FgBlue, color.Bold)
 	headerColor  = color.New(color.FgMagenta, color.Bold)
+	commandColor = color.New(color.FgWhite, color.Bold)
+	commandPromptColor = color.New(color.FgWhite, color.Bold)
+	toolCallColor = color.New(color.FgYellow, color.Bold)
 )
 
 // LoginHandler 登录处理器
@@ -157,7 +160,7 @@ func (h *LoginHandler) selectProvider() (string, error) {
 		}
 
 		errorColor.Printf("✗ Invalid platform: %s\n", provider)
-		warningColor.Println("  Please enter 'github' or 'google'")
+		warningColor.Println("  Please enter `github` or `google`")
 
 		if attempt == maxRetries {
 			return "", fmt.Errorf("maximum retries exceeded")
@@ -170,13 +173,13 @@ func (h *LoginHandler) selectProvider() (string, error) {
 // readCodeAndState reads authorization code and state from user
 func (h *LoginHandler) readCodeAndState() (string, string, error) {
 	for attempt := 1; attempt <= maxRetries; attempt++ {
-		promptColor.Print("\n→ Enter state parameter: ")
+		promptColor.Print("\n→ Enter `state` parameter: ")
 		if !h.scanner.Scan() {
 			return "", "", fmt.Errorf("failed to read input")
 		}
 		state := strings.TrimSpace(h.scanner.Text())
 
-		promptColor.Print("→ Enter code parameter: ")
+		promptColor.Print("→ Enter `code` parameter: ")
 		if !h.scanner.Scan() {
 			return "", "", fmt.Errorf("failed to read input")
 		}
