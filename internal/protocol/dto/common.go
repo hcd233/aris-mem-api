@@ -7,7 +7,7 @@ import "github.com/hcd233/aris-mem-api/internal/common/model"
 //	@author centonhuang
 //	@update 2025-11-10 19:29:36
 type CommonRsp struct {
-	Error *model.Error `json:"error" doc:"Error body"`
+	Error *model.Error `json:"error,omitempty" doc:"Error body"`
 }
 
 // EmptyReq 空请求
