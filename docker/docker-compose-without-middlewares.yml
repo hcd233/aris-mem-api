@@ -23,7 +23,7 @@ services:
     networks:
       - 1panel-network
     ports:
-      - 8170:8080
+      - 9080:8080
     env_file:
       - ../env/api.env
     depends_on:
