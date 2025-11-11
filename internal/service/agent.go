@@ -14,10 +14,12 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/ai/llm"
 	"github.com/hcd233/aris-mem-api/internal/ai/tool"
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
+	"github.com/hcd233/aris-mem-api/internal/config"
 	"github.com/hcd233/aris-mem-api/internal/lock"
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
 	"github.com/hcd233/aris-mem-api/internal/util"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
 
@@ -71,11 +73,19 @@ func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *h
 		logger.Error("[AgentService] failed to create list todo items tool", zap.Error(err))
 	}
 
-	todoAgent, err := agent.NewTodoAgent(ctx, chatModel, []etool.BaseTool{createTodoItemsTool, listTodoItemsTool})
+	tools := []etool.BaseTool{createTodoItemsTool, listTodoItemsTool}
+
+	todoAgent, err := agent.NewTodoAgent(ctx, chatModel, tools)
 	if err != nil {
 		logger.Error("[AgentService] failed to create agent", zap.Error(err))
 		return util.WrapErrorSSE(ctx, constant.ErrInternalError), nil
 	}
+
+	toolNames := lo.Map(tools, func(tool etool.BaseTool, _ int) string {
+		return lo.Must1(tool.Info(ctx)).Name
+	})
+
+	logger.Info("[AgentService] init agent", zap.String("llm", config.OpenAIModel), zap.Strings("tools", toolNames))
 
 	lockKey := fmt.Sprintf(constant.LockKeyTemplateAgentChat, ctx.Value(constant.CtxKeyUserID).(uint))
 	lockValue := ctx.Value(constant.CtxKeyTraceID).(string)
