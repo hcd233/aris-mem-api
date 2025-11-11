@@ -32,9 +32,9 @@ services:
       timeout: 5s
       retries: 3
   
-  db-migrate:
+  aris-mem-db-migrate:
     image: ghcr.io/hcd233/aris-mem-api:master
-    container_name: db-migrate
+    container_name: aris-mem-db-migrate
     restart: no
     env_file:
       - ../env/api.env
@@ -58,7 +58,7 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-      db-migrate:
+      aris-mem-db-migrate:
         condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:${PORT}"]
