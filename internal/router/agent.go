@@ -26,6 +26,9 @@ func initAgentRouter(agentGroup huma.API) {
 		Summary:     "Chat",
 		Description: "Chat with the agent",
 		Tags:        []string{"agent"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
 		Middlewares: huma.Middlewares{
 			middleware.RedisLockMiddleware("agentChat", constant.CtxKeyUserID, constant.AgentChatLockExpire),
 		},
