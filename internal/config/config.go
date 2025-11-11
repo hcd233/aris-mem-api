@@ -154,6 +154,11 @@ var (
 	// JwtRefreshTokenSecret string Jwt Refresh Token密钥
 	//	update 2024-06-22 11:15:55
 	JwtRefreshTokenSecret string
+
+	// ServerEndpoint string
+	//	@author centonhuang
+	//	@update 2025-11-11 20:13:39
+	ServerEndpoint string
 )
 
 func init() {
@@ -224,4 +229,6 @@ func initEnvironment() {
 
 	JwtRefreshTokenExpired = config.GetDuration("jwt.refresh.token.expired")
 	JwtRefreshTokenSecret = config.GetString("jwt.refresh.token.secret")
+
+	ServerEndpoint = config.GetString("server.endpoint")
 }

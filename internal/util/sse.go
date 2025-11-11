@@ -14,9 +14,11 @@ import (
 	"github.com/danielgtaylor/huma/v2/adapters/humafiber"
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
+	"github.com/hcd233/aris-mem-api/internal/common/model"
 	"github.com/hcd233/aris-mem-api/internal/lock"
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/protocol"
+	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
 	"github.com/samber/lo"
 	"github.com/valyala/fasthttp"
 	"go.uber.org/zap"
@@ -73,7 +75,7 @@ func WrapADKIterSSE(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent
 					}
 					if event.Err != nil {
 						logger.Error("[AgentService] agent run error", zap.Error(event.Err))
-						writeSSEErrorResponse(ctx, w, event.Err)
+						writeSSEErrorResponse(ctx, w, constant.ErrInternalError)
 						return
 					}
 
@@ -82,7 +84,7 @@ func WrapADKIterSSE(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent
 						message, err := event.Output.MessageOutput.GetMessage()
 						if err != nil {
 							logger.Error("[AgentService] failed to get message", zap.Error(err))
-							writeSSEErrorResponse(ctx, w, err)
+							writeSSEErrorResponse(ctx, w, constant.ErrInternalError)
 						}
 						writeSSEMessageResponse(ctx, w, message)
 						continue
@@ -96,7 +98,7 @@ func WrapADKIterSSE(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent
 							}
 
 							logger.Error("[AgentService] failed to get message", zap.Error(err))
-							writeSSEErrorResponse(ctx, w, err)
+							writeSSEErrorResponse(ctx, w, constant.ErrInternalError)
 							return
 						}
 						writeSSEMessageResponse(ctx, w, message)
@@ -115,7 +117,7 @@ func WrapADKIterSSE(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent
 //	@return rsp
 //	@author centonhuang
 //	@update 2025-11-11 17:46:36
-func WrapErrorSSE(ctx context.Context, err error) (rsp *huma.StreamResponse) {
+func WrapErrorSSE(ctx context.Context, err *model.Error) (rsp *huma.StreamResponse) {
 	return &huma.StreamResponse{
 		Body: func(hCtx huma.Context) {
 			fCtx := humafiber.Unwrap(hCtx)
@@ -133,10 +135,9 @@ func WrapErrorSSE(ctx context.Context, err error) (rsp *huma.StreamResponse) {
 
 func writeSSEMessageResponse(ctx context.Context, w *bufio.Writer, message adk.Message) {
 	logger := logger.WithCtx(ctx)
-	messageData := lo.Must1(sonic.Marshal(message))
 	rsp := &protocol.SSEResponse{
 		DataType: enum.SSEDataTypeMessage,
-		Data:     string(messageData),
+		Data:     message,
 	}
 	fmt.Fprintf(w, "data: %s\n\n", lo.Must1(sonic.Marshal(rsp)))
 	if err := w.Flush(); err != nil {
@@ -144,11 +145,11 @@ func writeSSEMessageResponse(ctx context.Context, w *bufio.Writer, message adk.M
 	}
 }
 
-func writeSSEErrorResponse(ctx context.Context, w *bufio.Writer, err error) {
+func writeSSEErrorResponse(ctx context.Context, w *bufio.Writer, err *model.Error) {
 	logger := logger.WithCtx(ctx)
 	rsp := &protocol.SSEResponse{
 		DataType: enum.SSEDataTypeError,
-		Data:     err.Error(),
+		Data:     &dto.CommonRsp{Error: err},
 	}
 	fmt.Fprintf(w, "data: %s\n\n", lo.Must1(sonic.Marshal(rsp)))
 	if err := w.Flush(); err != nil {
