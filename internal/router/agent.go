@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/handler"
 	"github.com/hcd233/aris-mem-api/internal/middleware"
 )
@@ -28,9 +27,6 @@ func initAgentRouter(agentGroup huma.API) {
 		Tags:        []string{"agent"},
 		Security: []map[string][]string{
 			{"jwtAuth": {}},
-		},
-		Middlewares: huma.Middlewares{
-			middleware.RedisLockMiddleware("agentChat", constant.CtxKeyUserID, constant.AgentChatLockExpire),
 		},
 	}, agentHandler.HandleChat)
 }

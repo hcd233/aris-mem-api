@@ -14,6 +14,7 @@ import (
 	"github.com/danielgtaylor/huma/v2/adapters/humafiber"
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
+	"github.com/hcd233/aris-mem-api/internal/lock"
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/protocol"
 	"github.com/samber/lo"
@@ -21,17 +22,16 @@ import (
 	"go.uber.org/zap"
 )
 
-// AdkIterToChan  将迭代器转换为通道
+// WrapADKIterSSE 将Adk迭代器转换为SSE响应
 //
 //	@param ctx context.Context
 //	@param iter *adk.AsyncIterator[*adk.AgentEvent]
-//	@return chan *protocol.SSEResponse
-//	@return error
+//	@return rsp
 //	@author centonhuang
-//	@update 2025-11-11 03:05:06
-func AdkIterToChan(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent]) (rsp *huma.StreamResponse) {
+//	@update 2025-11-11 17:43:42
+func WrapADKIterSSE(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent]) (rsp *huma.StreamResponse) {
 	logger := logger.WithCtx(ctx)
-
+	locker := lock.NewLocker()
 	return &huma.StreamResponse{
 		Body: func(hCtx huma.Context) {
 			fCtx := humafiber.Unwrap(hCtx)
@@ -41,6 +41,14 @@ func AdkIterToChan(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent]
 			fCtx.Set("Transfer-Encoding", "chunked")
 
 			fCtx.Response().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
+				defer func() {
+					lockKey := fmt.Sprintf(constant.LockKeyTemplateAgentChat, ctx.Value(constant.CtxKeyUserID))
+					lockValue := ctx.Value(constant.CtxKeyTraceID).(string)
+					err := locker.Unlock(ctx, lockKey, lockValue)
+					if err != nil {
+						logger.Error("[StreamADKIter] unlock resource error", zap.Error(err))
+					}
+				}()
 				ticker := time.NewTicker(constant.HeartbeatInterval)
 				defer ticker.Stop()
 				go func() {
@@ -95,6 +103,29 @@ func AdkIterToChan(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent]
 					}
 
 				}
+			}))
+		},
+	}
+}
+
+// WrapErrorSSE 包装错误响应
+//
+//	@param ctx
+//	@param err
+//	@return rsp
+//	@author centonhuang
+//	@update 2025-11-11 17:46:36
+func WrapErrorSSE(ctx context.Context, err error) (rsp *huma.StreamResponse) {
+	return &huma.StreamResponse{
+		Body: func(hCtx huma.Context) {
+			fCtx := humafiber.Unwrap(hCtx)
+			fCtx.Set("Content-Type", "text/event-stream")
+			fCtx.Set("Cache-Control", "no-cache")
+			fCtx.Set("Connection", "keep-alive")
+			fCtx.Set("Transfer-Encoding", "chunked")
+
+			fCtx.Response().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
+				writeSSEErrorResponse(ctx, w, err)
 			}))
 		},
 	}

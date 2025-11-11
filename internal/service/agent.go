@@ -5,6 +5,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/cloudwego/eino/adk"
 	etool "github.com/cloudwego/eino/components/tool"
@@ -12,6 +13,8 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/ai/agent"
 	"github.com/hcd233/aris-mem-api/internal/ai/llm"
 	"github.com/hcd233/aris-mem-api/internal/ai/tool"
+	"github.com/hcd233/aris-mem-api/internal/common/constant"
+	"github.com/hcd233/aris-mem-api/internal/lock"
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
 	"github.com/hcd233/aris-mem-api/internal/util"
@@ -50,16 +53,18 @@ func NewAgentService() AgentService {
 func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *huma.StreamResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
+	locker := lock.NewLocker()
+
 	chatModel, err := llm.NewOpenAIChatModel(ctx)
 	if err != nil {
 		logger.Error("[AgentService] failed to create model", zap.Error(err))
-		return nil, err
+		return util.WrapErrorSSE(ctx, constant.ErrInternalError), nil
 	}
 
 	createTodoItemsTool, err := tool.NewCreateTodoItemsTool(s.todoItemService.CreateTodoItems)
 	if err != nil {
 		logger.Error("[AgentService] failed to create create todo items tool", zap.Error(err))
-		return nil, err
+		return util.WrapErrorSSE(ctx, constant.ErrInternalError), nil
 	}
 	listTodoItemsTool, err := tool.NewListTodoItemsTool(s.todoItemService.ListTodoItems)
 	if err != nil {
@@ -69,7 +74,19 @@ func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *h
 	todoAgent, err := agent.NewTodoAgent(ctx, chatModel, []etool.BaseTool{createTodoItemsTool, listTodoItemsTool})
 	if err != nil {
 		logger.Error("[AgentService] failed to create agent", zap.Error(err))
-		return nil, err
+		return util.WrapErrorSSE(ctx, constant.ErrInternalError), nil
+	}
+
+	lockKey := fmt.Sprintf(constant.LockKeyTemplateAgentChat, ctx.Value(constant.CtxKeyUserID).(uint))
+	lockValue := ctx.Value(constant.CtxKeyTraceID).(string)
+	success, err := locker.Lock(ctx, lockKey, lockValue, constant.AgentChatLockExpire)
+	if err != nil {
+		logger.Error("[AgentService] lock resource error", zap.Error(err))
+		return util.WrapErrorSSE(ctx, constant.ErrInternalError), nil
+	}
+	if !success {
+		logger.Info("[AgentService] lock resource is already locked", zap.String("lockKey", lockKey))
+		return util.WrapErrorSSE(ctx, constant.ErrTooManyRequests), nil
 	}
 
 	runner := adk.NewRunner(ctx, adk.RunnerConfig{
@@ -79,5 +96,5 @@ func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *h
 
 	iter := runner.Query(ctx, req.Body.Message)
 
-	return util.AdkIterToChan(ctx, iter), nil
+	return util.WrapADKIterSSE(ctx, iter), nil
 }

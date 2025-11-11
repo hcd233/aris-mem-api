@@ -165,7 +165,7 @@ func initEnvironment() {
 	config.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	config.SetDefault("read.timeout", 10*time.Second)
-	config.SetDefault("write.timeout", 10*time.Second)
+	config.SetDefault("write.timeout", 5*time.Minute)
 	config.SetDefault("max.header.bytes", 1<<20)
 
 	config.SetDefault("log.level", "info")

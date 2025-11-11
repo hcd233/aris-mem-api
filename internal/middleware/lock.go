@@ -7,8 +7,8 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
+	"github.com/hcd233/aris-mem-api/internal/lock"
 	"github.com/hcd233/aris-mem-api/internal/logger"
-	"github.com/hcd233/aris-mem-api/internal/resource/cache"
 	"github.com/hcd233/aris-mem-api/internal/util"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
@@ -23,7 +23,7 @@ import (
 //	@author centonhuang
 //	@update 2025-11-11 04:52:25
 func RedisLockMiddleware(serviceName, key string, expire time.Duration) func(ctx huma.Context, next func(huma.Context)) {
-	redis := cache.GetRedisClient()
+	locker := lock.NewLocker()
 
 	return func(ctx huma.Context, next func(huma.Context)) {
 		logger := logger.WithCtx(ctx.Context())
@@ -35,35 +35,25 @@ func RedisLockMiddleware(serviceName, key string, expire time.Duration) func(ctx
 			return
 		}
 
-		lockKey := fmt.Sprintf("%s:%s:%v", serviceName, key, value)
+		lockKey := fmt.Sprintf(constant.LockKeyTemplateMiddleware, serviceName, key, value)
 		lockValue := uuid.New().String()
 
-		success, err := redis.SetNX(ctx.Context(), lockKey, lockValue, expire).Result()
+		success, err := locker.Lock(ctx.Context(), lockKey, lockValue, expire)
 		if err != nil {
-			logger.Error("[RedisLockMiddleware] failed to get lock", zap.Error(err))
+			logger.Error("[RedisLockMiddleware] lock resource error", zap.Error(err))
 			lo.Must0(util.WriteErrorResponse(ctx.BodyWriter(), constant.ErrInternalError))
 			return
 		}
-
 		if !success {
-			lockValue, err = redis.Get(ctx.Context(), lockKey).Result()
-			if err != nil {
-				logger.Error("[RedisLockMiddleware] failed to get lock info", zap.String("lockKey", lockKey), zap.Error(err))
-				lo.Must0(util.WriteErrorResponse(ctx.BodyWriter(), constant.ErrInternalError))
-				return
-			}
+			logger.Info("[RedisLockMiddleware] lock resource is already locked", zap.String("lockKey", lockKey))
+			lo.Must0(util.WriteErrorResponse(ctx.BodyWriter(), constant.ErrTooManyRequests))
+			return
 		}
 
 		defer func() {
-			luaScript := `
-			if redis.call("get", KEYS[1]) == ARGV[1] then
-				return redis.call("del", KEYS[1])
-			else
-				return 0
-			end
-		`
-			if err := redis.Eval(ctx.Context(), luaScript, []string{lockKey}, lockValue).Err(); err != nil {
-				logger.Error("[RedisLockMiddleware] failed to release lock", zap.String("lockKey", lockKey), zap.Error(err))
+			err = locker.Unlock(ctx.Context(), lockKey, lockValue)
+			if err != nil {
+				logger.Error("[RedisLockMiddleware] unlock resource error", zap.String("lockKey", lockKey), zap.Error(err))
 			}
 		}()
 		next(ctx)

@@ -24,7 +24,7 @@ func init() {
 		Prefork:           false,
 		ReadTimeout:       config.ReadTimeout,
 		WriteTimeout:      config.WriteTimeout,
-		IdleTimeout:       120 * time.Second,
+		IdleTimeout:       2 * time.Minute,
 		JSONEncoder:       sonic.Marshal,
 		JSONDecoder:       sonic.Unmarshal,
 		StreamRequestBody: true,
