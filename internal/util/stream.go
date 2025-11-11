@@ -76,8 +76,6 @@ func AdkIterToChan(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent]
 							logger.Error("[AgentService] failed to get message", zap.Error(err))
 							writeSSEErrorResponse(ctx, w, err)
 						}
-						messageData := lo.Must1(sonic.Marshal(message))
-						logger.Info("[AgentService] receive event message", zap.ByteString("message", messageData))
 						writeSSEMessageResponse(ctx, w, message)
 						continue
 					}
