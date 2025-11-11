@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"strconv"
 	"time"
 
@@ -32,8 +33,8 @@ func AdkIterToChan(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent]
 	logger := logger.WithCtx(ctx)
 
 	return &huma.StreamResponse{
-		Body: func(ctx huma.Context) {
-			fCtx := humafiber.Unwrap(ctx)
+		Body: func(hCtx huma.Context) {
+			fCtx := humafiber.Unwrap(hCtx)
 			fCtx.Set("Content-Type", "text/event-stream")
 			fCtx.Set("Cache-Control", "no-cache")
 			fCtx.Set("Connection", "keep-alive")
@@ -46,18 +47,10 @@ func AdkIterToChan(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent]
 					heartBeatCount := 0
 					for {
 						select {
-						case <-ctx.Context().Done():
+						case <-ctx.Done():
 							return
 						case <-ticker.C:
-							rsp := &protocol.SSEResponse{
-								DataType: enum.SSEDataTypeHeartBeat,
-								Data:     strconv.Itoa(heartBeatCount),
-							}
-							fmt.Fprintf(w, "data: %s\n\n", lo.Must1(sonic.Marshal(rsp)))
-							if err := w.Flush(); err != nil {
-								logger.Error("[AdkIterToChan] flush error", zap.Error(err))
-								return
-							}
+							writeSSEHeartBeatResponse(ctx, w, heartBeatCount)
 							heartBeatCount++
 						}
 					}
@@ -72,44 +65,76 @@ func AdkIterToChan(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent]
 					}
 					if event.Err != nil {
 						logger.Error("[AgentService] agent run error", zap.Error(event.Err))
-						rsp := &protocol.SSEResponse{
-							DataType: enum.SSEDataTypeError,
-							Data:     event.Err.Error(),
+						writeSSEErrorResponse(ctx, w, event.Err)
+						return
+					}
+
+					messageStream := event.Output.MessageOutput.MessageStream
+					if messageStream == nil {
+						message, err := event.Output.MessageOutput.GetMessage()
+						if err != nil {
+							logger.Error("[AgentService] failed to get message", zap.Error(err))
+							writeSSEErrorResponse(ctx, w, err)
 						}
-						fmt.Fprintf(w, "data: %s\n\n", lo.Must1(sonic.Marshal(rsp)))
-						if err := w.Flush(); err != nil {
-							logger.Error("[AdkIterToChan] flush error", zap.Error(err))
+						messageData := lo.Must1(sonic.Marshal(message))
+						logger.Info("[AgentService] receive event message", zap.ByteString("message", messageData))
+						writeSSEMessageResponse(ctx, w, message)
+						continue
+					}
+					for {
+						message, err := messageStream.Recv()
+						if err != nil {
+							if err == io.EOF {
+								logger.Info("[AgentService] reach message stream end")
+								break
+							}
+
+							logger.Error("[AgentService] failed to get message", zap.Error(err))
+							writeSSEErrorResponse(ctx, w, err)
 							return
 						}
-						return
+						writeSSEMessageResponse(ctx, w, message)
 					}
-					message, err := event.Output.MessageOutput.GetMessage()
-					if err != nil {
-						logger.Error("[AgentService] failed to get message", zap.Error(err))
-						rsp := &protocol.SSEResponse{
-							DataType: enum.SSEDataTypeError,
-							Data:     err.Error(),
-						}
-						fmt.Fprintf(w, "data: %s\n\n", lo.Must1(sonic.Marshal(rsp)))
-						if err := w.Flush(); err != nil {
-							logger.Error("[AdkIterToChan] flush error", zap.Error(err))
-							return
-						}
-						return
-					}
-					messageData := lo.Must1(sonic.Marshal(message))
-					logger.Info("[AgentService] receive event message", zap.ByteString("message", messageData))
-					rsp := &protocol.SSEResponse{
-						DataType: enum.SSEDataTypeMessage,
-						Data:     string(messageData),
-					}
-					fmt.Fprintf(w, "data: %s\n\n", lo.Must1(sonic.Marshal(rsp)))
-					if err := w.Flush(); err != nil {
-						logger.Error("[AdkIterToChan] flush error", zap.Error(err))
-						return
-					}
+
 				}
 			}))
 		},
+	}
+}
+
+func writeSSEMessageResponse(ctx context.Context, w *bufio.Writer, message adk.Message) {
+	logger := logger.WithCtx(ctx)
+	messageData := lo.Must1(sonic.Marshal(message))
+	rsp := &protocol.SSEResponse{
+		DataType: enum.SSEDataTypeMessage,
+		Data:     string(messageData),
+	}
+	fmt.Fprintf(w, "data: %s\n\n", lo.Must1(sonic.Marshal(rsp)))
+	if err := w.Flush(); err != nil {
+		logger.Error("[WriteMessageResponse] flush error", zap.Error(err))
+	}
+}
+
+func writeSSEErrorResponse(ctx context.Context, w *bufio.Writer, err error) {
+	logger := logger.WithCtx(ctx)
+	rsp := &protocol.SSEResponse{
+		DataType: enum.SSEDataTypeError,
+		Data:     err.Error(),
+	}
+	fmt.Fprintf(w, "data: %s\n\n", lo.Must1(sonic.Marshal(rsp)))
+	if err := w.Flush(); err != nil {
+		logger.Error("[WriteErrorResponse] flush error", zap.Error(err))
+	}
+}
+
+func writeSSEHeartBeatResponse(ctx context.Context, w *bufio.Writer, heartBeatCount int) {
+	logger := logger.WithCtx(ctx)
+	rsp := &protocol.SSEResponse{
+		DataType: enum.SSEDataTypeHeartBeat,
+		Data:     strconv.Itoa(heartBeatCount),
+	}
+	fmt.Fprintf(w, "data: %s\n\n", lo.Must1(sonic.Marshal(rsp)))
+	if err := w.Flush(); err != nil {
+		logger.Error("[WriteHeartBeatResponse] flush error", zap.Error(err))
 	}
 }

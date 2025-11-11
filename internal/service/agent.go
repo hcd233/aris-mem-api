@@ -57,7 +57,16 @@ func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *h
 	}
 
 	createTodoItemsTool, err := tool.NewCreateTodoItemsTool(s.todoItemService.CreateTodoItems)
-	todoAgent, err := agent.NewTodoAgent(ctx, chatModel, []etool.BaseTool{createTodoItemsTool})
+	if err != nil {
+		logger.Error("[AgentService] failed to create create todo items tool", zap.Error(err))
+		return nil, err
+	}
+	listTodoItemsTool, err := tool.NewListTodoItemsTool(s.todoItemService.ListTodoItems)
+	if err != nil {
+		logger.Error("[AgentService] failed to create list todo items tool", zap.Error(err))
+	}
+
+	todoAgent, err := agent.NewTodoAgent(ctx, chatModel, []etool.BaseTool{createTodoItemsTool, listTodoItemsTool})
 	if err != nil {
 		logger.Error("[AgentService] failed to create agent", zap.Error(err))
 		return nil, err

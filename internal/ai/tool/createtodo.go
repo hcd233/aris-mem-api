@@ -14,7 +14,7 @@ import (
 
 const (
 	createTodoItemsToolName        = "createTodoItems"
-	createTodoItemsToolDescription = "基于用户输入创建一系列待办事项，返回创建结果"
+	createTodoItemsToolDescription = "创建一系列待办事项，返回创建状态"
 )
 
 // CreateTodoItemsHandler 创建待办事项处理器
@@ -51,6 +51,16 @@ type CreateTodoItemsInput struct {
 	TodoItems []*TodoItem `json:"todoItems" jsonschema:"description=待办事项列表"`
 }
 
+func (c *CreateTodoItemsInput) toDto() *dto.CreateTodoItemsReq {
+	return &dto.CreateTodoItemsReq{
+		Body: &dto.CreateTodoItemsReqBody{
+			TodoItems: lo.Map(c.TodoItems, func(item *TodoItem, _ int) *dto.TodoItem {
+				return item.toDto()
+			}),
+		},
+	}
+}
+
 // NewCreateTodoItemsTool 创建创建待办事项工具
 //
 //	创建创建待办事项工具
@@ -68,13 +78,7 @@ func NewCreateTodoItemsTool(handler CreateTodoItemsHandler) (tool.InvokableTool,
 
 			output = &CommonToolOutput{}
 
-			req := &dto.CreateTodoItemsReq{
-				Body: &dto.CreateTodoItemsReqBody{
-					TodoItems: lo.Map(input.TodoItems, func(item *TodoItem, _ int) *dto.TodoItem {
-						return item.toDto()
-					}),
-				},
-			}
+			req := input.toDto()
 
 			_, err = handler(ctx, req)
 			if err != nil {
