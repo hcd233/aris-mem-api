@@ -6,9 +6,9 @@ networks:
 
 services:
 
-  db-migrate:
+  aris-mem-db-migrate:
     image: ghcr.io/hcd233/aris-mem-api:master # aris-mem-api:latest
-    container_name: db-migrate
+    container_name: aris-mem-db-migrate
     restart: no
     networks:
       - 1panel-network
@@ -27,7 +27,7 @@ services:
     env_file:
       - ../env/api.env
     depends_on:
-      db-migrate:
+      aris-mem-db-migrate:
         condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8080"]
