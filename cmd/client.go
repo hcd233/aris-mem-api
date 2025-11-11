@@ -11,7 +11,7 @@ import (
 
 var clientCmd = &cobra.Command{
 	Use:   "client",
-	Short: "Client command group",
+	Short: "Client Command Group",
 	Long:  `Client command group for authentication and interaction`,
 }
 
@@ -40,7 +40,7 @@ var loginClientCmd = &cobra.Command{
 var chatClientCmd = &cobra.Command{
 	Use:   "chat",
 	Short: "Chat with AI assistant",
-	Long:  `Interactive chat with AI assistant`,
+	Long:  `Interactive chat with Aris Mem AI`,
 	Run: func(_ *cobra.Command, _ []string) {
 		defer func() {
 			if r := recover(); r != nil {
@@ -49,7 +49,10 @@ var chatClientCmd = &cobra.Command{
 			}
 		}()
 
-		fmt.Println("Chat feature is under development...")
+		handler := client.NewChatHandler()
+		if err := handler.Execute(); err != nil {
+			os.Exit(1)
+		}
 
 		os.Exit(0)
 	},

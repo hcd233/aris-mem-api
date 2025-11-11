@@ -13,20 +13,20 @@ import (
 
 var objectCmd = &cobra.Command{
 	Use:   "object",
-	Short: "对象存储相关命令组",
-	Long:  `提供一组用于管理和操作对象存储的命令，包括创建桶、创建目录、上传文件等。`,
+	Short: "Object Storage Command Group",
+	Long:  `Object storage command group for managing and operating object storage, including creating buckets, creating directories, uploading files, etc.`,
 }
 
 var bucketCmd = &cobra.Command{
 	Use:   "bucket",
-	Short: "桶相关命令组",
-	Long:  `提供一组用于管理和操作桶的命令，包括创建桶、删除桶等。`,
+	Short: "Bucket Command Group",
+	Long:  `Bucket command group for managing and operating buckets, including creating buckets, deleting buckets, etc.`,
 }
 
 var createBucketCmd = &cobra.Command{
 	Use:   "create",
-	Short: "创建桶",
-	Long:  `创建桶。`,
+	Short: "Create Bucket",
+	Long:  `Create a bucket.`,
 	Run: func(_ *cobra.Command, _ []string) {
 		ctx := context.Background()
 		logger := logger.Logger()

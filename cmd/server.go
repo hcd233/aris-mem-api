@@ -19,14 +19,14 @@ import (
 
 var serverCmd = &cobra.Command{
 	Use:   "server",
-	Short: "服务器命令组",
-	Long:  `包含服务器相关操作的命令组`,
+	Short: "Server Command Group",
+	Long:  `Server command group for starting and managing the API server`,
 }
 
 var startServerCmd = &cobra.Command{
 	Use:   "start",
-	Short: "启动API服务器",
-	Long:  `启动并运行API服务器，监听指定的主机和端口`,
+	Short: "Start the API server",
+	Long:  `Start and run the API server, listening on the specified host and port`,
 	Run: func(cmd *cobra.Command, _ []string) {
 		defer func() {
 			if r := recover(); r != nil {

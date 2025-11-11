@@ -35,7 +35,7 @@ func (dao *MinioObjDAO) composeDirName(userID uint) string {
 //	return bucketName string
 //	author centonhuang
 //	update 2025-01-19 14:13:22
-func (dao *MinioObjDAO) GetBucketName(ctx context.Context) string {
+func (dao *MinioObjDAO) GetBucketName(_ context.Context) string {
 	return dao.BucketName
 }
 
