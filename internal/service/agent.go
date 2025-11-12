@@ -55,8 +55,6 @@ func NewAgentService() AgentService {
 func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *huma.StreamResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
-	userID := ctx.Value(constant.CtxKeyUserID).(uint)
-
 	locker := lock.NewLocker()
 
 	chatModel, err := llm.NewOpenAIChatModel(ctx)
