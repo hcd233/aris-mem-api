@@ -4,7 +4,9 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/handler"
+	"github.com/hcd233/aris-mem-api/internal/middleware"
 )
 
 func initOauth2Router(oauth2Group huma.API) {
@@ -17,7 +19,7 @@ func initOauth2Router(oauth2Group huma.API) {
 		Path:        "/login",
 		Summary:     "OAuth2Login",
 		Description: "Get OAuth2 authorization URL for the specified platform (github/google/qq)",
-		Tags:        []string{"oauth2"},
+		Tags:        []string{"OAuth2"},
 	}, oauth2Handler.HandleLogin)
 
 	// OAuth2回调
@@ -27,6 +29,7 @@ func initOauth2Router(oauth2Group huma.API) {
 		Path:        "/callback",
 		Summary:     "OAuth2Callback",
 		Description: "Handle OAuth2 callback with authorization code and state",
-		Tags:        []string{"oauth2"},
+		Tags:        []string{"OAuth2"},
+		Middlewares: huma.Middlewares{middleware.RateLimiterMiddleware("oauth2Callback", "", constant.PeriodOAuth2Callback, constant.LimitOAuth2Callback)},
 	}, oauth2Handler.HandleCallback)
 }

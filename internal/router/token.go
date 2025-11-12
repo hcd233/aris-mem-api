@@ -17,6 +17,6 @@ func initTokenRouter(tokenGroup huma.API) {
 		Path:        "/refresh",
 		Summary:     "RefreshToken",
 		Description: "Refresh the access token using a refresh token",
-		Tags:        []string{"token"},
+		Tags:        []string{"Token"},
 	}, tokenHandler.HandleRefreshToken)
 }

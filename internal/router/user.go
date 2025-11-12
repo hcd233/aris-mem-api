@@ -20,7 +20,7 @@ func initUserRouter(userGroup huma.API) {
 		Path:        "/current",
 		Summary:     "GetCurrentUser",
 		Description: "Get the current user's detailed information, including user ID, username, email, avatar, and permission information",
-		Tags:        []string{"user"},
+		Tags:        []string{"User"},
 		Security: []map[string][]string{
 			{"jwtAuth": {}},
 		},
@@ -33,7 +33,7 @@ func initUserRouter(userGroup huma.API) {
 		Path:        "/",
 		Summary:     "UpdateUser",
 		Description: "Update the current user's information, including the username and other fields",
-		Tags:        []string{"user"},
+		Tags:        []string{"User"},
 		Security: []map[string][]string{
 			{"jwtAuth": {}},
 		},

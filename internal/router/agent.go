@@ -24,7 +24,7 @@ func initAgentRouter(agentGroup huma.API) {
 		Path:        "/chat",
 		Summary:     "Chat",
 		Description: "Chat with the agent",
-		Tags:        []string{"agent"},
+		Tags:        []string{"Agent"},
 		Security: []map[string][]string{
 			{"jwtAuth": {}},
 		},

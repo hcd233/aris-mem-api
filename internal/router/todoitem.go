@@ -20,7 +20,7 @@ func initTodoItemRouter(todoItemGroup huma.API) {
 		Path:        "/",
 		Summary:     "CreateTodoItems",
 		Description: "Create todo items",
-		Tags:        []string{"todoItem"},
+		Tags:        []string{"TodoItem"},
 		Security: []map[string][]string{
 			{"jwtAuth": {}},
 		},
@@ -33,7 +33,7 @@ func initTodoItemRouter(todoItemGroup huma.API) {
 		Path:        "/list",
 		Summary:     "ListTodoItems",
 		Description: "List todo items",
-		Tags:        []string{"todoItem"},
+		Tags:        []string{"TodoItem"},
 		Security: []map[string][]string{
 			{"jwtAuth": {}},
 		},

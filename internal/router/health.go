@@ -21,7 +21,7 @@ func initHealthRouter(healthGroup huma.API) {
 		Path:        "/health",
 		Summary:     "HealthCheck",
 		Description: "Check the server health",
-		Tags:        []string{"health"},
+		Tags:        []string{"Health"},
 	}, pingHandler.HandlePing)
 
 	huma.Register(healthGroup, huma.Operation{
@@ -30,6 +30,6 @@ func initHealthRouter(healthGroup huma.API) {
 		Path:        "/ssehealth",
 		Summary:     "SSEHealthCheck",
 		Description: "Check the server health",
-		Tags:        []string{"health"},
+		Tags:        []string{"Health"},
 	}, pingHandler.HandleSSEPing)
 }
