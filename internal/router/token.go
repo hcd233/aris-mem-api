@@ -10,7 +10,6 @@ import (
 func initTokenRouter(tokenGroup huma.API) {
 	tokenHandler := handler.NewTokenHandler()
 
-	// 刷新令牌
 	huma.Register(tokenGroup, huma.Operation{
 		OperationID: "refreshToken",
 		Method:      http.MethodPost,

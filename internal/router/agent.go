@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/handler"
 	"github.com/hcd233/aris-mem-api/internal/middleware"
 )
@@ -16,7 +17,8 @@ import (
 func initAgentRouter(agentGroup huma.API) {
 	agentHandler := handler.NewAgentHandler()
 
-	agentGroup.UseMiddleware(middleware.JwtMiddleware())
+	agentGroup.UseMiddleware(middleware.JwtMiddleware(),
+		middleware.LimitUserPermissionMiddleware("agent", enum.PermissionUser))
 
 	huma.Register(agentGroup, huma.Operation{
 		OperationID: "chat",

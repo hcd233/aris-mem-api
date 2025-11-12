@@ -27,7 +27,7 @@ func LimitUserPermissionMiddleware(serviceName string, requiredPermission enum.P
 			return
 		}
 
-		if permission.GetLevel() < requiredPermission.GetLevel() {
+		if permission.Level() < requiredPermission.Level() {
 			logger.WithCtx(ctx.Context()).Info("[LimitUserPermissionMiddleware] permission denied",
 				zap.String("serviceName", serviceName),
 				zap.String("requiredPermission", string(requiredPermission)),

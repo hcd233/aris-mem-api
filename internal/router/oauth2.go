@@ -12,7 +12,6 @@ import (
 func initOauth2Router(oauth2Group huma.API) {
 	oauth2Handler := handler.NewOauth2Handler()
 
-	// OAuth2登录
 	huma.Register(oauth2Group, huma.Operation{
 		OperationID: "oauth2Login",
 		Method:      http.MethodGet,
@@ -22,7 +21,6 @@ func initOauth2Router(oauth2Group huma.API) {
 		Tags:        []string{"OAuth2"},
 	}, oauth2Handler.HandleLogin)
 
-	// OAuth2回调
 	huma.Register(oauth2Group, huma.Operation{
 		OperationID: "oauth2Callback",
 		Method:      http.MethodGet,

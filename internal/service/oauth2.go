@@ -174,7 +174,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dt
 			Name:       userName,
 			Email:      email,
 			Avatar:     avatar,
-			Permission: enum.PermissionReader,
+			Permission: enum.PermissionPending,
 			LastLogin:  time.Now().UTC(),
 		}
 

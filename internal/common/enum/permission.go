@@ -8,26 +8,26 @@ type (
 
 const (
 
-	// PermissionReader general permission
+	// PermissionPending general permission
 	//	update 2024-06-22 10:05:15
-	PermissionReader Permission = "reader"
+	PermissionPending Permission = "pending"
 
-	// PermissionCreator creator permission
+	// PermissionUser user permission
 	//	update 2024-06-22 10:05:17
-	PermissionCreator Permission = "creator"
+	PermissionUser Permission = "user"
 
 	// PermissionAdmin admin permission
 	//	update 2024-06-22 10:05:17
 	PermissionAdmin Permission = "admin"
 )
 
-// GetLevel 获取权限等级
+// Level 获取权限等级
 //
 //	@param p Permission
 //	@return int8
 //	@author centonhuang
 //	@update 2025-11-07 15:05:26
-func (p Permission) GetLevel() int8 {
+func (p Permission) Level() int8 {
 	return permissionLevelMapping[p]
 }
 
@@ -36,8 +36,8 @@ func (p Permission) GetLevel() int8 {
 //	update 2024-09-21 01:34:29
 var (
 	permissionLevelMapping = map[Permission]int8{
-		PermissionReader:  1,
-		PermissionCreator: 2,
+		PermissionPending: 1,
+		PermissionUser:    2,
 		PermissionAdmin:   3,
 	}
 )

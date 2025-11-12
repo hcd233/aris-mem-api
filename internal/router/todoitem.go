@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/handler"
 	"github.com/hcd233/aris-mem-api/internal/middleware"
 )
@@ -11,9 +12,9 @@ import (
 func initTodoItemRouter(todoItemGroup huma.API) {
 	todoItemHandler := handler.NewTodoItemHandler()
 
-	todoItemGroup.UseMiddleware(middleware.JwtMiddleware())
+	todoItemGroup.UseMiddleware(middleware.JwtMiddleware(),
+		middleware.LimitUserPermissionMiddleware("todoItem", enum.PermissionUser))
 
-	// 创建待办事项
 	huma.Register(todoItemGroup, huma.Operation{
 		OperationID: "createTodoItems",
 		Method:      http.MethodPost,
@@ -26,7 +27,6 @@ func initTodoItemRouter(todoItemGroup huma.API) {
 		},
 	}, todoItemHandler.HandleCreateTodoItems)
 
-	// 获取待办事项列表
 	huma.Register(todoItemGroup, huma.Operation{
 		OperationID: "listTodoItems",
 		Method:      http.MethodGet,

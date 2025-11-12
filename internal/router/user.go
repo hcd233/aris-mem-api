@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/handler"
 	"github.com/hcd233/aris-mem-api/internal/middleware"
 )
@@ -13,7 +14,6 @@ func initUserRouter(userGroup huma.API) {
 
 	userGroup.UseMiddleware(middleware.JwtMiddleware())
 
-	// 获取当前用户信息
 	huma.Register(userGroup, huma.Operation{
 		OperationID: "getCurrentUser",
 		Method:      http.MethodGet,
@@ -26,7 +26,6 @@ func initUserRouter(userGroup huma.API) {
 		},
 	}, userHandler.HandleGetCurUser)
 
-	// 更新用户信息
 	huma.Register(userGroup, huma.Operation{
 		OperationID: "updateUser",
 		Method:      http.MethodPatch,
@@ -37,5 +36,6 @@ func initUserRouter(userGroup huma.API) {
 		Security: []map[string][]string{
 			{"jwtAuth": {}},
 		},
+		Middlewares: huma.Middlewares{middleware.LimitUserPermissionMiddleware("updateUser", enum.PermissionUser)},
 	}, userHandler.HandleUpdateUser)
 }

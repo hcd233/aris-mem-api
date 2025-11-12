@@ -55,6 +55,8 @@ func NewAgentService() AgentService {
 func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *huma.StreamResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
 	locker := lock.NewLocker()
 
 	chatModel, err := llm.NewOpenAIChatModel(ctx)
@@ -102,9 +104,11 @@ func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *h
 	runner := adk.NewRunner(ctx, adk.RunnerConfig{
 		Agent:           todoAgent,
 		EnableStreaming: true,
+
+		// CheckPointStore: checkpoint.NewRedisCheckPointStore(),
 	})
 
-	iter := runner.Query(ctx, req.Body.Message)
+	iter := runner.Query(ctx, req.Body.Message) // adk.WithCheckPointID(strconv.FormatUint(uint64(userID), 10))
 
 	return util.WrapADKIterSSE(ctx, iter), nil
 }

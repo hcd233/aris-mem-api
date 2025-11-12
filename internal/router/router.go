@@ -45,14 +45,14 @@ func RegisterAPIRouter() {
 
 	initHealthRouter(api)
 
+	tokenGroup := huma.NewGroup(v1Group, "/token")
+	initTokenRouter(tokenGroup)
+
 	oauth2Group := huma.NewGroup(v1Group, "/oauth2")
 	initOauth2Router(oauth2Group)
 
 	userGroup := huma.NewGroup(v1Group, "/user")
 	initUserRouter(userGroup)
-
-	tokenGroup := huma.NewGroup(v1Group, "/token")
-	initTokenRouter(tokenGroup)
 
 	todoItemGroup := huma.NewGroup(v1Group, "/todoItem")
 	initTodoItemRouter(todoItemGroup)
