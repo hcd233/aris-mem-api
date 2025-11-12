@@ -14,9 +14,9 @@ func initOauth2Router(oauth2Group huma.API) {
 	huma.Register(oauth2Group, huma.Operation{
 		OperationID: "oauth2Login",
 		Method:      http.MethodGet,
-		Path:        "/{provider}/login",
+		Path:        "/login",
 		Summary:     "OAuth2Login",
-		Description: "Get OAuth2 authorization URL for the specified provider (github/google/qq)",
+		Description: "Get OAuth2 authorization URL for the specified platform (github/google/qq)",
 		Tags:        []string{"oauth2"},
 	}, oauth2Handler.HandleLogin)
 
@@ -24,7 +24,7 @@ func initOauth2Router(oauth2Group huma.API) {
 	huma.Register(oauth2Group, huma.Operation{
 		OperationID: "oauth2Callback",
 		Method:      http.MethodGet,
-		Path:        "/{provider}/callback",
+		Path:        "/callback",
 		Summary:     "OAuth2Callback",
 		Description: "Handle OAuth2 callback with authorization code and state",
 		Tags:        []string{"oauth2"},

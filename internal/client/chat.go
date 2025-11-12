@@ -219,26 +219,6 @@ func (h *ChatHandler) renderSSEStream(reader io.Reader) error {
 	return scanner.Err()
 }
 
-// renderToolCalls renders tool calls in a formatted way
-func (h *ChatHandler) renderToolCalls(toolCalls map[int]*ToolCallInfo) {
-	for _, info := range toolCalls {
-		if info == nil || info.Name == "" {
-			continue
-		}
-
-		// Parse and format arguments
-		var args map[string]interface{}
-		if err := json.Unmarshal([]byte(info.Arguments), &args); err == nil {
-			formatted, _ := json.MarshalIndent(args, "  ", "  ")
-
-			fmt.Println()
-			toolCallColor.Printf("🔧 Tool Call: %s\n", info.Name)
-			toolCallColor.Println("  Parameters:")
-			fmt.Printf("  %s\n", string(formatted))
-		}
-	}
-}
-
 // SSEEvent represents an SSE event
 type SSEEvent struct {
 	DataType string `json:"dataType"`

@@ -71,18 +71,18 @@ type GithubEmail struct {
 	Primary bool   `json:"primary"`
 }
 
-// githubProvider GitHub OAuth2提供商实现
-type githubProvider struct {
+// githubPlatform GitHub OAuth2提供商实现
+type githubPlatform struct {
 	oauth2Config *oauth2.Config
 }
 
-// NewGithubProvider Github提供商
+// NewGithubPlatform Github提供商
 //
-//	@return Provider
+//	@return Platform
 //	@author centonhuang
 //	@update 2025-10-31 14:56:59
-func NewGithubProvider() Provider {
-	return &githubProvider{
+func NewGithubPlatform() Platform {
+	return &githubPlatform{
 		oauth2Config: &oauth2.Config{
 			Endpoint:     github.Endpoint,
 			Scopes:       githubUserScopes,
@@ -93,15 +93,15 @@ func NewGithubProvider() Provider {
 	}
 }
 
-func (p *githubProvider) GetAuthURL() string {
+func (p *githubPlatform) GetAuthURL() string {
 	return p.oauth2Config.AuthCodeURL(config.Oauth2StateString, oauth2.AccessTypeOffline)
 }
 
-func (p *githubProvider) ExchangeToken(ctx context.Context, code string) (*oauth2.Token, error) {
+func (p *githubPlatform) ExchangeToken(ctx context.Context, code string) (*oauth2.Token, error) {
 	return p.oauth2Config.Exchange(ctx, code)
 }
 
-func (p *githubProvider) GetUserInfo(ctx context.Context, token *oauth2.Token) (UserInfo, error) {
+func (p *githubPlatform) GetUserInfo(ctx context.Context, token *oauth2.Token) (UserInfo, error) {
 	client := p.oauth2Config.Client(ctx, token)
 
 	// 获取用户基本信息
@@ -139,6 +139,6 @@ func (p *githubProvider) GetUserInfo(ctx context.Context, token *oauth2.Token) (
 	return &userInfo, nil
 }
 
-func (p *githubProvider) GetBindField() string {
+func (p *githubPlatform) GetBindField() string {
 	return "github_bind_id"
 }

@@ -1,49 +1,36 @@
 package storage
 
 import (
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/config"
 )
-
-// Provider 存储提供商
-type Provider string
-
-const (
-	// ProviderMinio Minio存储
-	ProviderMinio Provider = "minio"
-	// ProviderCOS 腾讯云COS存储
-	ProviderCOS Provider = "cos"
-)
-
-var provider Provider
 
 // InitObjectStorage 初始化对象存储
 //
 //	author centonhuang
 //	update 2024-12-09 15:59:06
 func InitObjectStorage() {
-	provider = GetProvider()
-
-	switch provider {
-	case ProviderMinio:
+	switch GetPlatform() {
+	case enum.ObjectStoragePlatformMinio:
 		initMinioClient()
-	case ProviderCOS:
+	case enum.ObjectStoragePlatformCOS:
 		initCosClient()
 	}
 }
 
-// GetProvider 获取存储提供商
+// GetPlatform 获取存储提供商
 //
-//	return Provider
+//	return Platform
 //	author centonhuang
 //	update 2025-01-19 14:13:22
-func GetProvider() Provider {
+func GetPlatform() enum.ObjectStoragePlatform {
 	// 优先使用 COS
 	if config.CosAppID != "" {
-		return ProviderCOS
+		return enum.ObjectStoragePlatformCOS
 	}
 
 	if config.MinioEndpoint != "" {
-		return ProviderMinio
+		return enum.ObjectStoragePlatformMinio
 	}
 
 	panic("no object storage configured")

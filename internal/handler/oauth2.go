@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/protocol"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
 	"github.com/hcd233/aris-mem-api/internal/service"
@@ -39,36 +40,36 @@ func NewOauth2Handler() Oauth2Handler {
 //	@author centonhuang
 //	@update 2025-11-11 04:57:58
 func (h *oauth2Handler) HandleLogin(ctx context.Context, req *dto.LoginReq) (*protocol.HTTPResponse[*dto.LoginResp], error) {
-	svc := h.getService(req.Provider)
+	svc := h.getService(req.Platform)
 	return util.WrapHTTPResponse(svc.Login(ctx, req))
 }
 
-// HandleCallback OAuth2回调 
+// HandleCallback OAuth2回调
 //
-//	@receiver h *oauth2Handler 
-//	@param ctx context.Context 
-//	@param req *dto.CallbackReq 
-//	@return *protocol.HTTPResponse[*dto.CallbackRsp] 
-//	@return error 
-//	@author centonhuang 
-//	@update 2025-11-11 04:58:11 
+//	@receiver h *oauth2Handler
+//	@param ctx context.Context
+//	@param req *dto.CallbackReq
+//	@return *protocol.HTTPResponse[*dto.CallbackRsp]
+//	@return error
+//	@author centonhuang
+//	@update 2025-11-11 04:58:11
 func (h *oauth2Handler) HandleCallback(ctx context.Context, req *dto.CallbackReq) (*protocol.HTTPResponse[*dto.CallbackRsp], error) {
-	svc := h.getService(req.Provider)
+	svc := h.getService(req.Platform)
 	return util.WrapHTTPResponse(svc.Callback(ctx, req))
 }
 
-// getService 根据provider获取对应的service
+// getService 根据platform获取对应的service
 //
 //	receiver h *oauth2Handler
-//	param provider string
+//	param platform string
 //	return service.Oauth2Service
 //	author centonhuang
 //	update 2025-01-05 21:00:00
-func (h *oauth2Handler) getService(provider string) service.Oauth2Service {
-	switch provider {
-	case "github":
+func (h *oauth2Handler) getService(platform string) service.Oauth2Service {
+	switch platform {
+	case enum.Oauth2PlatformGithub:
 		return service.NewGithubOauth2Service()
-	case "google":
+	case enum.Oauth2PlatformGoogle:
 		return service.NewGoogleOauth2Service()
 	// case "qq":
 	// 	return service.NewQQOauth2Service()

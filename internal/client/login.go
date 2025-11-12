@@ -17,14 +17,13 @@ const (
 
 var (
 	// Color definitions
-	successColor = color.New(color.FgGreen, color.Bold)
-	errorColor   = color.New(color.FgRed, color.Bold)
-	infoColor    = color.New(color.FgCyan)
-	warningColor = color.New(color.FgYellow)
-	promptColor  = color.New(color.FgBlue, color.Bold)
-	headerColor  = color.New(color.FgMagenta, color.Bold)
-	commandColor = color.New(color.FgWhite, color.Bold)
-	commandPromptColor = color.New(color.FgWhite, color.Bold)
+	successColor  = color.New(color.FgGreen, color.Bold)
+	errorColor    = color.New(color.FgRed, color.Bold)
+	infoColor     = color.New(color.FgCyan)
+	warningColor  = color.New(color.FgYellow)
+	promptColor   = color.New(color.FgBlue, color.Bold)
+	headerColor   = color.New(color.FgMagenta, color.Bold)
+	commandColor  = color.New(color.FgWhite, color.Bold)
 	toolCallColor = color.New(color.FgYellow, color.Bold)
 )
 
@@ -75,13 +74,13 @@ func (h *LoginHandler) Execute() error {
 	}
 
 	// Step 2: Select login platform
-	provider, err := h.selectProvider()
+	platform, err := h.selectPlatform()
 	if err != nil {
 		return err
 	}
 
 	// Step 3: Get OAuth2 authorization URL
-	loginResp, err := h.apiClient.OAuth2Login(provider)
+	loginResp, err := h.apiClient.OAuth2Login(platform)
 	if err != nil {
 		return fmt.Errorf("OAuth2 login request failed: %v", err)
 	}
@@ -107,7 +106,7 @@ func (h *LoginHandler) Execute() error {
 
 	// Step 5: Call OAuth2 callback
 	infoColor.Println("\n🔄 Verifying authorization code...")
-	callbackResp, err := h.apiClient.OAuth2Callback(provider, code, state)
+	callbackResp, err := h.apiClient.OAuth2Callback(platform, code, state)
 	if err != nil {
 		return fmt.Errorf("OAuth2 callback failed: %v", err)
 	}
@@ -138,9 +137,9 @@ func (h *LoginHandler) Execute() error {
 	return nil
 }
 
-// selectProvider prompts user to select login platform
-func (h *LoginHandler) selectProvider() (string, error) {
-	validProviders := map[string]bool{
+// selectPlatform prompts user to select login platform
+func (h *LoginHandler) selectPlatform() (string, error) {
+	validPlatforms := map[string]bool{
 		"github": true,
 		"google": true,
 	}
@@ -152,14 +151,14 @@ func (h *LoginHandler) selectProvider() (string, error) {
 			return "", fmt.Errorf("failed to read input")
 		}
 
-		provider := strings.TrimSpace(strings.ToLower(h.scanner.Text()))
+		platform := strings.TrimSpace(strings.ToLower(h.scanner.Text()))
 
-		if validProviders[provider] {
-			successColor.Printf("✓ Selected: %s\n", provider)
-			return provider, nil
+		if validPlatforms[platform] {
+			successColor.Printf("✓ Selected: %s\n", platform)
+			return platform, nil
 		}
 
-		errorColor.Printf("✗ Invalid platform: %s\n", provider)
+		errorColor.Printf("✗ Invalid platform: %s\n", platform)
 		warningColor.Println("  Please enter `github` or `google`")
 
 		if attempt == maxRetries {

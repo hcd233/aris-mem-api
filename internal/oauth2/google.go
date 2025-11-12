@@ -67,18 +67,18 @@ func (u *GoogleUserInfo) GetAvatar() string {
 	return u.PhotoURL
 }
 
-// googleProvider Google OAuth2提供商实现
-type googleProvider struct {
+// googlePlatform Google OAuth2提供商实现
+type googlePlatform struct {
 	oauth2Config *oauth2.Config
 }
 
-// NewGoogleProvider Google提供商
+// NewGooglePlatform Google提供商
 //
-//	@return Provider
+//	@return Platform
 //	@author centonhuang
 //	@update 2025-10-31 14:57:11
-func NewGoogleProvider() Provider {
-	return &googleProvider{
+func NewGooglePlatform() Platform {
+	return &googlePlatform{
 		oauth2Config: &oauth2.Config{
 			Endpoint:     google.Endpoint,
 			Scopes:       googleUserScopes,
@@ -89,11 +89,11 @@ func NewGoogleProvider() Provider {
 	}
 }
 
-func (p *googleProvider) GetAuthURL() string {
+func (p *googlePlatform) GetAuthURL() string {
 	return p.oauth2Config.AuthCodeURL(config.Oauth2StateString, oauth2.AccessTypeOffline)
 }
 
-func (p *googleProvider) ExchangeToken(ctx context.Context, code string) (*oauth2.Token, error) {
+func (p *googlePlatform) ExchangeToken(ctx context.Context, code string) (*oauth2.Token, error) {
 	logger := logger.WithCtx(ctx)
 
 	logger.Info("[GoogleOauth2] exchanging code for token",
@@ -111,7 +111,7 @@ func (p *googleProvider) ExchangeToken(ctx context.Context, code string) (*oauth
 	return token, nil
 }
 
-func (p *googleProvider) GetUserInfo(ctx context.Context, token *oauth2.Token) (UserInfo, error) {
+func (p *googlePlatform) GetUserInfo(ctx context.Context, token *oauth2.Token) (UserInfo, error) {
 	logger := logger.WithCtx(ctx)
 
 	// 使用HTTP客户端直接调用Google OAuth2 UserInfo API
@@ -157,6 +157,6 @@ func (p *googleProvider) GetUserInfo(ctx context.Context, token *oauth2.Token) (
 	return userInfo, nil
 }
 
-func (p *googleProvider) GetBindField() string {
+func (p *googlePlatform) GetBindField() string {
 	return "google_bind_id"
 }

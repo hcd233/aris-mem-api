@@ -1,12 +1,14 @@
 // Package dto OAuth2 DTO
 package dto
 
+import "github.com/hcd233/aris-mem-api/internal/common/enum"
+
 // LoginReq represents a request to initiate OAuth2 login flow
 //
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 type LoginReq struct {
-	Provider string `json:"provider" path:"provider" enum:"github,google" doc:"OAuth2 provider name (github or google)"`
+	Platform enum.Oauth2Platform `json:"platform" query:"platform" enum:"github,google" doc:"OAuth2 platform name (github or google)"`
 }
 
 // LoginResp represents the response containing the OAuth2 authorization URL
@@ -23,9 +25,9 @@ type LoginResp struct {
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 type CallbackReq struct {
-	Provider string `json:"provider" path:"provider" enum:"github,google" doc:"OAuth2 provider name (github or google)"`
-	Code     string `json:"code" query:"code" doc:"Authorization code returned by the OAuth2 provider"`
-	State    string `json:"state" query:"state" doc:"State parameter for CSRF protection, must match the initial state"`
+	Platform enum.Oauth2Platform `json:"platform" query:"platform" enum:"github,google" doc:"OAuth2 platform name (github or google)"`
+	Code     string              `json:"code" query:"code" doc:"Authorization code returned by the OAuth2 platform"`
+	State    string              `json:"state" query:"state" doc:"State parameter for CSRF protection, must match the initial state"`
 }
 
 // CallbackRsp represents the response containing access and refresh tokens after successful OAuth2 authentication

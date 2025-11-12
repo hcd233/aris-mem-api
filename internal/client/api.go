@@ -87,8 +87,8 @@ func (c *APIClient) GetCurrentUser(accessToken string) (*dto.GetCurUserRsp, erro
 }
 
 // OAuth2Login initiates OAuth2 login flow
-func (c *APIClient) OAuth2Login(provider string) (*dto.LoginResp, error) {
-	url := fmt.Sprintf("%s/api/v1/oauth2/%s/login", c.baseURL, provider)
+func (c *APIClient) OAuth2Login(platform string) (*dto.LoginResp, error) {
+	url := fmt.Sprintf("%s/api/v1/oauth2/login?platform=%s", c.baseURL, platform)
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -126,8 +126,8 @@ func (c *APIClient) OAuth2Login(provider string) (*dto.LoginResp, error) {
 }
 
 // OAuth2Callback handles OAuth2 callback with authorization code
-func (c *APIClient) OAuth2Callback(provider, code, state string) (*dto.CallbackRsp, error) {
-	url := fmt.Sprintf("%s/api/v1/oauth2/%s/callback?code=%s&state=%s", c.baseURL, provider, code, state)
+func (c *APIClient) OAuth2Callback(platform, code, state string) (*dto.CallbackRsp, error) {
+	url := fmt.Sprintf("%s/api/v1/oauth2/callback?platform=%s&code=%s&state=%s", c.baseURL, platform, code, state)
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {

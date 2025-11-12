@@ -7,16 +7,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// ProviderType 第三方OAuth2提供商类型
-type ProviderType string
-
-const (
-	// ProviderTypeGithub GitHub OAuth2提供商
-	ProviderTypeGithub ProviderType = "github"
-	// ProviderTypeGoogle Google OAuth2提供商
-	ProviderTypeGoogle ProviderType = "google"
-)
-
 // UserInfo 用户信息
 type UserInfo interface {
 	GetID() string
@@ -25,8 +15,8 @@ type UserInfo interface {
 	GetAvatar() string
 }
 
-// Provider OAuth2提供商接口
-type Provider interface {
+// Platform OAuth2提供商接口
+type Platform interface {
 	// GetAuthURL 获取授权URL
 	GetAuthURL() string
 	// ExchangeToken 通过授权码获取Access Token

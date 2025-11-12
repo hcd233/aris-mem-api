@@ -1,20 +1,21 @@
 package objdao
 
 import (
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/config"
 	"github.com/hcd233/aris-mem-api/internal/resource/storage"
 )
 
 // createObjectStorageDAO 创建对象存储DAO
 func createObjectStorageDAO(objectType ObjectType) ObjDAO {
-	switch storage.GetProvider() {
-	case storage.ProviderMinio:
+	switch storage.GetPlatform() {
+	case enum.ObjectStoragePlatformMinio:
 		return &MinioObjDAO{
 			ObjectType: objectType,
 			BucketName: config.MinioBucketName,
 			client:     storage.GetMinioStorage(),
 		}
-	case storage.ProviderCOS:
+	case enum.ObjectStoragePlatformCOS:
 		return &CosObjDAO{
 			ObjectType: objectType,
 			BucketName: config.CosBucketName,
