@@ -22,4 +22,9 @@ const (
 	//	@author centonhuang
 	//	@update 2025-11-08 04:39:27
 	SSEDataTypeHeartBeat = "heartbeat"
+
+	// SSEDataTypeNone 未定义数据
+	//	@author centonhuang
+	//	@update 2025-11-13 19:09:10
+	SSEDataTypeNone = "none"
 )

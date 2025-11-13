@@ -65,6 +65,10 @@ func WrapADKIterSSE(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent
 						logger.Error("[StreamADKIter] unlock resource error", zap.Error(err))
 					}
 				}()
+
+				writeSSENoneResponse(ctx, w, enum.SSEStatusStart)
+				defer writeSSENoneResponse(ctx, w, enum.SSEStatusEnd)
+
 				ticker := time.NewTicker(constant.HeartbeatInterval)
 				defer ticker.Stop()
 				go func() {
@@ -151,6 +155,7 @@ func writeSSEMessageResponse(ctx context.Context, w *bufio.Writer, message adk.M
 	logger := logger.WithCtx(ctx)
 	rsp := &protocol.SSEResponse{
 		DataType: enum.SSEDataTypeMessage,
+		Status:   enum.SSEStatusStreaming,
 		Data:     message,
 	}
 	fmt.Fprintf(w, "data: %s\n\n", lo.Must1(sonic.Marshal(rsp)))
@@ -163,6 +168,7 @@ func writeSSEErrorResponse(ctx context.Context, w *bufio.Writer, err *model.Erro
 	logger := logger.WithCtx(ctx)
 	rsp := &protocol.SSEResponse{
 		DataType: enum.SSEDataTypeError,
+		Status:   enum.SSEStatusError,
 		Data:     &dto.CommonRsp{Error: err},
 	}
 	fmt.Fprintf(w, "data: %s\n\n", lo.Must1(sonic.Marshal(rsp)))
@@ -175,10 +181,24 @@ func writeSSEHeartBeatResponse(ctx context.Context, w *bufio.Writer, heartBeatCo
 	logger := logger.WithCtx(ctx)
 	rsp := &protocol.SSEResponse{
 		DataType: enum.SSEDataTypeHeartBeat,
+		Status:   enum.SSEStatusStreaming,
 		Data:     strconv.Itoa(heartBeatCount),
 	}
 	fmt.Fprintf(w, "data: %s\n\n", lo.Must1(sonic.Marshal(rsp)))
 	if err := w.Flush(); err != nil {
 		logger.Error("[WriteHeartBeatResponse] flush error", zap.Error(err))
+	}
+}
+
+func writeSSENoneResponse(ctx context.Context, w *bufio.Writer, status enum.SSEStatus) {
+	logger := logger.WithCtx(ctx)
+	rsp := &protocol.SSEResponse{
+		DataType: enum.SSEDataTypeNone,
+		Status:   status,
+		Data:     nil,
+	}
+	fmt.Fprintf(w, "data: %s\n\n", lo.Must1(sonic.Marshal(rsp)))
+	if err := w.Flush(); err != nil {
+		logger.Error("[WriteNoneResponse] flush error", zap.Error(err))
 	}
 }

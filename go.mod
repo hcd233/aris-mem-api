@@ -3,7 +3,7 @@ module github.com/hcd233/aris-mem-api
 go 1.25.1
 
 require (
-	github.com/cloudwego/eino v0.5.12
+	github.com/cloudwego/eino v0.5.14
 	github.com/cloudwego/eino-ext/components/model/openai v0.1.4
 	github.com/danielgtaylor/huma/v2 v2.34.1
 	github.com/gofiber/contrib/fgprof v1.0.4
