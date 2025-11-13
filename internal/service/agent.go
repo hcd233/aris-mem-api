@@ -5,6 +5,9 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
+	"fmt"
+	"io"
 	"strings"
 
 	"github.com/cloudwego/eino/adk"
@@ -105,23 +108,38 @@ func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *h
 			logger.Warn("[AgentService] audio file is not a wav file", zap.String("filename", bodyData.Audio.Filename))
 			return util.WrapErrorSSE(ctx, constant.ErrBadRequest), nil
 		}
-		err = s.audioObjDAO.UploadObject(ctx, userID, bodyData.Audio.Filename, bodyData.Audio.Size, bodyData.Audio)
+		file := bodyData.Audio.File
+		defer file.Close()
+
+		err = s.audioObjDAO.UploadObject(ctx, userID, bodyData.Audio.Filename, bodyData.Audio.Size, file)
 		if err != nil {
 			logger.Error("[AgentService] failed to upload audio", zap.String("filename", bodyData.Audio.Filename), zap.Error(err))
 			return util.WrapErrorSSE(ctx, constant.ErrInternalError), nil
 		}
 
-		presignedURL, err := s.audioObjDAO.PresignObject(ctx, userID, bodyData.Audio.Filename)
+		// presignedURL, err := s.audioObjDAO.PresignObject(ctx, userID, bodyData.Audio.Filename)
+		// if err != nil {
+		// 	logger.Error("[AgentService] failed to presign audio", zap.String("filename", bodyData.Audio.Filename), zap.Error(err))
+		// 	return util.WrapErrorSSE(ctx, constant.ErrInternalError), nil
+		// }
+
+		_ = lo.Must1(file.Seek(0, io.SeekStart))
+
+		audioBytes, err := io.ReadAll(file)
 		if err != nil {
-			logger.Error("[AgentService] failed to presign audio", zap.String("filename", bodyData.Audio.Filename), zap.Error(err))
+			logger.Error("[AgentService] failed to read audio", zap.String("filename", bodyData.Audio.Filename), zap.Error(err))
 			return util.WrapErrorSSE(ctx, constant.ErrInternalError), nil
 		}
+
+		audioBase64 := base64.StdEncoding.EncodeToString(audioBytes)
 
 		inputContent = append(inputContent, schema.MessageInputPart{
 			Type: schema.ChatMessagePartTypeAudioURL,
 			Audio: &schema.MessageInputAudio{
 				MessagePartCommon: schema.MessagePartCommon{
-					URL: lo.ToPtr(presignedURL.String()),
+					// URL: lo.ToPtr(presignedURL.String()),
+					Base64Data: lo.ToPtr(fmt.Sprintf("data:%s;base64,%s", bodyData.Audio.ContentType, audioBase64)),
+					MIMEType:   bodyData.Audio.ContentType,
 				},
 			},
 		})
