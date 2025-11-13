@@ -83,13 +83,8 @@ func (dao *baseDAO[ModelT]) BatchDelete(db *gorm.DB, data *[]ModelT) (err error)
 //	return GetByID
 //	author centonhuang
 //	update 2024-10-17 03:06:57
-func (dao *baseDAO[ModelT]) GetByID(db *gorm.DB, id uint, fields []string, preloads []string) (data *ModelT, err error) {
-	sql := db.Select(fields)
-	for _, preload := range preloads {
-		sql = sql.Preload(preload)
-	}
-
-	err = sql.Where("id = ?", id).First(&data).Error
+func (dao *baseDAO[ModelT]) GetByID(db *gorm.DB, id uint, fields []string) (data *ModelT, err error) {
+	err = db.Select(fields).Where("id = ?", id).First(&data).Error
 	return
 }
 
@@ -99,12 +94,8 @@ func (dao *baseDAO[ModelT]) GetByID(db *gorm.DB, id uint, fields []string, prelo
 //	return BatchGetByIDs
 //	author centonhuang
 //	update 2024-11-03 07:34:47
-func (dao *baseDAO[ModelT]) BatchGetByIDs(db *gorm.DB, ids []uint, fields []string, preloads []string) (data *[]ModelT, err error) {
-	sql := db.Select(fields)
-	for _, preload := range preloads {
-		sql = sql.Preload(preload)
-	}
-	err = sql.Where("id IN ?", ids).Find(&data).Error
+func (dao *baseDAO[ModelT]) BatchGetByIDs(db *gorm.DB, ids []uint, fields []string) (data *[]ModelT, err error) {
+	err = db.Select(fields).Where("id IN ?", ids).Find(&data).Error
 	return
 }
 
@@ -114,13 +105,10 @@ func (dao *baseDAO[ModelT]) BatchGetByIDs(db *gorm.DB, ids []uint, fields []stri
 //	return Paginate
 //	author centonhuang
 //	update 2024-10-17 03:09:11
-func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, fields []string, preloads []string, param *CommonParam) (data []*ModelT, pageInfo *model.PageInfo, err error) {
+func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, fields []string, param *CommonParam) (data []*ModelT, pageInfo *model.PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)
-	for _, preload := range preloads {
-		sql = sql.Preload(preload)
-	}
 
 	if param.Query != "" && len(param.QueryFields) > 0 {
 		like := "%" + param.Query + "%"

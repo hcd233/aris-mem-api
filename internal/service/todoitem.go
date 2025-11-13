@@ -54,6 +54,8 @@ func (s *todoItemService) CreateTodoItems(ctx context.Context, req *dto.CreateTo
 
 	logger := logger.WithCtx(ctx)
 
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
 	todoItems := lo.Map(req.Body.TodoItems, func(item *dto.TodoItem, _ int) *model.TodoItem {
 		return &model.TodoItem{
 			Name:     item.Name,
@@ -61,6 +63,7 @@ func (s *todoItemService) CreateTodoItems(ctx context.Context, req *dto.CreateTo
 			Content:  item.Content,
 			Status:   enum.TodoItemStatusPending,
 			Priority: item.Priority,
+			UserID:   userID,
 		}
 	})
 	err := s.todoItemDAO.BatchCreate(db, todoItems)
@@ -85,6 +88,8 @@ func (s *todoItemService) ListTodoItems(ctx context.Context, req *dto.ListTodoIt
 
 	logger := logger.WithCtx(ctx)
 
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
 	commonParam := &dao.CommonParam{
 		PageParam: dao.PageParam{
 			Page:     req.Page,
@@ -100,7 +105,7 @@ func (s *todoItemService) ListTodoItems(ctx context.Context, req *dto.ListTodoIt
 		},
 	}
 
-	todoItems, pageInfo, err := s.todoItemDAO.Paginate(db, []string{"id", "created_at", "updated_at", "name", "summary", "content", "status", "priority"}, []string{}, commonParam)
+	todoItems, pageInfo, err := s.todoItemDAO.PaginateByUserID(db, userID, []string{"id", "created_at", "updated_at", "name", "summary", "content", "status", "priority"}, commonParam)
 	if err != nil {
 		logger.Error("[TodoItemService] failed to list todo items", zap.Error(err))
 		rsp.Error = constant.ErrInternalError

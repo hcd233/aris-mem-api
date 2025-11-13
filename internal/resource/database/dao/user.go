@@ -23,12 +23,8 @@ type UserDAO struct {
 //	return err error
 //	author centonhuang
 //	update 2024-10-17 05:18:46
-func (dao *UserDAO) GetByName(db *gorm.DB, name string, fields, preloads []string) (user *model.User, err error) {
-	sql := db.Select(fields)
-	for _, preload := range preloads {
-		sql = sql.Preload(preload)
-	}
-	err = sql.Where(model.User{Name: name}).First(&user).Error
+func (dao *UserDAO) GetByName(db *gorm.DB, name string, fields []string) (user *model.User, err error) {
+	err = db.Select(fields).Where(model.User{Name: name}).First(&user).Error
 	return
 }
 
@@ -43,12 +39,8 @@ func (dao *UserDAO) GetByName(db *gorm.DB, name string, fields, preloads []strin
 //	@return err
 //	@author centonhuang
 //	@update 2025-11-13 10:41:10
-func (dao *UserDAO) GetByGoogleBindID(db *gorm.DB, googleBindID string, fields, preloads []string) (user *model.User, err error) {
-	sql := db.Select(fields)
-	for _, preload := range preloads {
-		sql = sql.Preload(preload)
-	}
-	err = sql.Where(model.User{GoogleBindID: googleBindID}).First(&user).Error
+func (dao *UserDAO) GetByGoogleBindID(db *gorm.DB, googleBindID string, fields []string) (user *model.User, err error) {
+	err = db.Select(fields).Where(model.User{GoogleBindID: googleBindID}).First(&user).Error
 	return
 }
 
@@ -63,11 +55,7 @@ func (dao *UserDAO) GetByGoogleBindID(db *gorm.DB, googleBindID string, fields, 
 //	@return err
 //	@author centonhuang
 //	@update 2025-11-13 10:41:17
-func (dao *UserDAO) GetByGithubBindID(db *gorm.DB, githubBindID string, fields, preloads []string) (user *model.User, err error) {
-	sql := db.Select(fields)
-	for _, preload := range preloads {
-		sql = sql.Preload(preload)
-	}
-	err = sql.Where(model.User{GithubBindID: githubBindID}).First(&user).Error
+func (dao *UserDAO) GetByGithubBindID(db *gorm.DB, githubBindID string, fields []string) (user *model.User, err error) {
+	err = db.Select(fields).Where(model.User{GithubBindID: githubBindID}).First(&user).Error
 	return
 }

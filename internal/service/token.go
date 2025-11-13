@@ -66,7 +66,7 @@ func (s *tokenService) RefreshToken(ctx context.Context, req *dto.RefreshTokenRe
 		return rsp, nil
 	}
 
-	_, err = s.userDAO.GetByID(db, userID, []string{"id"}, []string{})
+	_, err = s.userDAO.GetByID(db, userID, []string{"id"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[TokenService] user not found", zap.Uint("userID", userID))

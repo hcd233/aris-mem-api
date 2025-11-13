@@ -40,7 +40,7 @@ func JwtMiddleware() func(ctx huma.Context, next func(huma.Context)) {
 			lo.Must0(util.WriteErrorResponse(ctx.BodyWriter(), constant.ErrUnauthorized))
 			return
 		}
-		user, err := dao.GetByID(db, userID, []string{"id", "name", "permission"}, []string{})
+		user, err := dao.GetByID(db, userID, []string{"id", "name", "permission"})
 		if err != nil {
 			lo.Must0(util.WriteErrorResponse(ctx.BodyWriter(), constant.ErrInternalError))
 			return

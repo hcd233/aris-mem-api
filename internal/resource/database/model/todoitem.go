@@ -8,8 +8,9 @@ import "github.com/hcd233/aris-mem-api/internal/common/enum"
 //	update 2024-06-22 09:36:22
 type TodoItem struct {
 	BaseModel
-	ID       uint                  `json:"id" gorm:"column:id;primary_key;auto_increment;comment:用户ID"`
-	Name     string                `json:"name" gorm:"column:name;not null;comment:用户名"`
+	ID       uint                  `json:"id" gorm:"column:id;primary_key;auto_increment;comment:待办ID"`
+	UserID   uint                  `json:"user_id" gorm:"column:user_id;not null;comment:用户ID"`
+	Name     string                `json:"name" gorm:"column:name;not null;comment:待办名"`
 	Summary  string                `json:"summary" gorm:"column:summary;not null;comment:摘要"`
 	Content  string                `json:"content" gorm:"column:content;not null;comment:内容"`
 	Status   enum.TodoItemStatus   `json:"status" gorm:"column:status;not null;comment:状态"`
