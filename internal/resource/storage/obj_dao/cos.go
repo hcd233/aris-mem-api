@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hcd233/aris-mem-api/internal/common/constant"
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/samber/lo"
 	"github.com/tencentyun/cos-go-sdk-v5"
 )
@@ -19,13 +21,13 @@ import (
 //	author centonhuang
 //	update 2025-01-19 14:13:22
 type CosObjDAO struct {
-	ObjectType ObjectType
+	ObjectType enum.ObjectType
 	BucketName string
 	client     *cos.Client
 }
 
 func (dao *CosObjDAO) composeDirName(userID uint) string {
-	return fmt.Sprintf("user-%d-%s", userID, dao.ObjectType)
+	return fmt.Sprintf("user-%d/%s", userID, dao.ObjectType)
 }
 
 // GetBucketName 获取桶名
@@ -40,9 +42,6 @@ func (dao *CosObjDAO) GetBucketName(_ context.Context) string {
 
 // CreateBucket 创建桶
 func (dao *CosObjDAO) CreateBucket(ctx context.Context) (err error) {
-	ctx, cancel := context.WithTimeout(ctx, createBucketTimeout)
-	defer cancel()
-
 	_, err = dao.client.Bucket.Put(ctx, nil)
 	return
 }
@@ -51,9 +50,6 @@ func (dao *CosObjDAO) CreateBucket(ctx context.Context) (err error) {
 func (dao *CosObjDAO) CreateDir(ctx context.Context, userID uint) (objectInfo *ObjectInfo, err error) {
 	dirName := dao.composeDirName(userID)
 	dirName += "/"
-
-	ctx, cancel := context.WithTimeout(ctx, createBucketTimeout)
-	defer cancel()
 
 	_, err = dao.client.Object.Put(ctx, dirName, strings.NewReader(""), nil)
 	if err != nil {
@@ -83,9 +79,6 @@ func (dao *CosObjDAO) CreateDir(ctx context.Context, userID uint) (objectInfo *O
 func (dao *CosObjDAO) ListObjects(ctx context.Context, userID uint) (objectInfos []ObjectInfo, err error) {
 	dirName := dao.composeDirName(userID)
 	dirName += "/"
-
-	ctx, cancel := context.WithTimeout(ctx, listObjectsTimeout)
-	defer cancel()
 
 	opt := &cos.BucketGetOptions{
 		Prefix:    dirName,
@@ -124,9 +117,6 @@ func (dao *CosObjDAO) UploadObject(ctx context.Context, userID uint, objectName 
 	dirName := dao.composeDirName(userID)
 	objectName = path.Join(dirName, objectName)
 
-	ctx, cancel := context.WithTimeout(ctx, uploadObjectTimeout)
-	defer cancel()
-
 	_, err = dao.client.Object.Put(ctx, objectName, reader, nil)
 	return
 }
@@ -135,9 +125,6 @@ func (dao *CosObjDAO) UploadObject(ctx context.Context, userID uint, objectName 
 func (dao *CosObjDAO) DownloadObject(ctx context.Context, userID uint, objectName string, writer io.Writer) (objectInfo *ObjectInfo, err error) {
 	dirName := dao.composeDirName(userID)
 	objectName = path.Join(dirName, objectName)
-
-	ctx, cancel := context.WithTimeout(ctx, downloadObjectTimeout)
-	defer cancel()
 
 	resp, err := dao.client.Object.Get(ctx, objectName, nil)
 	if err != nil {
@@ -170,15 +157,12 @@ func (dao *CosObjDAO) PresignObject(ctx context.Context, userID uint, objectName
 	dirName := dao.composeDirName(userID)
 	objectName = path.Join(dirName, objectName)
 
-	ctx, cancel := context.WithTimeout(ctx, presignObjectTimeout)
-	defer cancel()
-
 	presignedURL, err = dao.client.Object.GetPresignedURL(ctx,
 		http.MethodGet,
 		objectName,
 		dao.client.GetCredential().SecretID,
 		dao.client.GetCredential().SecretKey,
-		presignObjectExpire,
+		constant.PresignObjectExpire,
 		nil,
 	)
 	return
@@ -188,9 +172,6 @@ func (dao *CosObjDAO) PresignObject(ctx context.Context, userID uint, objectName
 func (dao *CosObjDAO) DeleteObject(ctx context.Context, userID uint, objectName string) (err error) {
 	dirName := dao.composeDirName(userID)
 	objectName = path.Join(dirName, objectName)
-
-	ctx, cancel := context.WithTimeout(ctx, deleteObjectTimeout)
-	defer cancel()
 
 	_, err = dao.client.Object.Delete(ctx, objectName)
 	return

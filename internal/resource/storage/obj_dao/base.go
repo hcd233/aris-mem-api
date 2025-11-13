@@ -23,31 +23,6 @@ type ObjDAO interface {
 	DeleteObject(ctx context.Context, userID uint, objectName string) (err error)
 }
 
-// ObjectType 对象类型
-//
-//	author centonhuang
-//	update 2025-01-05 22:45:37
-type ObjectType string
-
-const (
-	// ObjectTypeImage ObjectType
-	//	update 2025-01-05 17:36:01
-	ObjectTypeImage ObjectType = "image"
-
-	// ObjectTypeThumbnail ObjectType
-	//	update 2025-01-05 17:36:05
-	ObjectTypeThumbnail ObjectType = "thumbnail"
-
-	createBucketTimeout   = 10 * time.Second
-	listObjectsTimeout    = 10 * time.Second
-	uploadObjectTimeout   = 30 * time.Second
-	downloadObjectTimeout = 30 * time.Second
-	deleteObjectTimeout   = 10 * time.Second
-	presignObjectTimeout  = 10 * time.Second
-
-	presignObjectExpire = 5 * time.Minute
-)
-
 // ObjectInfo 对象信息
 //
 //	author centonhuang

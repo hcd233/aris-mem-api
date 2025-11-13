@@ -156,7 +156,3 @@ func (p *googlePlatform) GetUserInfo(ctx context.Context, token *oauth2.Token) (
 
 	return userInfo, nil
 }
-
-func (p *googlePlatform) GetBindField() string {
-	return "google_bind_id"
-}

@@ -5,19 +5,20 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"strings"
 
 	"github.com/cloudwego/eino/adk"
 	etool "github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/schema"
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/hcd233/aris-mem-api/internal/ai/agent"
 	"github.com/hcd233/aris-mem-api/internal/ai/llm"
 	"github.com/hcd233/aris-mem-api/internal/ai/tool"
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/config"
-	"github.com/hcd233/aris-mem-api/internal/lock"
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
+	objdao "github.com/hcd233/aris-mem-api/internal/resource/storage/obj_dao"
 	"github.com/hcd233/aris-mem-api/internal/util"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
@@ -33,6 +34,7 @@ type AgentService interface {
 
 type agentService struct {
 	todoItemService TodoItemService
+	audioObjDAO     objdao.ObjDAO
 }
 
 // NewAgentService 创建Agent服务
@@ -43,6 +45,7 @@ type agentService struct {
 func NewAgentService() AgentService {
 	return &agentService{
 		todoItemService: NewTodoItemService(),
+		audioObjDAO:     objdao.GetAudioObjDAO(),
 	}
 }
 
@@ -53,9 +56,11 @@ func NewAgentService() AgentService {
 //	param req *dto.ChatReq
 //	return *huma.StreamResponse, error
 func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *huma.StreamResponse, err error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
 	logger := logger.WithCtx(ctx)
 
-	locker := lock.NewLocker()
+	bodyData := req.RawBody.Data()
 
 	chatModel, err := llm.NewOpenAIChatModel(ctx)
 	if err != nil {
@@ -87,16 +92,45 @@ func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *h
 
 	logger.Info("[AgentService] init agent", zap.String("llm", config.OpenAIModel), zap.Strings("tools", toolNames))
 
-	lockKey := fmt.Sprintf(constant.LockKeyTemplateAgentChat, ctx.Value(constant.CtxKeyUserID).(uint))
-	lockValue := ctx.Value(constant.CtxKeyTraceID).(string)
-	success, err := locker.Lock(ctx, lockKey, lockValue, constant.AgentChatLockExpire)
-	if err != nil {
-		logger.Error("[AgentService] lock resource error", zap.Error(err))
-		return util.WrapErrorSSE(ctx, constant.ErrInternalError), nil
+	inputContent := []schema.MessageInputPart{}
+	if bodyData.Content != "" {
+		inputContent = append(inputContent, schema.MessageInputPart{
+			Type: schema.ChatMessagePartTypeText,
+			Text: bodyData.Content,
+		})
 	}
-	if !success {
-		logger.Info("[AgentService] lock resource is already locked", zap.String("lockKey", lockKey))
-		return util.WrapErrorSSE(ctx, constant.ErrTooManyRequests), nil
+
+	if bodyData.Audio.Size > 0 {
+		if !strings.HasSuffix(bodyData.Audio.Filename, ".wav") {
+			logger.Warn("[AgentService] audio file is not a wav file", zap.String("filename", bodyData.Audio.Filename))
+			return util.WrapErrorSSE(ctx, constant.ErrBadRequest), nil
+		}
+		err = s.audioObjDAO.UploadObject(ctx, userID, bodyData.Audio.Filename, bodyData.Audio.Size, bodyData.Audio)
+		if err != nil {
+			logger.Error("[AgentService] failed to upload audio", zap.String("filename", bodyData.Audio.Filename), zap.Error(err))
+			return util.WrapErrorSSE(ctx, constant.ErrInternalError), nil
+		}
+
+		presignedURL, err := s.audioObjDAO.PresignObject(ctx, userID, bodyData.Audio.Filename)
+		if err != nil {
+			logger.Error("[AgentService] failed to presign audio", zap.String("filename", bodyData.Audio.Filename), zap.Error(err))
+			return util.WrapErrorSSE(ctx, constant.ErrInternalError), nil
+		}
+
+		inputContent = append(inputContent, schema.MessageInputPart{
+			Type: schema.ChatMessagePartTypeAudioURL,
+			Audio: &schema.MessageInputAudio{
+				MessagePartCommon: schema.MessagePartCommon{
+					URL: lo.ToPtr(presignedURL.String()),
+				},
+			},
+		})
+	}
+
+	if len(bodyData.Images) > 0 {
+		logger.Warn("[AgentService] images are not supported yet", zap.Strings("filenames", lo.Map(bodyData.Images, func(image huma.FormFile, _ int) string {
+			return image.Filename
+		})))
 	}
 
 	runner := adk.NewRunner(ctx, adk.RunnerConfig{
@@ -106,7 +140,13 @@ func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *h
 		// CheckPointStore: checkpoint.NewRedisCheckPointStore(),
 	})
 
-	iter := runner.Query(ctx, req.Body.Message) // adk.WithCheckPointID(strconv.FormatUint(uint64(userID), 10))
+	iter := runner.Run(ctx, []adk.Message{
+		{
+			Role:                  schema.User,
+			UserInputMultiContent: inputContent,
+		},
+	},
+	) // adk.WithCheckPointID(strconv.FormatUint(uint64(userID), 10))
 
 	return util.WrapADKIterSSE(ctx, iter), nil
 }

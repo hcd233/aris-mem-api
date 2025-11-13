@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hcd233/aris-mem-api/internal/common/constant"
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/minio/minio-go/v7"
 	"github.com/samber/lo"
 )
@@ -20,13 +22,13 @@ import (
 //	author centonhuang
 //	update 2025-01-05 22:45:43
 type MinioObjDAO struct {
-	ObjectType ObjectType
+	ObjectType enum.ObjectType
 	BucketName string
 	client     *minio.Client
 }
 
 func (dao *MinioObjDAO) composeDirName(userID uint) string {
-	return fmt.Sprintf("user-%d-%s", userID, dao.ObjectType)
+	return fmt.Sprintf("user-%d/%s", userID, dao.ObjectType)
 }
 
 // GetBucketName 获取桶名
@@ -48,9 +50,6 @@ func (dao *MinioObjDAO) GetBucketName(_ context.Context) string {
 //	author centonhuang
 //	update 2025-01-05 17:37:41
 func (dao *MinioObjDAO) CreateBucket(ctx context.Context) (err error) {
-	ctx, cancel := context.WithTimeout(ctx, createBucketTimeout)
-	defer cancel()
-
 	err = dao.client.MakeBucket(ctx, dao.BucketName, minio.MakeBucketOptions{})
 
 	return
@@ -66,10 +65,6 @@ func (dao *MinioObjDAO) CreateBucket(ctx context.Context) (err error) {
 //	update 2025-01-18 17:37:41
 func (dao *MinioObjDAO) CreateDir(ctx context.Context, userID uint) (objectInfo *ObjectInfo, err error) {
 	dirName := dao.composeDirName(userID)
-
-	// 创建目录
-	ctx, cancel := context.WithTimeout(ctx, createBucketTimeout)
-	defer cancel()
 
 	// 创建一个空的目录对象
 	object, err := dao.client.PutObject(ctx, dao.BucketName, dirName+"/", nil, 0, minio.PutObjectOptions{})
@@ -100,9 +95,6 @@ func (dao *MinioObjDAO) CreateDir(ctx context.Context, userID uint) (objectInfo 
 func (dao *MinioObjDAO) ListObjects(ctx context.Context, userID uint) (objectInfos []ObjectInfo, err error) {
 	dirName := dao.composeDirName(userID)
 	dirName += "/"
-
-	ctx, cancel := context.WithTimeout(ctx, listObjectsTimeout)
-	defer cancel()
 
 	objectCh := dao.client.ListObjects(ctx, dao.BucketName, minio.ListObjectsOptions{
 		Prefix:     dirName,
@@ -146,9 +138,6 @@ func (dao *MinioObjDAO) UploadObject(ctx context.Context, userID uint, objectNam
 	dirName := dao.composeDirName(userID)
 	objectName = path.Join(dirName, objectName)
 
-	ctx, cancel := context.WithTimeout(ctx, uploadObjectTimeout)
-	defer cancel()
-
 	_, err = dao.client.PutObject(ctx, dao.BucketName, objectName, reader, size, minio.PutObjectOptions{})
 	return
 }
@@ -166,9 +155,6 @@ func (dao *MinioObjDAO) UploadObject(ctx context.Context, userID uint, objectNam
 func (dao *MinioObjDAO) DownloadObject(ctx context.Context, userID uint, objectName string, writer io.Writer) (objectInfo *ObjectInfo, err error) {
 	dirName := dao.composeDirName(userID)
 	objectName = path.Join(dirName, objectName)
-
-	ctx, cancel := context.WithTimeout(ctx, downloadObjectTimeout)
-	defer cancel()
 
 	object, err := dao.client.GetObject(ctx, dao.BucketName, objectName, minio.GetObjectOptions{})
 	if err != nil {
@@ -206,9 +192,6 @@ func (dao *MinioObjDAO) PresignObject(ctx context.Context, userID uint, objectNa
 	dirName := dao.composeDirName(userID)
 	objectName = path.Join(dirName, objectName)
 
-	ctx, cancel := context.WithTimeout(ctx, presignObjectTimeout)
-	defer cancel()
-
 	// 设置响应头
 	reqParams := make(url.Values)
 	reqParams.Set("response-content-disposition", fmt.Sprintf("attachment; filename=\"%s\"", filepath.Base(objectName)))
@@ -222,7 +205,7 @@ func (dao *MinioObjDAO) PresignObject(ctx context.Context, userID uint, objectNa
 	}
 	reqParams.Set("response-content-type", contentType)
 
-	presignedURL, err = dao.client.PresignedGetObject(ctx, dao.BucketName, objectName, presignObjectExpire, reqParams)
+	presignedURL, err = dao.client.PresignedGetObject(ctx, dao.BucketName, objectName, constant.PresignObjectExpire, reqParams)
 	return
 }
 
@@ -237,9 +220,6 @@ func (dao *MinioObjDAO) PresignObject(ctx context.Context, userID uint, objectNa
 func (dao *MinioObjDAO) DeleteObject(ctx context.Context, userID uint, objectName string) (err error) {
 	dirName := dao.composeDirName(userID)
 	objectName = path.Join(dirName, objectName)
-
-	ctx, cancel := context.WithTimeout(ctx, deleteObjectTimeout)
-	defer cancel()
 
 	err = dao.client.RemoveObject(ctx, dao.BucketName, objectName, minio.RemoveObjectOptions{})
 	return

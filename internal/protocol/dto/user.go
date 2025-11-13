@@ -29,7 +29,7 @@ type DetailedUser struct {
 //	update 2025-01-04 21:00:59
 type GetCurUserRsp struct {
 	CommonRsp
-	User *DetailedUser `json:"user" doc:"Complete user information including permissions"`
+	User *DetailedUser `json:"user,omitempty" doc:"Complete user information including permissions"`
 }
 
 // UpdateUserReq represents a request to update the current user's information

@@ -23,6 +23,6 @@ type RefreshTokenReqBody struct {
 //	update 2025-01-05 21:00:00
 type RefreshTokenRsp struct {
 	CommonRsp
-	AccessToken  string `json:"accessToken" doc:"New JWT access token for API authentication"`
-	RefreshToken string `json:"refreshToken" doc:"New JWT refresh token for obtaining future access tokens"`
+	AccessToken  string `json:"accessToken,omitempty" doc:"New JWT access token for API authentication"`
+	RefreshToken string `json:"refreshToken,omitempty" doc:"New JWT refresh token for obtaining future access tokens"`
 }

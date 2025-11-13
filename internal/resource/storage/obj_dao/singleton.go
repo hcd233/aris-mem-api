@@ -7,7 +7,7 @@ import (
 )
 
 // createObjectStorageDAO 创建对象存储DAO
-func createObjectStorageDAO(objectType ObjectType) ObjDAO {
+func createObjectStorageDAO(objectType enum.ObjectType) ObjDAO {
 	switch storage.GetPlatform() {
 	case enum.ObjectStoragePlatformMinio:
 		return &MinioObjDAO{
@@ -26,20 +26,11 @@ func createObjectStorageDAO(objectType ObjectType) ObjDAO {
 	}
 }
 
-// GetImageObjDAO 获取图片对象DAO单例
+// GetAudioObjDAO 获取音频对象DAO单例
 //
 //	return ObjDAO
 //	author centonhuang
 //	update 2024-10-18 01:10:28
-func GetImageObjDAO() ObjDAO {
-	return createObjectStorageDAO(ObjectTypeImage)
-}
-
-// GetThumbnailObjDAO 获取缩略图对象DAO单例
-//
-//	return ObjDAO
-//	author centonhuang
-//	update 2024-10-18 01:09:59
-func GetThumbnailObjDAO() ObjDAO {
-	return createObjectStorageDAO(ObjectTypeThumbnail)
+func GetAudioObjDAO() ObjDAO {
+	return createObjectStorageDAO(enum.ObjectTypeAudio)
 }

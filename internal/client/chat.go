@@ -12,7 +12,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/adk"
 	"github.com/hcd233/aris-mem-api/internal/config"
+	"github.com/hcd233/aris-mem-api/internal/protocol"
+	"github.com/samber/lo"
 )
 
 // ChatHandler handles chat interactions
@@ -169,7 +173,7 @@ func (h *ChatHandler) renderSSEStream(reader io.Reader) error {
 		// Extract JSON data
 		data := strings.TrimPrefix(line, "data: ")
 
-		var event SSEEvent
+		var event protocol.SSEResponse
 		if err := json.Unmarshal([]byte(data), &event); err != nil {
 			continue
 		}
@@ -181,8 +185,8 @@ func (h *ChatHandler) renderSSEStream(reader io.Reader) error {
 			continue
 
 		case "message":
-			var msg ChatMessage
-			if err := json.Unmarshal([]byte(event.Data), &msg); err != nil {
+			var msg adk.Message
+			if err := sonic.Unmarshal([]byte(lo.Must1(sonic.Marshal(event.Data))), &msg); err != nil {
 				continue
 			}
 
@@ -217,52 +221,4 @@ func (h *ChatHandler) renderSSEStream(reader io.Reader) error {
 
 	fmt.Println()
 	return scanner.Err()
-}
-
-// SSEEvent represents an SSE event
-type SSEEvent struct {
-	DataType string `json:"dataType"`
-	Data     string `json:"data"`
-}
-
-// ChatMessage represents a chat message
-type ChatMessage struct {
-	Role         string       `json:"role"`
-	Content      string       `json:"content"`
-	ToolCalls    []ToolCall   `json:"tool_calls"`
-	ResponseMeta ResponseMeta `json:"response_meta"`
-}
-
-// ToolCall represents a tool call
-type ToolCall struct {
-	Index    int          `json:"index"`
-	ID       string       `json:"id"`
-	Type     string       `json:"type"`
-	Function FunctionCall `json:"function"`
-}
-
-// FunctionCall represents a function call
-type FunctionCall struct {
-	Name      string `json:"name"`
-	Arguments string `json:"arguments"`
-}
-
-// ResponseMeta contains response metadata
-type ResponseMeta struct {
-	FinishReason string `json:"finish_reason"`
-	Usage        *Usage `json:"usage"`
-}
-
-// Usage contains token usage information
-type Usage struct {
-	PromptTokens     int `json:"prompt_tokens"`
-	CompletionTokens int `json:"completion_tokens"`
-	TotalTokens      int `json:"total_tokens"`
-}
-
-// ToolCallInfo accumulates tool call information
-type ToolCallInfo struct {
-	ID        string
-	Name      string
-	Arguments string
 }

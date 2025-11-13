@@ -32,7 +32,8 @@ func initCosClient() {
 		},
 	})
 
-	_, _ = lo.Must2(cosClient.Bucket.Get(context.Background(), &cos.BucketGetOptions{}))
+	// list buckets
+	_, _ = lo.Must2(cosClient.Service.Get(context.Background(), nil))
 
 	logger.Logger().Info("[Object Storage] Connected to COS", zap.String("endpoint", endpoint.String()))
 }

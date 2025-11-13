@@ -23,6 +23,4 @@ type Platform interface {
 	ExchangeToken(ctx context.Context, code string) (*oauth2.Token, error)
 	// GetUserInfo 获取用户信息
 	GetUserInfo(ctx context.Context, token *oauth2.Token) (UserInfo, error)
-	// GetBindField 获取绑定字段名
-	GetBindField() string
 }

@@ -34,6 +34,7 @@ import (
 func WrapADKIterSSE(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent]) (rsp *huma.StreamResponse) {
 	logger := logger.WithCtx(ctx)
 	locker := lock.NewLocker()
+
 	return &huma.StreamResponse{
 		Body: func(hCtx huma.Context) {
 			fCtx := humafiber.Unwrap(hCtx)
@@ -43,6 +44,19 @@ func WrapADKIterSSE(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent
 			fCtx.Set("Transfer-Encoding", "chunked")
 
 			fCtx.Response().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
+				lockKey := fmt.Sprintf(constant.LockKeyTemplateAgentChat, ctx.Value(constant.CtxKeyUserID).(uint))
+				lockValue := ctx.Value(constant.CtxKeyTraceID).(string)
+				success, err := locker.Lock(ctx, lockKey, lockValue, constant.AgentChatLockExpire)
+				if err != nil {
+					logger.Error("[AgentService] lock resource error", zap.Error(err))
+					writeSSEErrorResponse(ctx, w, constant.ErrInternalError)
+					return
+				}
+				if !success {
+					logger.Info("[AgentService] lock resource is already locked", zap.String("lockKey", lockKey))
+					writeSSEErrorResponse(ctx, w, constant.ErrResourceLocked)
+					return
+				}
 				defer func() {
 					lockKey := fmt.Sprintf(constant.LockKeyTemplateAgentChat, ctx.Value(constant.CtxKeyUserID))
 					lockValue := ctx.Value(constant.CtxKeyTraceID).(string)

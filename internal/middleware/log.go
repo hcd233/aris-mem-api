@@ -29,13 +29,6 @@ func LogMiddleware() fiber.Handler {
 
 		latency := time.Since(start)
 
-		request := make(map[string]interface{})
-		if reqBody := c.Body(); reqBody != nil {
-			if err := sonic.Unmarshal(reqBody, &request); err != nil {
-				logger.Warn("[LogMiddleware] unmarshal request error", zap.ByteString("request", reqBody), zap.Error(err))
-			}
-		}
-
 		fields := []zap.Field{
 			zap.Int("status", c.Response().StatusCode()),
 			zap.String("method", c.Method()),
@@ -44,15 +37,24 @@ func LogMiddleware() fiber.Handler {
 			zap.String("ip", c.IP()),
 			zap.String("user-agent", c.Get("User-Agent")),
 			zap.String("latency", latency.String()),
-			zap.Dict("request", lo.MapToSlice(request, func(key string, value interface{}) zap.Field {
+		}
+
+		if strings.Contains(string(c.Request().Header.ContentType()), "application/json") {
+			request := make(map[string]interface{})
+			if reqBody := c.Body(); reqBody != nil {
+				if err := sonic.Unmarshal(reqBody, &request); err != nil {
+					logger.Warn("[LogMiddleware] unmarshal request error", zap.ByteString("request", reqBody), zap.Error(err))
+				}
+			}
+			fields = append(fields, zap.Dict("request", lo.MapToSlice(request, func(key string, value interface{}) zap.Field {
 				return zap.Any(key, value)
-			})...),
+			})...))
 		}
 
 		// FIXME: get response body will break sse
 		// reference: https://github.com/gofiber/fiber/issues/429
 		// reference: https://github.com/samber/slog-fiber/issues/68
-		if !strings.Contains(string(c.Response().Header.ContentType()), "text/event-stream") { // response header content-type is not text/event-stream
+		if strings.Contains(string(c.Response().Header.ContentType()), "application/json") { // response header content-type is not text/event-stream
 			response := make(map[string]interface{})
 			if respBody := c.Response().Body(); respBody != nil {
 				if err := sonic.Unmarshal(respBody, &response); err != nil {

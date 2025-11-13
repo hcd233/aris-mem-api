@@ -12,6 +12,7 @@ import (
 
 	"github.com/hcd233/aris-mem-api/internal/resource/cache"
 	"github.com/hcd233/aris-mem-api/internal/resource/database"
+	"github.com/hcd233/aris-mem-api/internal/resource/storage"
 	"github.com/hcd233/aris-mem-api/internal/router"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
@@ -39,7 +40,7 @@ var startServerCmd = &cobra.Command{
 
 		database.InitDatabase()
 		cache.InitCache()
-		// storage.InitObjectStorage()
+		storage.InitObjectStorage()
 		// cron.InitCronJobs()
 
 		app := api.GetFiberApp()

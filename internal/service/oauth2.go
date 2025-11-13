@@ -36,8 +36,7 @@ type Oauth2Service interface {
 type oauth2Service struct {
 	platform           oauth2.Platform
 	userDAO            *dao.UserDAO
-	imageObjDAO        objdao.ObjDAO
-	thumbnailObjDAO    objdao.ObjDAO
+	audioObjDAO        objdao.ObjDAO
 	accessTokenSigner  jwt.TokenSigner
 	refreshTokenSigner jwt.TokenSigner
 }
@@ -45,10 +44,9 @@ type oauth2Service struct {
 // NewGithubOauth2Service 创建Github OAuth2服务
 func NewGithubOauth2Service() Oauth2Service {
 	return &oauth2Service{
-		platform: oauth2.NewGithubPlatform(),
-		userDAO:  dao.GetUserDAO(),
-		// imageObjDAO:        objdao.GetImageObjDAO(),
-		// thumbnailObjDAO:    objdao.GetThumbnailObjDAO(),
+		platform:           oauth2.NewGithubPlatform(),
+		userDAO:            dao.GetUserDAO(),
+		audioObjDAO:        objdao.GetAudioObjDAO(),
 		accessTokenSigner:  jwt.GetAccessTokenSigner(),
 		refreshTokenSigner: jwt.GetRefreshTokenSigner(),
 	}
@@ -57,10 +55,9 @@ func NewGithubOauth2Service() Oauth2Service {
 // NewGoogleOauth2Service 创建Google OAuth2服务
 func NewGoogleOauth2Service() Oauth2Service {
 	return &oauth2Service{
-		platform: oauth2.NewGooglePlatform(),
-		userDAO:  dao.GetUserDAO(),
-		// imageObjDAO:        objdao.GetImageObjDAO(),
-		// thumbnailObjDAO:    objdao.GetThumbnailObjDAO(),
+		platform:           oauth2.NewGooglePlatform(),
+		userDAO:            dao.GetUserDAO(),
+		audioObjDAO:        objdao.GetAudioObjDAO(),
 		accessTokenSigner:  jwt.GetAccessTokenSigner(),
 		refreshTokenSigner: jwt.GetRefreshTokenSigner(),
 	}
@@ -144,11 +141,22 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dt
 	thirdPartyID := userInfo.GetID()
 	userName, email, avatar := userInfo.GetName(), userInfo.GetEmail(), userInfo.GetAvatar()
 
-	user, err := s.userDAO.GetByEmail(db, email, []string{"id", "name", "avatar"}, []string{})
+	var user *model.User
+	switch req.Platform {
+	case enum.Oauth2PlatformGithub:
+		user, err = s.userDAO.GetByGithubBindID(db, thirdPartyID, []string{"id", "name", "avatar"}, []string{})
+	case enum.Oauth2PlatformGoogle:
+		user, err = s.userDAO.GetByGoogleBindID(db, thirdPartyID, []string{"id", "name", "avatar"}, []string{})
+	default:
+		logger.Error("[Oauth2Service] invalid platform", zap.String("platform", req.Platform))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		logger.Error("[Oauth2Service] failed to get user by email",
+		logger.Error("[Oauth2Service] failed to get user by third party bind id",
 			zap.String("platform", req.Platform),
-			zap.String("email", email),
+			zap.String("thirdPartyID", thirdPartyID),
 			zap.Error(err))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
@@ -178,6 +186,13 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dt
 			LastLogin:  time.Now().UTC(),
 		}
 
+		switch req.Platform {
+		case enum.Oauth2PlatformGithub:
+			user.GithubBindID = thirdPartyID
+		case enum.Oauth2PlatformGoogle:
+			user.GoogleBindID = thirdPartyID
+		}
+
 		if err := s.userDAO.Create(db, user); err != nil {
 			logger.Error("[Oauth2Service] failed to create user",
 				zap.String("platform", req.Platform),
@@ -187,39 +202,16 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dt
 			return rsp, nil
 		}
 
-		// _, err = s.imageObjDAO.CreateDir(ctx, user.ID)
-		// if err != nil {
-		// 	logger.Error("[Oauth2Service] failed to create image dir",
-		// 		zap.String("platform", req.Platform),
-		// 		zap.Error(err))
-		// 	return nil, protocol.ErrInternalError
-		// }
-		// logger.Info("[Oauth2Service] image dir created", zap.String("platform", req.Platform))
+		_, err = s.audioObjDAO.CreateDir(ctx, user.ID)
+		if err != nil {
+			logger.Error("[Oauth2Service] failed to create audio dir",
+				zap.String("platform", req.Platform),
+				zap.Error(err))
+			rsp.Error = constant.ErrInternalError
+			return rsp, nil
+		}
+		logger.Info("[Oauth2Service] audio dir created", zap.String("platform", req.Platform))
 
-		// _, err = s.thumbnailObjDAO.CreateDir(ctx, user.ID)
-		// if err != nil {
-		// 	logger.Error("[Oauth2Service] failed to create thumbnail dir",
-		// 		zap.String("platform", req.Platform),
-		// 		zap.Error(err))
-		// 	return nil, protocol.ErrInternalError
-		// }
-		// logger.Info("[Oauth2Service] thumbnail dir created", zap.String("platform", req.Platform))
-	}
-
-	// 更新第三方平台绑定ID
-	bindField := s.platform.GetBindField()
-	updateData := map[string]interface{}{
-		bindField: thirdPartyID,
-	}
-
-	if err := s.userDAO.Update(db, user, updateData); err != nil {
-		logger.Error("[Oauth2Service] failed to update third party bind id",
-			zap.String("platform", req.Platform),
-			zap.String("bindField", bindField),
-			zap.String("thirdPartyID", thirdPartyID),
-			zap.Error(err))
-		rsp.Error = constant.ErrInternalError
-		return rsp, nil
 	}
 
 	accessToken, err := s.accessTokenSigner.EncodeToken(user.ID)

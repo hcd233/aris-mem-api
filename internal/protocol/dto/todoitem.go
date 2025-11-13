@@ -68,6 +68,6 @@ type ListTodoItemsReq struct {
 //	@update 2025-11-07 01:43:02
 type ListTodoItemsRsp struct {
 	CommonRsp
-	TodoItems []*DatailedTodoItem `json:"todoItems" doc:"Items to list"`
-	PageInfo  *model.PageInfo     `json:"pageInfo" doc:"Page info"`
+	TodoItems []*DatailedTodoItem `json:"todoItems,omitempty" doc:"Items to list"`
+	PageInfo  *model.PageInfo     `json:"pageInfo,omitempty" doc:"Page info"`
 }

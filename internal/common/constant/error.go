@@ -50,4 +50,9 @@ var (
 	//
 	//	update 2025-01-05 18:41:32
 	ErrNoImplement = model.NewError(10008, "NoImplement")
+
+	// ErrResourceLocked 资源锁定错误
+	//
+	//	update 2025-11-13 17:48:00
+	ErrResourceLocked = model.NewError(10009, "ResourceLocked")
 )

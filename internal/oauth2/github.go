@@ -138,7 +138,3 @@ func (p *githubPlatform) GetUserInfo(ctx context.Context, token *oauth2.Token) (
 
 	return &userInfo, nil
 }
-
-func (p *githubPlatform) GetBindField() string {
-	return "github_bind_id"
-}
