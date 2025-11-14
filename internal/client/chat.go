@@ -72,7 +72,6 @@ func (h *ChatHandler) Execute() error {
 	fmt.Println()
 	infoColor.Println("💡 Type your message and press Enter to chat")
 	infoColor.Println("   Type 'exit' or 'quit' to end the session")
-	warningColor.Println("   Notice: This is a demo version, only support `SINGLE TURN DIALOG` now!")
 
 	fmt.Println()
 
