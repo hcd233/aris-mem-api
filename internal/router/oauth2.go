@@ -23,7 +23,7 @@ func initOauth2Router(oauth2Group huma.API) {
 
 	huma.Register(oauth2Group, huma.Operation{
 		OperationID: "oauth2Callback",
-		Method:      http.MethodGet,
+		Method:      http.MethodPost,
 		Path:        "/callback",
 		Summary:     "OAuth2Callback",
 		Description: "Handle OAuth2 callback with authorization code and state",

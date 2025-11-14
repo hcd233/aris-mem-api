@@ -17,8 +17,8 @@ type PageInfo struct {
 //	author centonhuang
 //	update 2024-09-21 09:00:57
 type PageParam struct {
-	Page     int `query:"page" minimum:"1"`
-	PageSize int `query:"pageSize" minimum:"1" maximum:"50"`
+	Page     int `query:"page" required:"true" minimum:"1"`
+	PageSize int `query:"pageSize" required:"true" minimum:"1" maximum:"50"`
 }
 
 // QueryParam 查询参数

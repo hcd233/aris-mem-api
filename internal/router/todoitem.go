@@ -38,4 +38,28 @@ func initTodoItemRouter(todoItemGroup huma.API) {
 			{"jwtAuth": {}},
 		},
 	}, todoItemHandler.HandleListTodoItems)
+
+	huma.Register(todoItemGroup, huma.Operation{
+		OperationID: "updateTodoItem",
+		Method:      http.MethodPatch,
+		Path:        "/",
+		Summary:     "UpdateTodoItem",
+		Description: "Patch update todo item fields",
+		Tags:        []string{"TodoItem"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, todoItemHandler.HandleUpdateTodoItem)
+
+	huma.Register(todoItemGroup, huma.Operation{
+		OperationID: "deleteTodoItem",
+		Method:      http.MethodDelete,
+		Path:        "/",
+		Summary:     "DeleteTodoItem",
+		Description: "Delete todo item",
+		Tags:        []string{"TodoItem"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, todoItemHandler.HandleDeleteTodoItem)
 }

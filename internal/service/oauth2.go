@@ -100,39 +100,39 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dt
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	if req.State != config.Oauth2StateString {
+	if req.Body.State != config.Oauth2StateString {
 		logger.Error("[Oauth2Service] invalid state",
-			zap.String("platform", req.Platform),
-			zap.String("state", req.State),
+			zap.String("platform", req.Body.Platform),
+			zap.String("state", req.Body.State),
 			zap.String("expectedState", config.Oauth2StateString))
 		rsp.Error = constant.ErrUnauthorized
 		return rsp, nil
 	}
 
 	logger.Info("[Oauth2Service] exchanging token",
-		zap.String("platform", req.Platform),
-		zap.String("code", req.Code),
-		zap.String("state", req.State))
+		zap.String("platform", req.Body.Platform),
+		zap.String("code", req.Body.Code),
+		zap.String("state", req.Body.State))
 
-	token, err := s.platform.ExchangeToken(ctx, req.Code)
+	token, err := s.platform.ExchangeToken(ctx, req.Body.Code)
 	if err != nil {
 		logger.Error("[Oauth2Service] failed to exchange token",
-			zap.String("platform", req.Platform),
-			zap.String("code", req.Code),
+			zap.String("platform", req.Body.Platform),
+			zap.String("code", req.Body.Code),
 			zap.Error(err))
 		rsp.Error = constant.ErrUnauthorized
 		return rsp, nil
 	}
 
 	logger.Info("[Oauth2Service] token exchange successful",
-		zap.String("platform", req.Platform),
+		zap.String("platform", req.Body.Platform),
 		zap.String("tokenType", token.TokenType),
 		zap.Bool("valid", token.Valid()))
 
 	userInfo, err := s.platform.GetUserInfo(ctx, token)
 	if err != nil {
 		logger.Error("[Oauth2Service] failed to get user info",
-			zap.String("platform", req.Platform),
+			zap.String("platform", req.Body.Platform),
 			zap.Error(err))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
@@ -142,20 +142,20 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dt
 	userName, email, avatar := userInfo.GetName(), userInfo.GetEmail(), userInfo.GetAvatar()
 
 	var user *model.User
-	switch req.Platform {
+	switch req.Body.Platform {
 	case enum.Oauth2PlatformGithub:
 		user, err = s.userDAO.GetByGithubBindID(db, thirdPartyID, []string{"id"})
 	case enum.Oauth2PlatformGoogle:
 		user, err = s.userDAO.GetByGoogleBindID(db, thirdPartyID, []string{"id"})
 	default:
-		logger.Error("[Oauth2Service] invalid platform", zap.String("platform", req.Platform))
+		logger.Error("[Oauth2Service] invalid platform", zap.String("platform", req.Body.Platform))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}
 
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Error("[Oauth2Service] failed to get user by third party bind id",
-			zap.String("platform", req.Platform),
+			zap.String("platform", req.Body.Platform),
 			zap.String("thirdPartyID", thirdPartyID),
 			zap.Error(err))
 		rsp.Error = constant.ErrInternalError
@@ -168,7 +168,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dt
 			"last_login": time.Now().UTC(),
 		}); err != nil {
 			logger.Error("[Oauth2Service] failed to update user login time",
-				zap.String("platform", req.Platform),
+				zap.String("platform", req.Body.Platform),
 				zap.Error(err))
 			rsp.Error = constant.ErrInternalError
 			return rsp, nil
@@ -186,7 +186,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dt
 			LastLogin:  time.Now().UTC(),
 		}
 
-		switch req.Platform {
+		switch req.Body.Platform {
 		case enum.Oauth2PlatformGithub:
 			user.GithubBindID = thirdPartyID
 		case enum.Oauth2PlatformGoogle:
@@ -195,7 +195,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dt
 
 		if err := s.userDAO.Create(db, user); err != nil {
 			logger.Error("[Oauth2Service] failed to create user",
-				zap.String("platform", req.Platform),
+				zap.String("platform", req.Body.Platform),
 				zap.String("userName", userName),
 				zap.Error(err))
 			rsp.Error = constant.ErrInternalError
@@ -205,19 +205,19 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dt
 		_, err = s.audioObjDAO.CreateDir(ctx, user.ID)
 		if err != nil {
 			logger.Error("[Oauth2Service] failed to create audio dir",
-				zap.String("platform", req.Platform),
+				zap.String("platform", req.Body.Platform),
 				zap.Error(err))
 			rsp.Error = constant.ErrInternalError
 			return rsp, nil
 		}
-		logger.Info("[Oauth2Service] audio dir created", zap.String("platform", req.Platform))
+		logger.Info("[Oauth2Service] audio dir created", zap.String("platform", req.Body.Platform))
 
 	}
 
 	accessToken, err := s.accessTokenSigner.EncodeToken(user.ID)
 	if err != nil {
 		logger.Error("[Oauth2Service] failed to encode access token",
-			zap.String("platform", req.Platform),
+			zap.String("platform", req.Body.Platform),
 			zap.Error(err))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
@@ -226,14 +226,14 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dt
 	refreshToken, err := s.refreshTokenSigner.EncodeToken(user.ID)
 	if err != nil {
 		logger.Error("[Oauth2Service] failed to encode refresh token",
-			zap.String("platform", req.Platform),
+			zap.String("platform", req.Body.Platform),
 			zap.Error(err))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}
 
 	logger.Info("[Oauth2Service] callback success",
-		zap.String("platform", req.Platform),
+		zap.String("platform", req.Body.Platform),
 		zap.Uint("userID", user.ID))
 
 	rsp.AccessToken = accessToken

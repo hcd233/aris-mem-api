@@ -45,6 +45,5 @@ type UpdateUserReq struct {
 //	author centonhuang
 //	update 2025-10-31 02:33:48
 type UpdateUserReqBody struct {
-	CommonRsp
-	User *User `json:"user" doc:"User information to update"`
+	User *User `json:"user" required:"true" doc:"User information to update"`
 }

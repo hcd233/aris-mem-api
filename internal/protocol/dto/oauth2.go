@@ -8,7 +8,7 @@ import "github.com/hcd233/aris-mem-api/internal/common/enum"
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 type LoginReq struct {
-	Platform enum.Oauth2Platform `json:"platform" query:"platform" enum:"github,google" doc:"OAuth2 platform name (github or google)"`
+	Platform enum.Oauth2Platform `json:"platform" query:"platform" enum:"github,google" required:"true" doc:"OAuth2 platform name (github or google)"`
 }
 
 // LoginResp represents the response containing the OAuth2 authorization URL
@@ -25,9 +25,17 @@ type LoginResp struct {
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 type CallbackReq struct {
-	Platform enum.Oauth2Platform `json:"platform" query:"platform" enum:"github,google" doc:"OAuth2 platform name (github or google)"`
-	Code     string              `json:"code" query:"code" doc:"Authorization code returned by the OAuth2 platform"`
-	State    string              `json:"state" query:"state" doc:"State parameter for CSRF protection, must match the initial state"`
+	Body *CallbackReqBody `json:"body" doc:"Request body containing the authorization code and state"`
+}
+
+// CallbackReqBody contains the authorization code and state for OAuth2 callback
+//
+//	author centonhuang
+//	update 2025-01-05 21:00:00
+type CallbackReqBody struct {
+	Platform enum.Oauth2Platform `json:"platform" enum:"github,google" required:"true" doc:"OAuth2 platform name (github or google)"`
+	Code     string              `json:"code" query:"code" required:"true" doc:"Authorization code returned by the OAuth2 platform"`
+	State    string              `json:"state" query:"state" required:"true" doc:"State parameter for CSRF protection, must match the initial state"`
 }
 
 // CallbackRsp represents the response containing access and refresh tokens after successful OAuth2 authentication

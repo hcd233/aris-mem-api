@@ -14,7 +14,7 @@ type RefreshTokenReq struct {
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 type RefreshTokenReqBody struct {
-	RefreshToken string `json:"refreshToken" doc:"JWT refresh token used to obtain a new access token"`
+	RefreshToken string `json:"refreshToken" required:"true" minLength:"1" doc:"JWT refresh token used to obtain a new access token"`
 }
 
 // RefreshTokenRsp represents the response containing new access and refresh tokens

@@ -17,7 +17,7 @@ func RegisterDocsRouter() {
 		html := `<!doctype html>
 <html>
   <head>
-    <title>API Reference</title>
+    <title>Aris Mem API Reference</title>
     <meta charset="utf-8" />
     <meta
       name="viewport"

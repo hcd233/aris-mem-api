@@ -35,7 +35,7 @@ type TodoItemDAO struct {
 func (dao *TodoItemDAO) PaginateByUserID(db *gorm.DB, userID uint, fields []string, param *CommonParam) (data []*dbmodel.TodoItem, pageInfo *model.PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
-	sql := db.Select(fields).Where(dbmodel.TodoItem{UserID: userID})
+	sql := db.Select(fields).Where("deleted_at = 0").Where(dbmodel.TodoItem{UserID: userID})
 
 	if param.Query != "" && len(param.QueryFields) > 0 {
 		like := "%" + param.Query + "%"

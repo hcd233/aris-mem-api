@@ -24,7 +24,7 @@ type UserDAO struct {
 //	author centonhuang
 //	update 2024-10-17 05:18:46
 func (dao *UserDAO) GetByName(db *gorm.DB, name string, fields []string) (user *model.User, err error) {
-	err = db.Select(fields).Where(model.User{Name: name}).First(&user).Error
+	err = db.Select(fields).Where("deleted_at = 0").Where(model.User{Name: name}).First(&user).Error
 	return
 }
 
@@ -40,7 +40,7 @@ func (dao *UserDAO) GetByName(db *gorm.DB, name string, fields []string) (user *
 //	@author centonhuang
 //	@update 2025-11-13 10:41:10
 func (dao *UserDAO) GetByGoogleBindID(db *gorm.DB, googleBindID string, fields []string) (user *model.User, err error) {
-	err = db.Select(fields).Where(model.User{GoogleBindID: googleBindID}).First(&user).Error
+	err = db.Select(fields).Where("deleted_at = 0").Where(model.User{GoogleBindID: googleBindID}).First(&user).Error
 	return
 }
 
@@ -56,6 +56,6 @@ func (dao *UserDAO) GetByGoogleBindID(db *gorm.DB, googleBindID string, fields [
 //	@author centonhuang
 //	@update 2025-11-13 10:41:17
 func (dao *UserDAO) GetByGithubBindID(db *gorm.DB, githubBindID string, fields []string) (user *model.User, err error) {
-	err = db.Select(fields).Where(model.User{GithubBindID: githubBindID}).First(&user).Error
+	err = db.Select(fields).Where("deleted_at = 0").Where(model.User{GithubBindID: githubBindID}).First(&user).Error
 	return
 }

@@ -40,8 +40,7 @@ func NewOauth2Handler() Oauth2Handler {
 //	@author centonhuang
 //	@update 2025-11-11 04:57:58
 func (h *oauth2Handler) HandleLogin(ctx context.Context, req *dto.LoginReq) (*protocol.HTTPResponse[*dto.LoginResp], error) {
-	svc := h.getService(req.Platform)
-	return util.WrapHTTPResponse(svc.Login(ctx, req))
+	return util.WrapHTTPResponse(h.getService(req.Platform).Login(ctx, req))
 }
 
 // HandleCallback OAuth2回调
@@ -54,8 +53,7 @@ func (h *oauth2Handler) HandleLogin(ctx context.Context, req *dto.LoginReq) (*pr
 //	@author centonhuang
 //	@update 2025-11-11 04:58:11
 func (h *oauth2Handler) HandleCallback(ctx context.Context, req *dto.CallbackReq) (*protocol.HTTPResponse[*dto.CallbackRsp], error) {
-	svc := h.getService(req.Platform)
-	return util.WrapHTTPResponse(svc.Callback(ctx, req))
+	return util.WrapHTTPResponse(h.getService(req.Body.Platform).Callback(ctx, req))
 }
 
 // getService 根据platform获取对应的service

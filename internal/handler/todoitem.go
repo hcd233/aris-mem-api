@@ -9,13 +9,15 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/util"
 )
 
-// UserHandler 用户处理器
+// TodoItemHandler 用户处理器
 //
 //	author centonhuang
 //	update 2025-01-04 15:56:20
 type TodoItemHandler interface {
 	HandleCreateTodoItems(ctx context.Context, req *dto.CreateTodoItemsReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error)
 	HandleListTodoItems(ctx context.Context, req *dto.ListTodoItemsReq) (*protocol.HTTPResponse[*dto.ListTodoItemsRsp], error)
+	HandleUpdateTodoItem(ctx context.Context, req *dto.UpdateTodoItemReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error)
+	HandleDeleteTodoItem(ctx context.Context, req *dto.DeleteTodoItemReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error)
 }
 
 type todoItemHandler struct {
@@ -39,4 +41,12 @@ func (h *todoItemHandler) HandleCreateTodoItems(ctx context.Context, req *dto.Cr
 
 func (h *todoItemHandler) HandleListTodoItems(ctx context.Context, req *dto.ListTodoItemsReq) (*protocol.HTTPResponse[*dto.ListTodoItemsRsp], error) {
 	return util.WrapHTTPResponse(h.svc.ListTodoItems(ctx, req))
+}
+
+func (h *todoItemHandler) HandleUpdateTodoItem(ctx context.Context, req *dto.UpdateTodoItemReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error) {
+	return util.WrapHTTPResponse(h.svc.UpdateTodoItem(ctx, req))
+}
+
+func (h *todoItemHandler) HandleDeleteTodoItem(ctx context.Context, req *dto.DeleteTodoItemReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error) {
+	return util.WrapHTTPResponse(h.svc.DeleteTodoItem(ctx, req))
 }

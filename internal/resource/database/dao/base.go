@@ -68,12 +68,12 @@ func (dao *baseDAO[ModelT]) Update(db *gorm.DB, data *ModelT, info map[string]in
 //	author centonhuang
 //	update 2024-10-17 02:52:33
 func (dao *baseDAO[ModelT]) Delete(db *gorm.DB, data *ModelT) (err error) {
-	err = db.Delete(&data).Error
+	err = db.Model(data).Update("deleted_at", time.Now().UTC().Unix()).Error
 	return
 }
 
 func (dao *baseDAO[ModelT]) BatchDelete(db *gorm.DB, data *[]ModelT) (err error) {
-	err = db.Delete(&data).Error
+	err = db.Model(data).Update("deleted_at", time.Now().UTC().Unix()).Error
 	return
 }
 
@@ -84,7 +84,7 @@ func (dao *baseDAO[ModelT]) BatchDelete(db *gorm.DB, data *[]ModelT) (err error)
 //	author centonhuang
 //	update 2024-10-17 03:06:57
 func (dao *baseDAO[ModelT]) GetByID(db *gorm.DB, id uint, fields []string) (data *ModelT, err error) {
-	err = db.Select(fields).Where("id = ?", id).First(&data).Error
+	err = db.Select(fields).Where("deleted_at = 0").Where("id = ?", id).First(&data).Error
 	return
 }
 
@@ -95,7 +95,7 @@ func (dao *baseDAO[ModelT]) GetByID(db *gorm.DB, id uint, fields []string) (data
 //	author centonhuang
 //	update 2024-11-03 07:34:47
 func (dao *baseDAO[ModelT]) BatchGetByIDs(db *gorm.DB, ids []uint, fields []string) (data *[]ModelT, err error) {
-	err = db.Select(fields).Where("id IN ?", ids).Find(&data).Error
+	err = db.Select(fields).Where("deleted_at = 0").Where("id IN ?", ids).Find(&data).Error
 	return
 }
 
@@ -108,7 +108,7 @@ func (dao *baseDAO[ModelT]) BatchGetByIDs(db *gorm.DB, ids []uint, fields []stri
 func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, fields []string, param *CommonParam) (data []*ModelT, pageInfo *model.PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
-	sql := db.Select(fields)
+	sql := db.Select(fields).Where("deleted_at = 0")
 
 	if param.Query != "" && len(param.QueryFields) > 0 {
 		like := "%" + param.Query + "%"

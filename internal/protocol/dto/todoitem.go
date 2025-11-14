@@ -21,7 +21,8 @@ type TodoItem struct {
 //	@author centonhuang
 //	@update 2025-11-07 15:21:39
 type UpdatedTodoItem struct {
-	ID uint `json:"id" doc:"Unique identifier for the todo item"`
+	ID     uint                `json:"id" minimum:"1" required:"true" doc:"Unique identifier for the todo item"`
+	Status enum.TodoItemStatus `json:"status,omitempty" enum:"pending,completed,cancelled,timeout" doc:"Status of the todo item"`
 	TodoItem
 }
 
@@ -50,7 +51,7 @@ type CreateTodoItemsReq struct {
 //	@author centonhuang
 //	@update 2025-11-07 01:37:12
 type CreateTodoItemsReqBody struct {
-	TodoItems []*TodoItem `json:"todoItems" minItems:"1" maxItems:"100" doc:"Items to create"`
+	TodoItems []*TodoItem `json:"todoItems" minItems:"1" maxItems:"100" required:"true" doc:"Items to create"`
 }
 
 // ListTodoItemsReq 获取待办事项列表请求
@@ -68,6 +69,30 @@ type ListTodoItemsReq struct {
 //	@update 2025-11-07 01:43:02
 type ListTodoItemsRsp struct {
 	CommonRsp
-	TodoItems []*DatailedTodoItem `json:"todoItems,omitempty" doc:"Items to list"`
+	TodoItems []*DatailedTodoItem `json:"todoItems" doc:"Items to list"`
 	PageInfo  *model.PageInfo     `json:"pageInfo,omitempty" doc:"Page info"`
+}
+
+// UpdateTodoItemReq 更新待办事项请求
+//
+//	@author centonhuang
+//	@update 2025-11-14 10:11:00
+type UpdateTodoItemReq struct {
+	Body *UpdateTodoItemReqBody `json:"body" doc:"Request body containing fields to update"`
+}
+
+// UpdateTodoItemReqBody 更新待办事项请求体
+//
+//	@author centonhuang
+//	@update 2025-11-14 10:11:00
+type UpdateTodoItemReqBody struct {
+	TodoItem *UpdatedTodoItem `json:"todoItem" required:"true" doc:"Todo item to update"`
+}
+
+// DeleteTodoItemReq 删除待办事项请求体
+//
+//	@author centonhuang
+//	@update 2025-11-14 14:14:16
+type DeleteTodoItemReq struct {
+	ID uint `json:"id" query:"id" required:"true" minimum:"1" doc:"Unique identifier for the todo item"`
 }
