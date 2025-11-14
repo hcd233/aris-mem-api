@@ -56,7 +56,7 @@ func (s *userService) GetCurUser(ctx context.Context, _ *dto.EmptyReq) (*dto.Get
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	user, err := s.userDAO.GetByID(db, userID, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"})
+	user, err := s.userDAO.Get(db, &model.User{ID: userID}, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[UserService] user not found")

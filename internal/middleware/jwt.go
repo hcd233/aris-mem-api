@@ -11,6 +11,7 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/jwt"
 	"github.com/hcd233/aris-mem-api/internal/resource/database"
 	"github.com/hcd233/aris-mem-api/internal/resource/database/dao"
+	"github.com/hcd233/aris-mem-api/internal/resource/database/model"
 	"github.com/hcd233/aris-mem-api/internal/util"
 	"github.com/samber/lo"
 )
@@ -40,7 +41,7 @@ func JwtMiddleware() func(ctx huma.Context, next func(huma.Context)) {
 			lo.Must0(util.WriteErrorResponse(ctx.BodyWriter(), constant.ErrUnauthorized))
 			return
 		}
-		user, err := dao.GetByID(db, userID, []string{"id", "name", "permission"})
+		user, err := dao.Get(db, &model.User{ID: userID}, []string{"id", "name", "permission"})
 		if err != nil {
 			lo.Must0(util.WriteErrorResponse(ctx.BodyWriter(), constant.ErrInternalError))
 			return

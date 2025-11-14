@@ -13,6 +13,7 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
 	"github.com/hcd233/aris-mem-api/internal/resource/database"
 	"github.com/hcd233/aris-mem-api/internal/resource/database/dao"
+	"github.com/hcd233/aris-mem-api/internal/resource/database/model"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -66,7 +67,7 @@ func (s *tokenService) RefreshToken(ctx context.Context, req *dto.RefreshTokenRe
 		return rsp, nil
 	}
 
-	_, err = s.userDAO.GetByID(db, userID, []string{"id"})
+	_, err = s.userDAO.Get(db, &model.User{ID: userID}, []string{"id"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[TokenService] user not found", zap.Uint("userID", userID))

@@ -155,20 +155,20 @@ func (s *todoItemService) UpdateTodoItem(ctx context.Context, req *dto.UpdateTod
 		return rsp, nil
 	}
 
-	payload := req.Body.TodoItem
+	todoItem := req.Body.TodoItem
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	existing, err := s.todoItemDAO.GetByID(db, payload.ID, []string{"id", "user_id"})
+	existing, err := s.todoItemDAO.Get(db, &model.TodoItem{ID: todoItem.ID}, []string{"id", "user_id"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			rsp.Error = constant.ErrDataNotExists
 			return rsp, nil
 		}
-		logger.Error("[TodoItemService] failed to get todo item", zap.Error(err), zap.Uint("todoItemID", payload.ID))
+		logger.Error("[TodoItemService] failed to get todo item", zap.Error(err), zap.Uint("todoItemID", todoItem.ID))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}
@@ -179,11 +179,11 @@ func (s *todoItemService) UpdateTodoItem(ctx context.Context, req *dto.UpdateTod
 	}
 
 	updateFields := map[string]interface{}{
-		"name":     payload.Name,
-		"summary":  payload.Summary,
-		"content":  payload.Content,
-		"priority": payload.Priority,
-		"status":   payload.Status,
+		"name":     todoItem.Name,
+		"summary":  todoItem.Summary,
+		"content":  todoItem.Content,
+		"priority": todoItem.Priority,
+		"status":   todoItem.Status,
 	}
 
 	if !hasNonZeroValue(updateFields) {
@@ -191,8 +191,8 @@ func (s *todoItemService) UpdateTodoItem(ctx context.Context, req *dto.UpdateTod
 		return rsp, nil
 	}
 
-	if err = s.todoItemDAO.Update(db, &model.TodoItem{ID: payload.ID}, updateFields); err != nil {
-		logger.Error("[TodoItemService] failed to update todo item", zap.Error(err), zap.Uint("todoItemID", payload.ID))
+	if err = s.todoItemDAO.Update(db, &model.TodoItem{ID: todoItem.ID}, updateFields); err != nil {
+		logger.Error("[TodoItemService] failed to update todo item", zap.Error(err), zap.Uint("todoItemID", todoItem.ID))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}
@@ -219,7 +219,7 @@ func (s *todoItemService) DeleteTodoItem(ctx context.Context, req *dto.DeleteTod
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	todoItem, err := s.todoItemDAO.GetByID(db, req.ID, []string{"id", "user_id"})
+	todoItem, err := s.todoItemDAO.Get(db, &model.TodoItem{ID: req.ID}, []string{"id", "user_id"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			rsp.Error = constant.ErrDataNotExists
