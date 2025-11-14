@@ -10,6 +10,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/adk"
+	"github.com/cloudwego/eino/schema"
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humafiber"
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
@@ -19,6 +20,9 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/protocol"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
+	"github.com/hcd233/aris-mem-api/internal/resource/database"
+	"github.com/hcd233/aris-mem-api/internal/resource/database/dao"
+	dbmodel "github.com/hcd233/aris-mem-api/internal/resource/database/model"
 	"github.com/samber/lo"
 	"github.com/valyala/fasthttp"
 	"go.uber.org/zap"
@@ -31,8 +35,13 @@ import (
 //	@return rsp
 //	@author centonhuang
 //	@update 2025-11-11 17:43:42
-func WrapADKIterSSE(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent]) (rsp *huma.StreamResponse) {
+func WrapADKIterSSE(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent], inputMessage *schema.Message) (rsp *huma.StreamResponse) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
 	logger := logger.WithCtx(ctx)
+	db := database.GetDBInstance(ctx)
+	dialogDAO := dao.GetDialogDAO()
+
 	locker := lock.NewLocker()
 
 	return &huma.StreamResponse{
@@ -44,6 +53,19 @@ func WrapADKIterSSE(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent
 			fCtx.Set("Transfer-Encoding", "chunked")
 
 			fCtx.Response().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
+				newDialog := &dbmodel.Dialog{
+					UserID:         userID,
+					InputMessages:  []*schema.Message{inputMessage},
+					OutputMessages: []*schema.Message{},
+					Status:         enum.DialogStatusError,
+				}
+				defer func() {
+					err := dialogDAO.Create(db, newDialog)
+					if err != nil {
+						logger.Error("[AgentService] failed to create dialog", zap.Error(err))
+					}
+				}()
+
 				lockKey := fmt.Sprintf(constant.LockKeyTemplateAgentChat, ctx.Value(constant.CtxKeyUserID).(uint))
 				lockValue := ctx.Value(constant.CtxKeyTraceID).(string)
 				success, err := locker.Lock(ctx, lockKey, lockValue, constant.AgentChatLockExpire)
@@ -88,7 +110,7 @@ func WrapADKIterSSE(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent
 					event, ok := iter.Next()
 					if !ok {
 						logger.Info("[AgentService] reach iter end")
-						time.Sleep(constant.HeartbeatInterval)
+						newDialog.Status = enum.DialogStatusCompleted
 						return
 					}
 					if event.Err != nil {
@@ -98,15 +120,30 @@ func WrapADKIterSSE(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent
 					}
 
 					messageStream := event.Output.MessageOutput.MessageStream
+					var (
+						message *schema.Message
+						err     error
+					)
 					if messageStream == nil {
-						message, err := event.Output.MessageOutput.GetMessage()
-						if err != nil {
-							logger.Error("[AgentService] failed to get message", zap.Error(err))
-							writeSSEErrorResponse(ctx, w, constant.ErrInternalError)
-						}
+						message, err = event.Output.MessageOutput.GetMessage()
+					} else {
+						messageStreams := messageStream.Copy(2)
+						var copiedMessageStream *schema.StreamReader[*schema.Message]
+						messageStream, copiedMessageStream = messageStreams[0], messageStreams[1]
+						message, err = schema.ConcatMessageStream(copiedMessageStream)
+					}
+					if err != nil {
+						logger.Error("[AgentService] failed to get message", zap.Error(err))
+						writeSSEErrorResponse(ctx, w, constant.ErrInternalError)
+						return
+					}
+					newDialog.OutputMessages = append(newDialog.OutputMessages, message)
+
+					if messageStream == nil {
 						writeSSEMessageResponse(ctx, w, message)
 						continue
 					}
+
 					for {
 						message, err := messageStream.Recv()
 						if err != nil {

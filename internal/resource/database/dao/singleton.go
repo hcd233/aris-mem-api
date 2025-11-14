@@ -3,11 +3,13 @@ package dao
 var (
 	userDAOSingleton     *UserDAO
 	todoItemDAOSingleton *TodoItemDAO
+	dialogDAOSingleton   *DialogDAO
 )
 
 func init() {
 	userDAOSingleton = &UserDAO{}
 	todoItemDAOSingleton = &TodoItemDAO{}
+	dialogDAOSingleton = &DialogDAO{}
 }
 
 // GetUserDAO 获取用户DAO
@@ -26,4 +28,13 @@ func GetUserDAO() *UserDAO {
 //	update 2025-11-07 01:12:23
 func GetTodoItemDAO() *TodoItemDAO {
 	return todoItemDAOSingleton
+}
+
+// GetDialogDAO 获取对话DAO
+//
+//	return *DialogDAO
+//	author centonhuang
+//	update 2025-11-14 16:07:18
+func GetDialogDAO() *DialogDAO {
+	return dialogDAOSingleton
 }

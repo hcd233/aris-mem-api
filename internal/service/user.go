@@ -96,7 +96,6 @@ func (s *userService) UpdateUser(ctx context.Context, req *dto.UpdateUserReq) (*
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
 	logger := logger.WithCtx(ctx)
-
 	db := database.GetDBInstance(ctx)
 
 	if err := s.userDAO.Update(db, &model.User{ID: userID}, map[string]interface{}{

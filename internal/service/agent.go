@@ -16,9 +16,13 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/ai/llm"
 	"github.com/hcd233/aris-mem-api/internal/ai/tool"
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/config"
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
+	"github.com/hcd233/aris-mem-api/internal/resource/database"
+	"github.com/hcd233/aris-mem-api/internal/resource/database/dao"
+	"github.com/hcd233/aris-mem-api/internal/resource/database/model"
 	objdao "github.com/hcd233/aris-mem-api/internal/resource/storage/obj_dao"
 	"github.com/hcd233/aris-mem-api/internal/util"
 	"github.com/samber/lo"
@@ -35,6 +39,7 @@ type AgentService interface {
 
 type agentService struct {
 	todoItemService TodoItemService
+	dialogDAO       *dao.DialogDAO
 	audioObjDAO     objdao.ObjDAO
 }
 
@@ -46,6 +51,7 @@ type agentService struct {
 func NewAgentService() AgentService {
 	return &agentService{
 		todoItemService: NewTodoItemService(),
+		dialogDAO:       dao.GetDialogDAO(),
 		audioObjDAO:     objdao.GetAudioObjDAO(),
 	}
 }
@@ -60,6 +66,7 @@ func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *h
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
 	logger := logger.WithCtx(ctx)
+	db := database.GetDBInstance(ctx)
 
 	bodyData := req.RawBody.Data()
 
@@ -92,6 +99,27 @@ func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *h
 	})
 
 	logger.Info("[AgentService] init agent", zap.String("llm", config.OpenAIModel), zap.Strings("tools", toolNames))
+
+	commonParam := &dao.CommonParam{
+		PageParam: dao.PageParam{
+			Page:     1,
+			PageSize: constant.DialogHistoryTurn,
+		},
+		SortParam: dao.SortParam{
+			Sort:      enum.SortDesc,
+			SortField: "id",
+		},
+	}
+
+	historyDialog, _, err := s.dialogDAO.Paginate(db, &model.Dialog{UserID: userID, Status: enum.DialogStatusCompleted}, []string{"id", "input_messages", "output_messages"}, commonParam)
+	if err != nil {
+		logger.Error("[AgentService] failed to get history dialog", zap.Error(err))
+		return util.WrapErrorSSE(ctx, constant.ErrInternalError), nil
+	}
+
+	messages := lo.Flatten(lo.Map(lo.Reverse(historyDialog), func(dialog *model.Dialog, _ int) []*schema.Message {
+		return append(dialog.InputMessages, dialog.OutputMessages...)
+	}))
 
 	inputContent := []schema.MessageInputPart{}
 	if bodyData.Content != "" {
@@ -157,13 +185,14 @@ func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *h
 		// CheckPointStore: checkpoint.NewRedisCheckPointStore(),
 	})
 
-	iter := runner.Run(ctx, []adk.Message{
-		{
-			Role:                  schema.User,
-			UserInputMultiContent: inputContent,
-		},
-	},
-	) // adk.WithCheckPointID(strconv.FormatUint(uint64(userID), 10))
+	userMessage := &schema.Message{
+		Role:                  schema.User,
+		UserInputMultiContent: inputContent,
+	}
 
-	return util.WrapADKIterSSE(ctx, iter), nil
+	messages = append(messages, userMessage)
+
+	iter := runner.Run(ctx, messages) // adk.WithCheckPointID(strconv.FormatUint(uint64(userID), 10))
+
+	return util.WrapADKIterSSE(ctx, iter, userMessage), nil
 }
