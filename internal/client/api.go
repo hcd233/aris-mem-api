@@ -2,6 +2,7 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,6 +13,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/hcd233/aris-mem-api/internal/config"
 	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
+	"github.com/samber/lo"
 )
 
 // APIClient represents the HTTP API client
@@ -127,9 +129,15 @@ func (c *APIClient) OAuth2Login(platform string) (*dto.LoginResp, error) {
 
 // OAuth2Callback handles OAuth2 callback with authorization code
 func (c *APIClient) OAuth2Callback(platform, code, state string) (*dto.CallbackRsp, error) {
-	url := fmt.Sprintf("%s/api/v1/oauth2/callback?platform=%s&code=%s&state=%s", c.baseURL, platform, code, state)
+	url := fmt.Sprintf("%s/api/v1/oauth2/callback", c.baseURL)
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	body := lo.Must1(json.Marshal(dto.CallbackReqBody{
+		Platform: platform,
+		Code:     code,
+		State:    state,
+	}))
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +150,7 @@ func (c *APIClient) OAuth2Callback(platform, code, state string) (*dto.CallbackR
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

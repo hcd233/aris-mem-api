@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"strings"
@@ -118,23 +119,28 @@ func (h *ChatHandler) sendMessage(message string) error {
 	baseURL := config.ServerEndpoint
 	url := fmt.Sprintf("%s/api/v1/agent/chat", baseURL)
 
-	// Prepare request body
-	reqBody := map[string]interface{}{
-		"message": message,
+	// Prepare multipart form body
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+
+	if err := writer.WriteField("content", message); err != nil {
+		return err
 	}
-	jsonData, err := json.Marshal(reqBody)
-	if err != nil {
+
+	contentType := writer.FormDataContentType()
+
+	if err := writer.Close(); err != nil {
 		return err
 	}
 
 	// Create request
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(jsonData))
+	req, err := http.NewRequest(http.MethodPost, url, &body)
 	if err != nil {
 		return err
 	}
 
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", h.token))
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", contentType)
 	req.Header.Set("Accept", "text/event-stream")
 
 	// Send request
