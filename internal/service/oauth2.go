@@ -144,9 +144,9 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dt
 	var user *model.User
 	switch req.Body.Platform {
 	case enum.Oauth2PlatformGithub:
-		user, err = s.userDAO.GetByGithubBindID(db, thirdPartyID, []string{"id"})
+		user, err = s.userDAO.Get(db, &model.User{GithubBindID: thirdPartyID}, []string{"id"})
 	case enum.Oauth2PlatformGoogle:
-		user, err = s.userDAO.GetByGoogleBindID(db, thirdPartyID, []string{"id"})
+		user, err = s.userDAO.Get(db, &model.User{GoogleBindID: thirdPartyID}, []string{"id"})
 	default:
 		logger.Error("[Oauth2Service] invalid platform", zap.String("platform", req.Body.Platform))
 		rsp.Error = constant.ErrInternalError
