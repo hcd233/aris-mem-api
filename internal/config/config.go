@@ -159,6 +159,27 @@ var (
 	//	@author centonhuang
 	//	@update 2025-11-11 20:13:39
 	ServerEndpoint string
+
+	// SMTPHost string Email SMTP server host
+	SMTPHost string
+
+	// EmailPort int Email SMTP server port
+	SMTPPort int
+
+	// EmailUsername string Email account username
+	SMTPUsername string
+
+	// EmailPassword string Email account password or app-specific password
+	SMTPPassword string
+
+	// EmailFrom string Sender email address
+	SMTPFrom string
+
+	// EmailFromName string Sender name
+	SMTPFromName string
+
+	// EmailTLS bool Enable TLS for email
+	SMTPTLS bool
 )
 
 func init() {
@@ -231,4 +252,12 @@ func initEnvironment() {
 	JwtRefreshTokenSecret = config.GetString("jwt.refresh.token.secret")
 
 	ServerEndpoint = config.GetString("server.endpoint")
+
+	SMTPHost = config.GetString("smtp.host")
+	SMTPPort = config.GetInt("smtp.port")
+	SMTPUsername = config.GetString("smtp.username")
+	SMTPPassword = config.GetString("smtp.password")
+	SMTPFrom = config.GetString("smtp.from")
+	SMTPFromName = config.GetString("smtp.from.name")
+	SMTPTLS = config.GetBool("smtp.tls")
 }

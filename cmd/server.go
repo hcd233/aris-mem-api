@@ -41,6 +41,7 @@ var startServerCmd = &cobra.Command{
 		database.InitDatabase()
 		cache.InitCache()
 		storage.InitObjectStorage()
+		// smtp.InitSMTPClient()
 		// cron.InitCronJobs()
 
 		app := api.GetFiberApp()
