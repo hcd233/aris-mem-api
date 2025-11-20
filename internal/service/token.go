@@ -8,12 +8,12 @@ import (
 	"errors"
 
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
+	"github.com/hcd233/aris-mem-api/internal/dto"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/database"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/dao"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/model"
 	"github.com/hcd233/aris-mem-api/internal/jwt"
 	"github.com/hcd233/aris-mem-api/internal/logger"
-	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
-	"github.com/hcd233/aris-mem-api/internal/resource/database"
-	"github.com/hcd233/aris-mem-api/internal/resource/database/dao"
-	"github.com/hcd233/aris-mem-api/internal/resource/database/model"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )

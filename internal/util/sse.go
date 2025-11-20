@@ -16,13 +16,12 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/common/model"
+	"github.com/hcd233/aris-mem-api/internal/dto"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/database"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/dao"
+	dbmodel "github.com/hcd233/aris-mem-api/internal/infrastructure/database/model"
 	"github.com/hcd233/aris-mem-api/internal/lock"
 	"github.com/hcd233/aris-mem-api/internal/logger"
-	"github.com/hcd233/aris-mem-api/internal/protocol"
-	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
-	"github.com/hcd233/aris-mem-api/internal/resource/database"
-	"github.com/hcd233/aris-mem-api/internal/resource/database/dao"
-	dbmodel "github.com/hcd233/aris-mem-api/internal/resource/database/model"
 	"github.com/samber/lo"
 	"github.com/valyala/fasthttp"
 	"go.uber.org/zap"
@@ -190,7 +189,7 @@ func WrapErrorSSE(ctx context.Context, err *model.Error) (rsp *huma.StreamRespon
 
 func writeSSEMessageResponse(ctx context.Context, w *bufio.Writer, message adk.Message) {
 	logger := logger.WithCtx(ctx)
-	rsp := &protocol.SSEResponse{
+	rsp := &dto.SSEResponse{
 		DataType: enum.SSEDataTypeMessage,
 		Status:   enum.SSEStatusStreaming,
 		Data:     message,
@@ -203,7 +202,7 @@ func writeSSEMessageResponse(ctx context.Context, w *bufio.Writer, message adk.M
 
 func writeSSEErrorResponse(ctx context.Context, w *bufio.Writer, err *model.Error) {
 	logger := logger.WithCtx(ctx)
-	rsp := &protocol.SSEResponse{
+	rsp := &dto.SSEResponse{
 		DataType: enum.SSEDataTypeError,
 		Status:   enum.SSEStatusError,
 		Data:     &dto.CommonRsp{Error: err},
@@ -216,7 +215,7 @@ func writeSSEErrorResponse(ctx context.Context, w *bufio.Writer, err *model.Erro
 
 func writeSSEHeartBeatResponse(ctx context.Context, w *bufio.Writer, heartBeatCount int) {
 	logger := logger.WithCtx(ctx)
-	rsp := &protocol.SSEResponse{
+	rsp := &dto.SSEResponse{
 		DataType: enum.SSEDataTypeHeartBeat,
 		Status:   enum.SSEStatusStreaming,
 		Data:     strconv.Itoa(heartBeatCount),
@@ -229,7 +228,7 @@ func writeSSEHeartBeatResponse(ctx context.Context, w *bufio.Writer, heartBeatCo
 
 func writeSSENoneResponse(ctx context.Context, w *bufio.Writer, status enum.SSEStatus) {
 	logger := logger.WithCtx(ctx)
-	rsp := &protocol.SSEResponse{
+	rsp := &dto.SSEResponse{
 		DataType: enum.SSEDataTypeNone,
 		Status:   status,
 		Data:     nil,

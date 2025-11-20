@@ -16,7 +16,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/adk"
 	"github.com/hcd233/aris-mem-api/internal/config"
-	"github.com/hcd233/aris-mem-api/internal/protocol"
+	"github.com/hcd233/aris-mem-api/internal/dto"
 	"github.com/samber/lo"
 )
 
@@ -178,7 +178,7 @@ func (h *ChatHandler) renderSSEStream(reader io.Reader) error {
 		// Extract JSON data
 		data := strings.TrimPrefix(line, "data: ")
 
-		var event protocol.SSEResponse
+		var event dto.SSEResponse
 		if err := json.Unmarshal([]byte(data), &event); err != nil {
 			continue
 		}

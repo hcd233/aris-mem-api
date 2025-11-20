@@ -3,7 +3,7 @@ package objdao
 import (
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/config"
-	"github.com/hcd233/aris-mem-api/internal/resource/storage"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/storage"
 )
 
 // createObjectStorageDAO 创建对象存储DAO

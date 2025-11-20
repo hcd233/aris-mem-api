@@ -101,7 +101,7 @@ func (dao *baseDAO[ModelT]) Get(db *gorm.DB, where *ModelT, fields []string) (da
 func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, where *ModelT, fields []string, param *CommonParam) (data []*ModelT, pageInfo *model.PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
-	sql := db.Select(fields).Where(where).Where("deleted_at = 0")
+	sql := db.Model(where).Select(fields).Where(where).Where("deleted_at = 0")
 
 	if param.Query != "" && len(param.QueryFields) > 0 {
 		like := "%" + param.Query + "%"
@@ -125,17 +125,17 @@ func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, where *ModelT, fields []string
 		sql = sql.Order(clause.OrderByColumn{Column: clause.Column{Name: param.SortField}, Desc: param.Sort == enum.SortDesc})
 	}
 
-	err = sql.Limit(limit).Offset(offset).Find(&data).Error
-	if err != nil {
-		return
-	}
-
 	pageInfo = &model.PageInfo{
 		Page:     param.Page,
 		PageSize: param.PageSize,
 	}
 
-	err = db.Model(&data).Count(&pageInfo.Total).Error
+	err = sql.Count(&pageInfo.Total).Error
+	if err != nil {
+		return
+	}
+
+	err = sql.Limit(limit).Offset(offset).Find(&data).Error
 
 	return
 }

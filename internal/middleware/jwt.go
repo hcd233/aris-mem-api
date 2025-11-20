@@ -8,10 +8,10 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/database"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/dao"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/model"
 	"github.com/hcd233/aris-mem-api/internal/jwt"
-	"github.com/hcd233/aris-mem-api/internal/resource/database"
-	"github.com/hcd233/aris-mem-api/internal/resource/database/dao"
-	"github.com/hcd233/aris-mem-api/internal/resource/database/model"
 	"github.com/hcd233/aris-mem-api/internal/util"
 	"github.com/samber/lo"
 )

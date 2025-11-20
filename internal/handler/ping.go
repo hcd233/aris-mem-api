@@ -12,8 +12,7 @@ import (
 	"github.com/danielgtaylor/huma/v2/adapters/humafiber"
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
-	"github.com/hcd233/aris-mem-api/internal/protocol"
-	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
+	"github.com/hcd233/aris-mem-api/internal/dto"
 	"github.com/hcd233/aris-mem-api/internal/util"
 	"github.com/samber/lo"
 	"github.com/valyala/fasthttp"
@@ -24,7 +23,7 @@ import (
 //	author centonhuang
 //	update 2025-01-04 15:52:48
 type PingHandler interface {
-	HandlePing(ctx context.Context, req *dto.EmptyReq) (rsp *protocol.HTTPResponse[*dto.PingResponse], err error)
+	HandlePing(ctx context.Context, req *dto.EmptyReq) (rsp *dto.HTTPResponse[*dto.PingResponse], err error)
 	HandleSSEPing(ctx context.Context, req *dto.EmptyReq) (rsp *huma.StreamResponse, err error)
 }
 
@@ -40,7 +39,7 @@ func NewPingHandler() PingHandler {
 }
 
 // HandlePing 健康检查处理器
-func (h *pingHandler) HandlePing(_ context.Context, _ *dto.EmptyReq) (*protocol.HTTPResponse[*dto.PingResponse], error) {
+func (h *pingHandler) HandlePing(_ context.Context, _ *dto.EmptyReq) (*dto.HTTPResponse[*dto.PingResponse], error) {
 	rsp := &dto.PingResponse{
 		Status: "ok",
 	}
@@ -59,7 +58,7 @@ func (h *pingHandler) HandleSSEPing(_ context.Context, _ *dto.EmptyReq) (rsp *hu
 
 			fCtx.Response().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
 				for i := 0; i < 30; i++ {
-					data := &protocol.SSEResponse{
+					data := &dto.SSEResponse{
 						DataType: enum.SSEDataTypeHeartBeat,
 						Data:     strconv.Itoa(i),
 					}

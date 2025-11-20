@@ -3,8 +3,7 @@ package handler
 import (
 	"context"
 
-	"github.com/hcd233/aris-mem-api/internal/protocol"
-	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
+	"github.com/hcd233/aris-mem-api/internal/dto"
 	"github.com/hcd233/aris-mem-api/internal/service"
 	"github.com/hcd233/aris-mem-api/internal/util"
 )
@@ -14,10 +13,10 @@ import (
 //	author centonhuang
 //	update 2025-01-04 15:56:20
 type TodoItemHandler interface {
-	HandleCreateTodoItems(ctx context.Context, req *dto.CreateTodoItemsReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error)
-	HandleListTodoItems(ctx context.Context, req *dto.ListTodoItemsReq) (*protocol.HTTPResponse[*dto.ListTodoItemsRsp], error)
-	HandleUpdateTodoItem(ctx context.Context, req *dto.UpdateTodoItemReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error)
-	HandleDeleteTodoItem(ctx context.Context, req *dto.DeleteTodoItemReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error)
+	HandleCreateTodoItems(ctx context.Context, req *dto.CreateTodoItemsReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
+	HandleListTodoItems(ctx context.Context, req *dto.ListTodoItemsReq) (*dto.HTTPResponse[*dto.ListTodoItemsRsp], error)
+	HandleUpdateTodoItem(ctx context.Context, req *dto.UpdateTodoItemReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
+	HandleDeleteTodoItem(ctx context.Context, req *dto.DeleteTodoItemReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
 }
 
 type todoItemHandler struct {
@@ -35,18 +34,18 @@ func NewTodoItemHandler() TodoItemHandler {
 	}
 }
 
-func (h *todoItemHandler) HandleCreateTodoItems(ctx context.Context, req *dto.CreateTodoItemsReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error) {
+func (h *todoItemHandler) HandleCreateTodoItems(ctx context.Context, req *dto.CreateTodoItemsReq) (*dto.HTTPResponse[*dto.EmptyRsp], error) {
 	return util.WrapHTTPResponse(h.svc.CreateTodoItems(ctx, req))
 }
 
-func (h *todoItemHandler) HandleListTodoItems(ctx context.Context, req *dto.ListTodoItemsReq) (*protocol.HTTPResponse[*dto.ListTodoItemsRsp], error) {
+func (h *todoItemHandler) HandleListTodoItems(ctx context.Context, req *dto.ListTodoItemsReq) (*dto.HTTPResponse[*dto.ListTodoItemsRsp], error) {
 	return util.WrapHTTPResponse(h.svc.ListTodoItems(ctx, req))
 }
 
-func (h *todoItemHandler) HandleUpdateTodoItem(ctx context.Context, req *dto.UpdateTodoItemReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error) {
+func (h *todoItemHandler) HandleUpdateTodoItem(ctx context.Context, req *dto.UpdateTodoItemReq) (*dto.HTTPResponse[*dto.EmptyRsp], error) {
 	return util.WrapHTTPResponse(h.svc.UpdateTodoItem(ctx, req))
 }
 
-func (h *todoItemHandler) HandleDeleteTodoItem(ctx context.Context, req *dto.DeleteTodoItemReq) (*protocol.HTTPResponse[*dto.EmptyRsp], error) {
+func (h *todoItemHandler) HandleDeleteTodoItem(ctx context.Context, req *dto.DeleteTodoItemReq) (*dto.HTTPResponse[*dto.EmptyRsp], error) {
 	return util.WrapHTTPResponse(h.svc.DeleteTodoItem(ctx, req))
 }

@@ -3,8 +3,7 @@ package handler
 import (
 	"context"
 
-	"github.com/hcd233/aris-mem-api/internal/protocol"
-	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
+	"github.com/hcd233/aris-mem-api/internal/dto"
 	"github.com/hcd233/aris-mem-api/internal/service"
 	"github.com/hcd233/aris-mem-api/internal/util"
 )
@@ -14,7 +13,7 @@ import (
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 type TokenHandler interface {
-	HandleRefreshToken(ctx context.Context, req *dto.RefreshTokenReq) (*protocol.HTTPResponse[*dto.RefreshTokenRsp], error)
+	HandleRefreshToken(ctx context.Context, req *dto.RefreshTokenReq) (*dto.HTTPResponse[*dto.RefreshTokenRsp], error)
 }
 
 type tokenHandler struct {
@@ -37,10 +36,10 @@ func NewTokenHandler() TokenHandler {
 //	@receiver h *tokenHandler
 //	@param ctx context.Context
 //	@param req *dto.RefreshTokenReq
-//	@return *protocol.HTTPResponse[*dto.RefreshTokenRsp]
+//	@return *dto.HTTPResponse[*dto.RefreshTokenRsp]
 //	@return error
 //	@author centonhuang
 //	@update 2025-11-11 04:58:25
-func (h *tokenHandler) HandleRefreshToken(ctx context.Context, req *dto.RefreshTokenReq) (*protocol.HTTPResponse[*dto.RefreshTokenRsp], error) {
+func (h *tokenHandler) HandleRefreshToken(ctx context.Context, req *dto.RefreshTokenReq) (*dto.HTTPResponse[*dto.RefreshTokenRsp], error) {
 	return util.WrapHTTPResponse(h.svc.RefreshToken(ctx, req))
 }

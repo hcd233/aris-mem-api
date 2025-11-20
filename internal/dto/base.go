@@ -1,4 +1,4 @@
-package protocol
+package dto
 
 import "github.com/hcd233/aris-mem-api/internal/common/enum"
 

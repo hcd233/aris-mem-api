@@ -8,11 +8,11 @@ import (
 
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
+	"github.com/hcd233/aris-mem-api/internal/dto"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/database"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/dao"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/model"
 	"github.com/hcd233/aris-mem-api/internal/logger"
-	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
-	"github.com/hcd233/aris-mem-api/internal/resource/database"
-	"github.com/hcd233/aris-mem-api/internal/resource/database/dao"
-	"github.com/hcd233/aris-mem-api/internal/resource/database/model"
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
@@ -116,7 +116,7 @@ func (s *todoItemService) ListTodoItems(ctx context.Context, req *dto.ListTodoIt
 		},
 	}
 
-	todoItems, pageInfo, err := s.todoItemDAO.PaginateByUserID(db, userID, []string{"id", "created_at", "updated_at", "name", "summary", "content", "status", "priority"}, commonParam)
+	todoItems, pageInfo, err := s.todoItemDAO.Paginate(db, &model.TodoItem{UserID: userID, Status: req.Status, Priority: req.Priority}, []string{"id", "created_at", "updated_at", "name", "summary", "content", "status", "priority"}, commonParam)
 	if err != nil {
 		logger.Error("[TodoItemService] failed to list todo items", zap.Error(err))
 		rsp.Error = constant.ErrInternalError

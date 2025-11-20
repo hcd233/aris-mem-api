@@ -9,8 +9,8 @@ import (
 	"github.com/cloudwego/eino/components/tool/utils"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/common/model"
+	"github.com/hcd233/aris-mem-api/internal/dto"
 	"github.com/hcd233/aris-mem-api/internal/logger"
-	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
@@ -35,11 +35,13 @@ type ListTodoItemsHandler func(ctx context.Context, req *dto.ListTodoItemsReq) (
 //	@author centonhuang
 //	@update 2025-11-11 15:27:24
 type ListTodoItemsInput struct {
-	Page      int       `json:"page" jsonschema:"description=分页，默认从1开始"`
-	PageSize  int       `json:"pageSize" jsonschema:"description=每页大小，用户不指定默认10条，最大50条"`
-	Query     string    `json:"query" jsonschema:"description=查询关键词，用户不指定默认为空"`
-	Sort      enum.Sort `json:"sort" jsonschema:"description=排序方式，用户不指定默认升序"`
-	SortField string    `json:"sortField" jsonschema:"description=排序字段，用户不指定默认id,enum=id,enum=createdAt,enum=updatedAt"`
+	Page      int                   `json:"page" jsonschema:"description=分页，默认从1开始"`
+	PageSize  int                   `json:"pageSize" jsonschema:"description=每页大小，用户不指定默认10条，最大50条"`
+	Query     string                `json:"query" jsonschema:"description=查询关键词，用户不指定默认为空"`
+	Sort      enum.Sort             `json:"sort" jsonschema:"description=排序方式，用户不指定默认升序"`
+	SortField string                `json:"sortField" jsonschema:"description=排序字段，用户不指定默认id,enum=id,enum=createdAt,enum=updatedAt,enum=priority"`
+	Priority  enum.TodoItemPriority `json:"priority" jsonschema:"description=优先级过滤，用户不指定默认全部,enum=low,enum=medium,enum=high,enum=urgent"`
+	Status    enum.TodoItemStatus   `json:"status" jsonschema:"description=状态过滤，用户不指定默认全部,enum=pending,enum=completed,enum=cancelled"`
 }
 
 func (l *ListTodoItemsInput) toDto() *dto.ListTodoItemsReq {
@@ -57,6 +59,10 @@ func (l *ListTodoItemsInput) toDto() *dto.ListTodoItemsReq {
 			},
 		},
 		SortField: l.SortField,
+		TodoItemFilterParam: dto.TodoItemFilterParam{
+			Priority: l.Priority,
+			Status:   l.Status,
+		},
 	}
 }
 

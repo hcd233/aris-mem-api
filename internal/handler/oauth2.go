@@ -4,8 +4,7 @@ import (
 	"context"
 
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
-	"github.com/hcd233/aris-mem-api/internal/protocol"
-	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
+	"github.com/hcd233/aris-mem-api/internal/dto"
 	"github.com/hcd233/aris-mem-api/internal/service"
 	"github.com/hcd233/aris-mem-api/internal/util"
 )
@@ -15,8 +14,8 @@ import (
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 type Oauth2Handler interface {
-	HandleLogin(ctx context.Context, req *dto.LoginReq) (*protocol.HTTPResponse[*dto.LoginResp], error)
-	HandleCallback(ctx context.Context, req *dto.CallbackReq) (*protocol.HTTPResponse[*dto.CallbackRsp], error)
+	HandleLogin(ctx context.Context, req *dto.LoginReq) (*dto.HTTPResponse[*dto.LoginResp], error)
+	HandleCallback(ctx context.Context, req *dto.CallbackReq) (*dto.HTTPResponse[*dto.CallbackRsp], error)
 }
 
 type oauth2Handler struct{}
@@ -35,11 +34,11 @@ func NewOauth2Handler() Oauth2Handler {
 //	@receiver h *oauth2Handler
 //	@param ctx context.Context
 //	@param req *dto.LoginReq
-//	@return *protocol.HTTPResponse[*dto.LoginResp]
+//	@return *dto.HTTPResponse[*dto.LoginResp]
 //	@return error
 //	@author centonhuang
 //	@update 2025-11-11 04:57:58
-func (h *oauth2Handler) HandleLogin(ctx context.Context, req *dto.LoginReq) (*protocol.HTTPResponse[*dto.LoginResp], error) {
+func (h *oauth2Handler) HandleLogin(ctx context.Context, req *dto.LoginReq) (*dto.HTTPResponse[*dto.LoginResp], error) {
 	return util.WrapHTTPResponse(h.getService(req.Platform).Login(ctx, req))
 }
 
@@ -48,11 +47,11 @@ func (h *oauth2Handler) HandleLogin(ctx context.Context, req *dto.LoginReq) (*pr
 //	@receiver h *oauth2Handler
 //	@param ctx context.Context
 //	@param req *dto.CallbackReq
-//	@return *protocol.HTTPResponse[*dto.CallbackRsp]
+//	@return *dto.HTTPResponse[*dto.CallbackRsp]
 //	@return error
 //	@author centonhuang
 //	@update 2025-11-11 04:58:11
-func (h *oauth2Handler) HandleCallback(ctx context.Context, req *dto.CallbackReq) (*protocol.HTTPResponse[*dto.CallbackRsp], error) {
+func (h *oauth2Handler) HandleCallback(ctx context.Context, req *dto.CallbackReq) (*dto.HTTPResponse[*dto.CallbackRsp], error) {
 	return util.WrapHTTPResponse(h.getService(req.Body.Platform).Callback(ctx, req))
 }
 

@@ -12,7 +12,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/hcd233/aris-mem-api/internal/config"
-	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
+	"github.com/hcd233/aris-mem-api/internal/dto"
 	"github.com/samber/lo"
 )
 

@@ -6,8 +6,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/hcd233/aris-mem-api/internal/common/model"
-	"github.com/hcd233/aris-mem-api/internal/protocol"
-	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
+	"github.com/hcd233/aris-mem-api/internal/dto"
 	"github.com/samber/lo"
 )
 
@@ -15,12 +14,12 @@ import (
 //
 //	@param rsp rspT
 //	@param err error
-//	@return *protocol.HTTPResponse[rspT]
+//	@return *dto.HTTPResponse[rspT]
 //	@return error
 //	@author centonhuang
 //	@update 2025-11-11 04:58:31
-func WrapHTTPResponse[rspT any](rsp rspT, err error) (*protocol.HTTPResponse[rspT], error) {
-	return &protocol.HTTPResponse[rspT]{
+func WrapHTTPResponse[rspT any](rsp rspT, err error) (*dto.HTTPResponse[rspT], error) {
+	return &dto.HTTPResponse[rspT]{
 		Body: rsp,
 	}, err
 }

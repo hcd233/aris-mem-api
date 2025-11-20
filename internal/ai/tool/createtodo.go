@@ -6,8 +6,8 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
+	"github.com/hcd233/aris-mem-api/internal/dto"
 	"github.com/hcd233/aris-mem-api/internal/logger"
-	"github.com/hcd233/aris-mem-api/internal/protocol/dto"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 )

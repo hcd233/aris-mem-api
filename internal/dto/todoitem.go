@@ -26,6 +26,15 @@ type UpdatedTodoItem struct {
 	TodoItem
 }
 
+// TodoItemFilterParam 待办事项过滤参数
+//
+//	@author centonhuang
+//	@update 2025-11-20 15:10:52
+type TodoItemFilterParam struct {
+	Priority enum.TodoItemPriority `query:"priority" enum:"low,medium,high,urgent" doc:"Priority filter"`
+	Status   enum.TodoItemStatus   `query:"status" enum:"pending,completed,cancelled" doc:"Status filter"`
+}
+
 // DatailedTodoItem 详细待办事项实体
 //
 //	@author centonhuang
@@ -61,6 +70,7 @@ type CreateTodoItemsReqBody struct {
 type ListTodoItemsReq struct {
 	model.CommonParam
 	SortField string `query:"sortField" enum:"id,createdAt,updatedAt" doc:"Sort field"`
+	TodoItemFilterParam
 }
 
 // ListTodoItemsRsp 获取待办事项列表响应

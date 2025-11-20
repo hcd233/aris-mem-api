@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/cloudwego/eino/compose"
-	"github.com/hcd233/aris-mem-api/internal/resource/cache"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/cache"
 	"github.com/redis/go-redis/v9"
 )
 

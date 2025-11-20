@@ -30,10 +30,6 @@ const (
 	// TodoItemStatusCancelled TodoItemStatus 已取消状态
 	//	@update 2025-11-07 01:10:35
 	TodoItemStatusCancelled TodoItemStatus = "cancelled"
-
-	// TodoItemStatusTimeout TodoItemStatus 超时状态
-	//	@update 2025-11-07 01:10:48
-	TodoItemStatusTimeout TodoItemStatus = "timeout"
 )
 
 const (
