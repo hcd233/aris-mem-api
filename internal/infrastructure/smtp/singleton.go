@@ -10,15 +10,15 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-var service *Client
+var client *Client
 
-// GetEmailService returns the email client instance
+// GetEmailClient returns the email client instance
 //
 //	return *Client
 //	author centonhuang
 //	update 2025-11-20 00:00:00
-func GetEmailService() *Client {
-	return service
+func GetEmailClient() *Client {
+	return client
 }
 
 // InitSMTPClient initializes the email service
@@ -36,13 +36,13 @@ func InitSMTPClient() {
 		}
 	}
 
-	service = &Client{
+	client = &Client{
 		from:     config.SMTPFrom,
 		fromName: config.SMTPFromName,
 		dialer:   dialer,
 	}
 
-	service.Ping()
+	client.Ping()
 
 	logger.Logger().Info("[SMTP] Connected to SMTP server", zap.String("host", config.SMTPHost), zap.Int("port", config.SMTPPort), zap.String("username", config.SMTPUsername), zap.Bool("tls", config.SMTPTLS), zap.String("from", config.SMTPFrom))
 }
