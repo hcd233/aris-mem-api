@@ -42,6 +42,12 @@ func (dao *ArticleDAO) Paginate(db *gorm.DB, where *dbmodel.Article, fields []st
 			Where("tags.name = ? AND tags.deleted_at = 0 AND article_tags.deleted_at = 0", tag)
 	}
 
+	delete(param.FieldValueMap, "tag")
+
+	for field, value := range param.FieldValueMap {
+		sql = sql.Where("articles." + field + " = ?", value)
+	}
+
 	// 模糊搜索
 	if param.Query != "" && len(param.QueryFields) > 0 {
 		like := "%" + param.Query + "%"

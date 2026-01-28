@@ -147,6 +147,10 @@ func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, where *ModelT, fields []string
 
 	sql := db.Model(where).Select(fields).Where(where).Where("deleted_at = 0")
 
+	for field, value := range param.FieldValueMap {
+		sql = sql.Where(field + " = ?", value)
+	}
+
 	if param.Query != "" && len(param.QueryFields) > 0 {
 		like := "%" + param.Query + "%"
 		expressions := make([]clause.Expression, 0, len(param.QueryFields))

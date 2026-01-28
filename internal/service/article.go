@@ -146,6 +146,17 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 	logger := logger.WithCtx(ctx)
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
+	tag, err := s.tagDAO.Get(db, &dbmodel.Tag{Name: req.TagName}, []string{"id"})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			rsp.Error = constant.ErrDataNotExists
+			return rsp, nil
+		}
+		logger.Error("[ArticleService] failed to get tag", zap.Error(err), zap.String("tagName", req.TagName))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
 	commonParam := &dao.CommonParam{
 		PageParam: dao.PageParam{
 			Page:     req.Page,
@@ -161,7 +172,8 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		},
 		FilterParam: dao.FilterParam{
 			FieldValueMap: map[string]any{
-				"tag": req.Tag,
+				"tag": tag.Name,
+				"status": enum.ArticleStatusPublished,
 			},
 		},
 	}

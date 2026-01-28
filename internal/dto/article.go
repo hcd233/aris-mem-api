@@ -73,7 +73,7 @@ type CreateArticleRsp struct {
 type ListArticlesReq struct {
 	model.CommonParam
 	SortField string `query:"sortField" enum:"id,createdAt,updatedAt,name" doc:"Sort field"`
-	Tag string `query:"tagName" doc:"Filter by tag name"`
+	TagName string `query:"tagName" doc:"Filter by tag name"`
 }
 
 // ListArticlesRsp 获取文章列表响应
