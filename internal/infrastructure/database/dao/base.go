@@ -42,6 +42,23 @@ func (dao *baseDAO[ModelT]) BatchCreate(db *gorm.DB, data []*ModelT) (err error)
 	return
 }
 
+// BatchGetByIDs 根据ID列表批量查询数据
+//
+//	param db *gorm.DB
+//	param ids []uint
+//	param fields []string
+//	return data []*ModelT
+//	return err error
+//	author centonhuang
+//	update 2026-01-29 10:00:00
+func (dao *baseDAO[ModelT]) BatchGetByIDs(db *gorm.DB, ids []uint, fields []string) (data []*ModelT, err error) {
+	if len(ids) == 0 {
+		return []*ModelT{}, nil
+	}
+	err = db.Select(fields).Where("id IN ?", ids).Where("deleted_at = 0").Find(&data).Error
+	return
+}
+
 // Update 使用ID更新数据
 //
 //	param dao *BaseDAO[T]
@@ -89,6 +106,33 @@ func (dao *baseDAO[ModelT]) BatchDelete(db *gorm.DB, data *[]ModelT) (err error)
 //	@update 2025-11-14 16:05:03
 func (dao *baseDAO[ModelT]) Get(db *gorm.DB, where *ModelT, fields []string) (data *ModelT, err error) {
 	err = db.Select(fields).Where(where).Where("deleted_at = 0").First(&data).Error
+	return
+}
+
+// GetOrCreate 获取或创建数据
+//
+//	param db *gorm.DB
+//	param where *ModelT
+//	param fields []string
+//	return data *ModelT
+//	return err error
+//	author centonhuang
+//	update 2026-01-29 10:00:00
+func (dao *baseDAO[ModelT]) GetOrCreate(db *gorm.DB, where *ModelT, createData *ModelT, fields []string) (data *ModelT, err error) {
+	// 先尝试获取
+	data, err = dao.Get(db, where, fields)
+	if err == nil {
+		return
+	}
+
+	// 如果不存在则创建
+	if err == gorm.ErrRecordNotFound {
+		if err = db.Create(createData).Error; err != nil {
+			return nil, err
+		}
+		return createData, nil
+	}
+
 	return
 }
 

@@ -1,10 +1,12 @@
 package dao
 
 var (
-	userDAOSingleton     *UserDAO
-	todoItemDAOSingleton *TodoItemDAO
-	dialogDAOSingleton   *DialogDAO
-	tagDAOSingleton      *TagDAO
+	userDAOSingleton       *UserDAO
+	todoItemDAOSingleton   *TodoItemDAO
+	dialogDAOSingleton     *DialogDAO
+	tagDAOSingleton        *TagDAO
+	articleDAOSingleton    *ArticleDAO
+	articleTagDAOSingleton *ArticleTagDAO
 )
 
 func init() {
@@ -12,6 +14,8 @@ func init() {
 	todoItemDAOSingleton = &TodoItemDAO{}
 	dialogDAOSingleton = &DialogDAO{}
 	tagDAOSingleton = &TagDAO{}
+	articleDAOSingleton = &ArticleDAO{}
+	articleTagDAOSingleton = &ArticleTagDAO{}
 }
 
 // GetUserDAO 获取用户DAO
@@ -48,4 +52,22 @@ func GetDialogDAO() *DialogDAO {
 //	update 2026-01-29 10:00:00
 func GetTagDAO() *TagDAO {
 	return tagDAOSingleton
+}
+
+// GetArticleDAO 获取文章DAO
+//
+//	return *ArticleDAO
+//	author centonhuang
+//	update 2026-01-29 10:00:00
+func GetArticleDAO() *ArticleDAO {
+	return articleDAOSingleton
+}
+
+// GetArticleTagDAO 获取文章标签关联DAO
+//
+//	return *ArticleTagDAO
+//	author centonhuang
+//	update 2026-01-29 10:00:00
+func GetArticleTagDAO() *ArticleTagDAO {
+	return articleTagDAOSingleton
 }

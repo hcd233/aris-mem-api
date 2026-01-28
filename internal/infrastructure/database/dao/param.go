@@ -39,6 +39,13 @@ type SortParam struct {
 	SortField string    `json:"sortField"`
 }
 
+// FilterParam 过滤参数
+//	@author centonhuang 
+//	@update 2026-01-29 01:15:15 
+type FilterParam struct {
+	FieldValueMap map[string]any
+}
+
 // CommonParam 分页查询参数
 //
 //	@author centonhuang
@@ -47,4 +54,4 @@ type CommonParam struct {
 	PageParam
 	QueryParam
 	SortParam
-}
+	FilterParam}

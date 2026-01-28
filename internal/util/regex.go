@@ -2,13 +2,20 @@ package util
 
 import "regexp"
 
-var tagRegex = regexp.MustCompile(`#(\w+)`)
+var tagRegex = regexp.MustCompile(`#([\w\u4e00-\u9fa5]+)`)
 
 // ExtractTags 提取内容中的标签
-//	@param content 
-//	@return []string 
-//	@author centonhuang 
-//	@update 2026-01-28 21:51:07 
+//	@param content
+//	@return []string
+//	@author centonhuang
+//	@update 2026-01-28 21:51:07
 func ExtractTags(content string) []string {
-	return tagRegex.FindAllString(content, -1)
+	matches := tagRegex.FindAllStringSubmatch(content, -1)
+	tags := make([]string, 0, len(matches))
+	for _, match := range matches {
+		if len(match) > 1 {
+			tags = append(tags, match[1])
+		}
+	}
+	return tags
 }
