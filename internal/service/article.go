@@ -88,7 +88,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 
 		// 处理标签
 		if len(tagNames) > 0 {
-			tags := make([] *dbmodel.Tag, len(tagNames))
+			tags := make([]*dbmodel.Tag, 0, len(tagNames))
 			for _, tagName := range tagNames {
 				tag := &dbmodel.Tag{Name: tagName}
 				tag, err := s.tagDAO.GetOrCreate(tx, tag, tag, []string{"id"})
@@ -97,10 +97,10 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 				}
 				tags = append(tags, tag)
 			}
-			err := s.articleTagDAO.BatchCreate(tx, lo.Map(tags, func(item *dbmodel.Tag, _ int) *dbmodel.ArticleTag  {
+			err := s.articleTagDAO.BatchCreate(tx, lo.Map(tags, func(item *dbmodel.Tag, _ int) *dbmodel.ArticleTag {
 				return &dbmodel.ArticleTag{
 					ArticleID: article.ID,
-					TagID: item.ID,
+					TagID:     item.ID,
 				}
 			}))
 			if err != nil {
@@ -281,7 +281,7 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 			// 提取新标签
 			tagNames := util.ExtractTags(req.Body.Content)
 			if len(tagNames) > 0 {
-				tags := make([] *dbmodel.Tag, len(tagNames))
+				tags := make([]*dbmodel.Tag, 0, len(tagNames))
 				for _, tagName := range tagNames {
 					tag := &dbmodel.Tag{Name: tagName}
 					tag, err := s.tagDAO.GetOrCreate(tx, tag, tag, []string{"id"})
