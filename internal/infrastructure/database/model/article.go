@@ -1,6 +1,8 @@
 package model
 
 import (
+	"time"
+
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
 )
 
@@ -15,6 +17,9 @@ type Article struct {
 	ID             uint              `json:"id" gorm:"column:id;primary_key;auto_increment;comment:用户ID"`
 	UserID         uint              `json:"user_id" gorm:"column:user_id;not null;comment:用户ID"`
 	Title          string            `json:"title" gorm:"column:title;not null;comment:标题"`
+	Slug           string            `json:"slug" gorm:"column:slug;not null;comment:slug"`
 	Content        string            `json:"content" gorm:"column:content;not null;comment:内容"`
+	Tags           string          `json:"tags" gorm:"column:tags;not null;serializer:json;comment:标签"`
+	PublishedAt    time.Time         `json:"published_at" gorm:"column:published_at;not null;comment:发布时间"`
 	Status         enum.ArticleStatus `json:"status" gorm:"column:status;not null;comment:状态"`
 }
