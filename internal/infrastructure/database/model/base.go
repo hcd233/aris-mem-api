@@ -22,4 +22,7 @@ var Models = []interface{}{
 	&User{},
 	&TodoItem{},
 	&Dialog{},
+	&Tag{},
+	&Article{},
+	&ArticleTag{},
 }
