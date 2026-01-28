@@ -146,7 +146,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 	logger := logger.WithCtx(ctx)
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	tag, err := s.tagDAO.Get(db, &dbmodel.Tag{Name: req.TagName}, []string{"id"})
+	_, err := s.tagDAO.Get(db, &dbmodel.Tag{Name: req.TagName}, []string{"id"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			rsp.Error = constant.ErrDataNotExists
@@ -172,7 +172,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		},
 		FilterParam: dao.FilterParam{
 			FieldValueMap: map[string]any{
-				"tag": tag.Name,
+				"tag": req.TagName,
 				"status": enum.ArticleStatusPublished,
 			},
 		},
