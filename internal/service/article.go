@@ -290,10 +290,10 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 					}
 					tags = append(tags, tag)
 				}
-				err := s.articleTagDAO.BatchCreate(tx, lo.Map(tags, func(item *dbmodel.Tag, _ int) *dbmodel.ArticleTag  {
+				err := s.articleTagDAO.BatchCreate(tx, lo.Map(tags, func(item *dbmodel.Tag, _ int) *dbmodel.ArticleTag {
 					return &dbmodel.ArticleTag{
-						ArticleID: article.ID,
-						TagID: item.ID,
+						ArticleID: req.Body.ID,
+						TagID:     item.ID,
 					}
 				}))
 				if err != nil {
