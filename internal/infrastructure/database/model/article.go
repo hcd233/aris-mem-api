@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/cloudwego/eino/schema"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
 )
 
@@ -9,8 +8,8 @@ import (
 //
 //	author centonhuang
 //	update 2025-11-13 19:10:00
-//	@author centonhuang 
-//	@update 2026-01-28 21:18:34 
+//	@author centonhuang
+//	@update 2026-01-28 21:18:34
 type Article struct {
 	BaseModel
 	ID             uint              `json:"id" gorm:"column:id;primary_key;auto_increment;comment:用户ID"`
