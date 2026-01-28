@@ -47,6 +47,12 @@ func GenerateSlug(s string) string {
 			if len(py) > 0 {
 				parts = append(parts, py[0])
 			}
+		} else if unicode.IsDigit(r) {
+			if len(buffer) > 0 {
+				parts = append(parts, strings.ToLower(string(buffer)))
+				buffer = buffer[:0]
+			}
+			parts = append(parts, string(r))
 		}
 		// Ignore all other characters (special symbols, spaces, etc.)
 	}
