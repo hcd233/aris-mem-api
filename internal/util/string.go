@@ -33,7 +33,7 @@ func GenerateSlug(s string) string {
 	a := pinyin.NewArgs()
 	
 	for _, r := range s {
-		if unicode.IsLetter(r) && r < 128 { // ASCII letter (English)
+		if (unicode.IsLetter(r) || unicode.IsDigit(r)) && r < 128 {  // ASCII letter (English)
 			buffer = append(buffer, r)
 		} else if unicode.Is(unicode.Han, r) { // Chinese character
 			// Flush buffer if it contains English letters
@@ -47,12 +47,6 @@ func GenerateSlug(s string) string {
 			if len(py) > 0 {
 				parts = append(parts, py[0])
 			}
-		} else if unicode.IsDigit(r) {
-			if len(buffer) > 0 {
-				parts = append(parts, strings.ToLower(string(buffer)))
-				buffer = buffer[:0]
-			}
-			parts = append(parts, string(r))
 		}
 		// Ignore all other characters (special symbols, spaces, etc.)
 	}
