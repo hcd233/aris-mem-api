@@ -2,7 +2,7 @@ package util
 
 import "regexp"
 
-var tagRegex = regexp.MustCompile(`#([\w\u4e00-\u9fa5]+)`)
+var tagRegex = regexp.MustCompile(`#([\p{L}\p{N}_]+)`)
 
 // ExtractTags 提取内容中的标签
 //	@param content
