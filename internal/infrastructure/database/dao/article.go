@@ -4,6 +4,7 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/common/model"
 	dbmodel "github.com/hcd233/aris-mem-api/internal/infrastructure/database/model"
+	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -32,7 +33,9 @@ func (dao *ArticleDAO) Paginate(db *gorm.DB, where *dbmodel.Article, fields []st
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	// 构建基础查询
-	sql := db.Model(where).Select(fields).Where(where).Where("articles.deleted_at = 0")
+	sql := db.Model(where).Select(lo.Map(fields, func (item string, _ int) string {
+		return "articles."+item
+	})).Where(where).Where("articles.deleted_at = 0")
 
 	tag, ok := param.FieldValueMap["tag"].(string)
 	// 如果有标签过滤，联表查询
