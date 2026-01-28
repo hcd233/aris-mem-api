@@ -19,7 +19,6 @@ type Article struct {
 	Title          string            `json:"title" gorm:"column:title;not null;comment:标题"`
 	Slug           string            `json:"slug" gorm:"column:slug;not null;comment:slug"`
 	Content        string            `json:"content" gorm:"column:content;not null;comment:内容"`
-	Tags           string          `json:"tags" gorm:"column:tags;not null;serializer:json;comment:标签"`
 	PublishedAt    time.Time         `json:"published_at" gorm:"column:published_at;not null;comment:发布时间"`
 	Status         enum.ArticleStatus `json:"status" gorm:"column:status;not null;comment:状态"`
 }

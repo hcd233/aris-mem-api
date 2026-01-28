@@ -4,12 +4,14 @@ var (
 	userDAOSingleton     *UserDAO
 	todoItemDAOSingleton *TodoItemDAO
 	dialogDAOSingleton   *DialogDAO
+	tagDAOSingleton      *TagDAO
 )
 
 func init() {
 	userDAOSingleton = &UserDAO{}
 	todoItemDAOSingleton = &TodoItemDAO{}
 	dialogDAOSingleton = &DialogDAO{}
+	tagDAOSingleton = &TagDAO{}
 }
 
 // GetUserDAO 获取用户DAO
@@ -37,4 +39,13 @@ func GetTodoItemDAO() *TodoItemDAO {
 //	update 2025-11-14 16:07:18
 func GetDialogDAO() *DialogDAO {
 	return dialogDAOSingleton
+}
+
+// GetTagDAO 获取标签DAO
+//
+//	return *TagDAO
+//	author centonhuang
+//	update 2026-01-29 10:00:00
+func GetTagDAO() *TagDAO {
+	return tagDAOSingleton
 }

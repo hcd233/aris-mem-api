@@ -59,4 +59,7 @@ func RegisterAPIRouter() {
 
 	agentGroup := huma.NewGroup(v1Group, "/agent")
 	initAgentRouter(agentGroup)
+
+	tagGroup := huma.NewGroup(v1Group, "/tag")
+	initTagRouter(tagGroup)
 }
