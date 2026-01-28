@@ -260,7 +260,7 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 		}
 	}
 
-	if !hasNonZeroValue(updateFields) {
+	if !util.HasNonZeroValue(updateFields) {
 		rsp.Error = constant.ErrBadRequest
 		return rsp, nil
 	}

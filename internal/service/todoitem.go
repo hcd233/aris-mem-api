@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"reflect"
 	"time"
 
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
@@ -13,6 +12,7 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/dao"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/model"
 	"github.com/hcd233/aris-mem-api/internal/logger"
+	"github.com/hcd233/aris-mem-api/internal/util"
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
@@ -186,7 +186,7 @@ func (s *todoItemService) UpdateTodoItem(ctx context.Context, req *dto.UpdateTod
 		"status":   todoItem.Status,
 	}
 
-	if !hasNonZeroValue(updateFields) {
+	if !util.HasNonZeroValue(updateFields) {
 		rsp.Error = constant.ErrBadRequest
 		return rsp, nil
 	}
@@ -242,13 +242,4 @@ func (s *todoItemService) DeleteTodoItem(ctx context.Context, req *dto.DeleteTod
 	}
 
 	return rsp, nil
-}
-
-func hasNonZeroValue(fields map[string]interface{}) bool {
-	for _, value := range fields {
-		if !reflect.ValueOf(value).IsZero() {
-			return true
-		}
-	}
-	return false
 }
