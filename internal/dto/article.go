@@ -34,9 +34,9 @@ type ListedArticle struct {
 	ID          uint               `json:"id" doc:"ID of the article"`
 	Slug        string             `json:"slug" doc:"Slug of the article"`
 	Title       string             `json:"title" doc:"Title of the article"`
-	CreatedAt   time.Time          `json:"created_at" doc:"Created time of the article"`
-	UpdatedAt   time.Time          `json:"updated_at" doc:"Updated time of the article"`
-	PublishedAt time.Time          `json:"published_at" doc:"Published time of the article"`
+	CreatedAt   time.Time          `json:"createdAt" doc:"Created time of the article"`
+	UpdatedAt   time.Time          `json:"updatedAt" doc:"Updated time of the article"`
+	PublishedAt time.Time          `json:"publishedAt" doc:"Published time of the article"`
 }
 
 // DetailedArticle 详细文章实体
@@ -46,9 +46,9 @@ type ListedArticle struct {
 type DetailedArticle struct {
 	ID          uint               `json:"id" doc:"ID of the article"`
 	Slug        string             `json:"slug" doc:"Slug of the article"`
-	CreatedAt   time.Time          `json:"created_at" doc:"Created time of the article"`
-	UpdatedAt   time.Time          `json:"updated_at" doc:"Updated time of the article"`
-	PublishedAt time.Time          `json:"published_at" doc:"Published time of the article"`
+	CreatedAt   time.Time          `json:"createdAt" doc:"Created time of the article"`
+	UpdatedAt   time.Time          `json:"updatedAt" doc:"Updated time of the article"`
+	PublishedAt time.Time          `json:"publishedAt" doc:"Published time of the article"`
 	Status      enum.ArticleStatus `json:"status" doc:"Status of the article"`
 	Tags        []string           `json:"tags" doc:"Tags of the article"`
 	Article
