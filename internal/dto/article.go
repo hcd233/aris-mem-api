@@ -26,10 +26,23 @@ type UpdatedArticle struct {
 	Article
 }
 
-// DetailedArticle 详细文章实体
+// ListedArticle 详细文章实体
 //
 //	@author centonhuang
 //	@update 2026-01-28 21:56:04
+type ListedArticle struct {
+	ID          uint               `json:"id" doc:"ID of the article"`
+	Slug        string             `json:"slug" doc:"Slug of the article"`
+	Title       string             `json:"title" doc:"Title of the article"`
+	CreatedAt   time.Time          `json:"created_at" doc:"Created time of the article"`
+	UpdatedAt   time.Time          `json:"updated_at" doc:"Updated time of the article"`
+	PublishedAt time.Time          `json:"published_at" doc:"Published time of the article"`
+}
+
+// DetailedArticle 详细文章实体
+//
+//	@author centonhuang 
+//	@update 2026-01-29 11:00:50 
 type DetailedArticle struct {
 	ID          uint               `json:"id" doc:"ID of the article"`
 	Slug        string             `json:"slug" doc:"Slug of the article"`
@@ -57,15 +70,6 @@ type CreateArticleReqBody struct {
 	Article
 }
 
-// CreateArticleRsp 创建文章响应
-//
-//	@author centonhuang
-//	@update 2026-01-29 10:00:00
-type CreateArticleRsp struct {
-	CommonRsp
-	Article *DetailedArticle `json:"article,omitempty" doc:"Created article"`
-}
-
 // ListArticlesReq 获取文章列表请求
 //
 //	@author centonhuang
@@ -82,7 +86,7 @@ type ListArticlesReq struct {
 //	@update 2026-01-29 10:00:00
 type ListArticlesRsp struct {
 	CommonRsp
-	Articles []*DetailedArticle `json:"articles" doc:"Articles to list"`
+	Articles []*ListedArticle `json:"articles" doc:"Articles to list"`
 	PageInfo *model.PageInfo    `json:"pageInfo,omitempty" doc:"Page info"`
 }
 
@@ -108,4 +112,21 @@ type UpdateArticleReqBody struct {
 //	@update 2026-01-29 10:00:00
 type DeleteArticleReq struct {
 	ID uint `json:"id" query:"id" required:"true" minimum:"1" doc:"Unique identifier for the article"`
+}
+
+// GetArticleReq 通过 slug 获取文章详情请求
+//
+//	@author centonhuang
+//	@update 2026-01-29 11:30:00
+type GetArticleReq struct {
+	Slug string `json:"slug" query:"slug" required:"true" doc:"Unique slug of the article"`
+}
+
+// GetArticleRsp 通过 slug 获取文章详情响应
+//
+//	@author centonhuang
+//	@update 2026-01-29 11:30:00
+type GetArticleRsp struct {
+	CommonRsp
+	Article *DetailedArticle `json:"article" doc:"Detailed article information"`
 }

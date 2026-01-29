@@ -13,10 +13,11 @@ import (
 //	author centonhuang
 //	update 2026-01-29 10:00:00
 type ArticleHandler interface {
-	HandleCreateArticle(ctx context.Context, req *dto.CreateArticleReq) (*dto.HTTPResponse[*dto.CreateArticleRsp], error)
+	HandleCreateArticle(ctx context.Context, req *dto.CreateArticleReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
 	HandleListArticles(ctx context.Context, req *dto.ListArticlesReq) (*dto.HTTPResponse[*dto.ListArticlesRsp], error)
 	HandleUpdateArticle(ctx context.Context, req *dto.UpdateArticleReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
 	HandleDeleteArticle(ctx context.Context, req *dto.DeleteArticleReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
+	HandleGetArticle(ctx context.Context, req *dto.GetArticleReq) (*dto.HTTPResponse[*dto.GetArticleRsp], error)
 }
 
 type articleHandler struct {
@@ -34,7 +35,7 @@ func NewArticleHandler() ArticleHandler {
 	}
 }
 
-func (h *articleHandler) HandleCreateArticle(ctx context.Context, req *dto.CreateArticleReq) (*dto.HTTPResponse[*dto.CreateArticleRsp], error) {
+func (h *articleHandler) HandleCreateArticle(ctx context.Context, req *dto.CreateArticleReq) (*dto.HTTPResponse[*dto.EmptyRsp], error) {
 	return util.WrapHTTPResponse(h.svc.CreateArticle(ctx, req))
 }
 
@@ -48,4 +49,8 @@ func (h *articleHandler) HandleUpdateArticle(ctx context.Context, req *dto.Updat
 
 func (h *articleHandler) HandleDeleteArticle(ctx context.Context, req *dto.DeleteArticleReq) (*dto.HTTPResponse[*dto.EmptyRsp], error) {
 	return util.WrapHTTPResponse(h.svc.DeleteArticle(ctx, req))
+}
+
+func (h *articleHandler) HandleGetArticle(ctx context.Context, req *dto.GetArticleReq) (*dto.HTTPResponse[*dto.GetArticleRsp], error) {
+	return util.WrapHTTPResponse(h.svc.GetArticle(ctx, req))
 }

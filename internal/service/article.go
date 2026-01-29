@@ -23,10 +23,11 @@ import (
 //	author centonhuang
 //	update 2026-01-29 10:00:00
 type ArticleService interface {
-	CreateArticle(ctx context.Context, req *dto.CreateArticleReq) (rsp *dto.CreateArticleRsp, err error)
+	CreateArticle(ctx context.Context, req *dto.CreateArticleReq) (rsp *dto.EmptyRsp, err error)
 	ListArticles(ctx context.Context, req *dto.ListArticlesReq) (rsp *dto.ListArticlesRsp, err error)
 	UpdateArticle(ctx context.Context, req *dto.UpdateArticleReq) (rsp *dto.EmptyRsp, err error)
 	DeleteArticle(ctx context.Context, req *dto.DeleteArticleReq) (rsp *dto.EmptyRsp, err error)
+	GetArticle(ctx context.Context, req *dto.GetArticleReq) (rsp *dto.GetArticleRsp, err error)
 }
 
 type articleService struct {
@@ -53,8 +54,8 @@ func NewArticleService() ArticleService {
 //	return *CreateArticleRsp
 //	author centonhuang
 //	update 2026-01-29 10:00:00
-func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArticleReq) (*dto.CreateArticleRsp, error) {
-	rsp := &dto.CreateArticleRsp{}
+func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArticleReq) (*dto.EmptyRsp, error) {
+	rsp := &dto.EmptyRsp{}
 
 	if req == nil || req.Body == nil {
 		rsp.Error = constant.ErrBadRequest
@@ -117,20 +118,6 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 		return rsp, nil
 	}
 
-	// 获取创建后的文章详情
-	rsp.Article = &dto.DetailedArticle{
-		ID:          article.ID,
-		Slug:        article.Slug,
-		CreatedAt:   article.CreatedAt,
-		UpdatedAt:   article.UpdatedAt,
-		PublishedAt: article.PublishedAt,
-		Status:      article.Status,
-		Tags:        tagNames,
-		Article: dto.Article{
-			Title:   article.Title,
-			Content: article.Content,
-		},
-	}
 	return rsp, nil
 }
 
@@ -186,35 +173,14 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 	}
 
 	// 组装文章列表并获取标签信息
-	rsp.Articles = lo.Map(articles, func(item *dbmodel.Article, _ int) *dto.DetailedArticle {
-		var tagNames []string
-		// 获取标签
-		tagIDs, err := s.articleTagDAO.GetTagIDsByArticleID(db, item.ID)
-		if err != nil {
-			logger.Info("[ArticleService] failed to get tag ids", zap.Error(err))
-			tagIDs = []uint{}
-		}
-
-		if len(tagIDs) != 0 {
-			tags, err := s.tagDAO.BatchGetByIDs(db, tagIDs, []string{"id", "name"})
-			if err != nil {
-				logger.Info("[ArticleService] failed to get tag ids", zap.Error(err))
-			}
-			tagNames = lo.Map(tags, func(item *dbmodel.Tag, _ int) string {return item.Name})
-		}
-		
-		return &dto.DetailedArticle{
+	rsp.Articles = lo.Map(articles, func(item *dbmodel.Article, _ int) *dto.ListedArticle {
+		return &dto.ListedArticle{
 			ID:          item.ID,
 			Slug:        item.Slug,
+			Title:       item.Title,
 			CreatedAt:   item.CreatedAt,
 			UpdatedAt:   item.UpdatedAt,
 			PublishedAt: item.PublishedAt,
-			Status:      item.Status,
-			Tags:        tagNames,
-			Article: dto.Article{
-				Title:   item.Title,
-				Content: item.Content,
-			},
 		}
 	})
 	rsp.PageInfo = pageInfo
@@ -378,6 +344,82 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *dto.DeleteArtic
 		logger.Error("[ArticleService] failed to delete article", zap.Error(err), zap.Uint("articleID", req.ID))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
+	}
+
+	return rsp, nil
+}
+
+// GetArticle 通过 slug 获取文章详情
+//
+//	return *GetArticleRsp
+//	author centonhuang
+//	update 2026-01-29 11:30:00
+func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq) (*dto.GetArticleRsp, error) {
+	rsp := &dto.GetArticleRsp{}
+
+	if req == nil || req.Slug == "" {
+		rsp.Error = constant.ErrBadRequest
+		return rsp, nil
+	}
+
+	db := database.GetDBInstance(ctx)
+	logger := logger.WithCtx(ctx)
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	// 查询文章
+	article, err := s.articleDAO.Get(db, &dbmodel.Article{Slug: req.Slug}, []string{"id", "user_id", "title", "slug", "content", "created_at", "updated_at", "published_at", "status"})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			rsp.Error = constant.ErrDataNotExists
+			return rsp, nil
+		}
+		logger.Error("[ArticleService] failed to get article by slug", zap.Error(err), zap.String("slug", req.Slug))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
+	// 权限检查：如果不是本人，只能查看已发布的文章
+	if article.UserID != userID && article.Status != enum.ArticleStatusPublished {
+		logger.Info("[ArticleService] user not allowed to access article", zap.Uint("articleID", article.ID), zap.String("slug", req.Slug), zap.Uint("articleUserID", article.UserID), zap.String("status", string(article.Status)))
+		rsp.Error = constant.ErrNoPermission
+		return rsp, nil
+	}
+
+	// 获取文章标签
+	tagIDs, err := s.articleTagDAO.GetTagIDsByArticleID(db, article.ID)
+	if err != nil {
+		logger.Error("[ArticleService] failed to get tag IDs", zap.Error(err), zap.Uint("articleID", article.ID))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
+	// 获取标签名称
+	tagNames := []string{}
+	if len(tagIDs) > 0 {
+		tags, err := s.tagDAO.BatchGetByIDs(db, tagIDs, []string{"id", "name"})
+		if err != nil {
+			logger.Error("[ArticleService] failed to get tags", zap.Error(err), zap.Uints("tagIDs", tagIDs))
+			rsp.Error = constant.ErrInternalError
+			return rsp, nil
+		}
+		tagNames = lo.Map(tags, func(item *dbmodel.Tag, _ int) string {
+			return item.Name
+		})
+	}
+
+	// 组装响应
+	rsp.Article = &dto.DetailedArticle{
+		ID:          article.ID,
+		Slug:        article.Slug,
+		CreatedAt:   article.CreatedAt,
+		UpdatedAt:   article.UpdatedAt,
+		PublishedAt: article.PublishedAt,
+		Status:      article.Status,
+		Tags:        tagNames,
+		Article: dto.Article{
+			Title:   article.Title,
+			Content: article.Content,
+		},
 	}
 
 	return rsp, nil

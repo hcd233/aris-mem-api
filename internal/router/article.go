@@ -62,4 +62,16 @@ func initArticleRouter(articleGroup huma.API) {
 			{"jwtAuth": {}},
 		},
 	}, articleHandler.HandleDeleteArticle)
+
+	huma.Register(articleGroup, huma.Operation{
+		OperationID: "getArticle",
+		Method:      http.MethodGet,
+		Path:        "/",
+		Summary:     "GetArticle",
+		Description: "Get article details by slug. Non-owner can only view published articles, owner can view all.",
+		Tags:        []string{"Article"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, articleHandler.HandleGetArticle)
 }
