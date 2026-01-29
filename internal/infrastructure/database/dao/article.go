@@ -33,8 +33,8 @@ func (dao *ArticleDAO) Paginate(db *gorm.DB, where *dbmodel.Article, fields []st
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	// 构建基础查询
-	sql := db.Model(where).Select(lo.Map(fields, func (item string, _ int) string {
-		return "articles."+item
+	sql := db.Model(where).Select(lo.Map(fields, func(item string, _ int) string {
+		return "articles." + item
 	})).Where(where).Where("articles.deleted_at = 0")
 
 	tag, ok := param.FieldValueMap["tag"].(string)
@@ -48,7 +48,7 @@ func (dao *ArticleDAO) Paginate(db *gorm.DB, where *dbmodel.Article, fields []st
 	delete(param.FieldValueMap, "tag")
 
 	for field, value := range param.FieldValueMap {
-		sql = sql.Where("articles." + field + " = ?", value)
+		sql = sql.Where("articles."+field+" = ?", value)
 	}
 
 	// 模糊搜索

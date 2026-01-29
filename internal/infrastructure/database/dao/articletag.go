@@ -26,7 +26,6 @@ func (dao *ArticleTagDAO) DeleteByArticleID(db *gorm.DB, articleID uint) error {
 	return db.Model(&model.ArticleTag{}).Where("article_id = ?", articleID).Where("deleted_at = 0").Update("deleted_at", time.Now().UTC().Unix()).Error
 }
 
-
 // GetTagIDsByArticleID 获取文章关联的标签ID列表（仅未删除的）
 //
 //	param db *gorm.DB

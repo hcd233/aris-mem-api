@@ -40,8 +40,9 @@ type SortParam struct {
 }
 
 // FilterParam 过滤参数
-//	@author centonhuang 
-//	@update 2026-01-29 01:15:15 
+//
+//	@author centonhuang
+//	@update 2026-01-29 01:15:15
 type FilterParam struct {
 	FieldValueMap map[string]any
 }
@@ -54,4 +55,5 @@ type CommonParam struct {
 	PageParam
 	QueryParam
 	SortParam
-	FilterParam}
+	FilterParam
+}

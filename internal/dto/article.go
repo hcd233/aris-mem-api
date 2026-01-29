@@ -17,30 +17,29 @@ type Article struct {
 	CoverImage string `json:"coverImage,omitempty" doc:"Cover image URL of the article (presigned URL)"`
 }
 
-
 // ListedArticle 详细文章实体
 //
 //	@author centonhuang
 //	@update 2026-01-29 12:00:00
 type ListedArticle struct {
-	ID          uint               `json:"id" doc:"ID of the article"`
-	Slug        string             `json:"slug" doc:"Slug of the article"`
-	Title       string             `json:"title" doc:"Title of the article"`
-	CoverImage  string             `json:"coverImage,omitempty" doc:"Cover image URL of the article"`
-	Author      *User               `json:"author" doc:"Author of the article"`
-	CreatedAt   time.Time          `json:"createdAt" doc:"Created time of the article"`
-	UpdatedAt   time.Time          `json:"updatedAt" doc:"Updated time of the article"`
-	PublishedAt time.Time          `json:"publishedAt" doc:"Published time of the article"`
+	ID          uint      `json:"id" doc:"ID of the article"`
+	Slug        string    `json:"slug" doc:"Slug of the article"`
+	Title       string    `json:"title" doc:"Title of the article"`
+	CoverImage  string    `json:"coverImage,omitempty" doc:"Cover image URL of the article"`
+	Author      *User     `json:"author" doc:"Author of the article"`
+	CreatedAt   time.Time `json:"createdAt" doc:"Created time of the article"`
+	UpdatedAt   time.Time `json:"updatedAt" doc:"Updated time of the article"`
+	PublishedAt time.Time `json:"publishedAt" doc:"Published time of the article"`
 }
 
 // DetailedArticle 详细文章实体
 //
-//	@author centonhuang 
-//	@update 2026-01-29 11:00:50 
+//	@author centonhuang
+//	@update 2026-01-29 11:00:50
 type DetailedArticle struct {
 	ID          uint               `json:"id" doc:"ID of the article"`
 	Slug        string             `json:"slug" doc:"Slug of the article"`
-	Author      *User               `json:"author" doc:"Author of the article"`
+	Author      *User              `json:"author" doc:"Author of the article"`
 	CreatedAt   time.Time          `json:"createdAt" doc:"Created time of the article"`
 	UpdatedAt   time.Time          `json:"updatedAt" doc:"Updated time of the article"`
 	PublishedAt time.Time          `json:"publishedAt" doc:"Published time of the article"`
@@ -54,8 +53,7 @@ type DetailedArticle struct {
 //	@author centonhuang
 //	@update 2026-01-29 17:00:00
 type CreateArticleReq struct {
-	Body       *CreateArticleReqBody `json:"body" doc:"Request body containing fields to create"`
-	CoverImage []byte                `contentType:"image/png,image/jpeg,image/jpg,image/webp" maxLength:"10485760" doc:"Cover image file (max 10MB), optional"`
+	Body *CreateArticleReqBody `json:"body" doc:"Request body containing fields to create"`
 }
 
 // CreateArticleReqBody 创建文章请求体
@@ -63,8 +61,9 @@ type CreateArticleReq struct {
 //	@author centonhuang
 //	@update 2026-01-29 17:00:00
 type CreateArticleReqBody struct {
-	Title   string `json:"title" doc:"Title of the article"`
-	Content string `json:"content" doc:"Content of the article"`
+	Title      string `json:"title" doc:"Title of the article"`
+	Content    string `json:"content" doc:"Content of the article"`
+	CoverImage []byte `contentType:"image/png,image/jpeg,image/jpg,image/webp" maxItems:"10485760" doc:"Cover image file (max 10MB), optional"`
 }
 
 // ListArticlesReq 获取文章列表请求
@@ -74,7 +73,7 @@ type CreateArticleReqBody struct {
 type ListArticlesReq struct {
 	model.CommonParam
 	SortField string `query:"sortField" enum:"id,createdAt,updatedAt,name" doc:"Sort field"`
-	TagName string `query:"tagName" doc:"Filter by tag name"`
+	TagName   string `query:"tagName" doc:"Filter by tag name"`
 }
 
 // ListArticlesRsp 获取文章列表响应
@@ -84,7 +83,7 @@ type ListArticlesReq struct {
 type ListArticlesRsp struct {
 	CommonRsp
 	Articles []*ListedArticle `json:"articles" doc:"Articles to list"`
-	PageInfo *model.PageInfo    `json:"pageInfo" doc:"Page info"`
+	PageInfo *model.PageInfo  `json:"pageInfo" doc:"Page info"`
 }
 
 // UpdateArticleReq 更新文章请求
@@ -101,10 +100,10 @@ type UpdateArticleReq struct {
 //	@author centonhuang
 //	@update 2026-01-29 17:00:00
 type UpdateArticleReqBody struct {
-	ID     uint               `json:"id" doc:"ID of the article"`
-	Status enum.ArticleStatus `json:"status" doc:"Status of the article"`
-	Title  string             `json:"title" doc:"Title of the article"`
-	Content string            `json:"content" doc:"Content of the article"`
+	ID      uint               `json:"id" doc:"ID of the article"`
+	Status  enum.ArticleStatus `json:"status" doc:"Status of the article"`
+	Title   string             `json:"title" doc:"Title of the article"`
+	Content string             `json:"content" doc:"Content of the article"`
 }
 
 // DeleteArticleReq 删除文章请求

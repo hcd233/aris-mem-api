@@ -5,6 +5,7 @@ import "regexp"
 var tagRegex = regexp.MustCompile(`#([\p{L}\p{N}_]+)`)
 
 // ExtractTags 提取内容中的标签
+//
 //	@param content
 //	@return []string
 //	@author centonhuang

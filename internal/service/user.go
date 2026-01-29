@@ -70,9 +70,9 @@ func (s *userService) GetCurUser(ctx context.Context, _ *dto.EmptyReq) (*dto.Get
 
 	rsp.User = &dto.DetailedUser{
 		User: dto.User{
-			ID:         user.ID,
-			Name:       user.Name,
-			Avatar:     user.Avatar,
+			ID:     user.ID,
+			Name:   user.Name,
+			Avatar: user.Avatar,
 		},
 		CreatedAt:  user.CreatedAt.Format(time.DateTime),
 		LastLogin:  user.LastLogin.Format(time.DateTime),

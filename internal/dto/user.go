@@ -6,9 +6,9 @@ package dto
 //	@author centonhuang
 //	@update 2026-01-29 14:38:14
 type User struct {
-    ID         uint   `json:"id" doc:"Unique identifier for the user"`
-	Name       string `json:"name" doc:"Display name of the user"`
-	Avatar     string `json:"avatar" doc:"URL or path to the user's avatar image"`
+	ID     uint   `json:"id" doc:"Unique identifier for the user"`
+	Name   string `json:"name" doc:"Display name of the user"`
+	Avatar string `json:"avatar" doc:"URL or path to the user's avatar image"`
 }
 
 // UpdatedUser 用户实体

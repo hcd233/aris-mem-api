@@ -56,6 +56,7 @@ func NewArticleService() ArticleService {
 		imageObjDAO:   objdao.GetImageObjDAO(),
 	}
 }
+
 // CreateArticle 创建文章
 //
 //	return *CreateArticleRsp
@@ -81,10 +82,10 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 
 	// 上传封面图片（如果提供）
 	var coverImage string
-	if len(req.CoverImage) > 0 {
+	if len(req.Body.CoverImage) > 0 {
 		coverImage := fmt.Sprintf("article-cover-%s.jpg", uuid.New().String()[:8])
-	
-		err := s.imageObjDAO.UploadObject(ctx, userID, coverImage, int64(len(req.CoverImage)), bytes.NewReader(req.CoverImage))
+
+		err := s.imageObjDAO.UploadObject(ctx, userID, coverImage, int64(len(req.Body.CoverImage)), bytes.NewReader(req.Body.CoverImage))
 		if err != nil {
 			logger.Error("[ArticleService] failed to upload cover image", zap.Error(err), zap.Uint("userID", userID))
 			rsp.Error = constant.ErrInternalError
@@ -132,7 +133,6 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 
 		return nil
 	})
-
 	if err != nil {
 		logger.Error("[ArticleService] failed to create article", zap.Error(err))
 		rsp.Error = constant.ErrInternalError
@@ -180,7 +180,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		},
 		FilterParam: dao.FilterParam{
 			FieldValueMap: map[string]any{
-				"tag": req.TagName,
+				"tag":    req.TagName,
 				"status": enum.ArticleStatusPublished,
 			},
 		},
@@ -210,30 +210,29 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 	// 组装文章列表并获取标签信息
 	rsp.Articles = lo.Map(articles, func(item *dbmodel.Article, _ int) *dto.ListedArticle {
 		user := userIDUserMap[item.UserID]
-		
 
 		// Generate presigned URL for cover image
 		coverImage := ""
 		if item.CoverImage != "" {
 			presignedURL, err := s.imageObjDAO.PresignObject(ctx, item.UserID, item.CoverImage)
 			if err != nil {
-				logger.Warn("[ArticleService] failed to generate presigned URL for cover image", 
-					zap.Error(err), 
-					zap.Uint("userID", item.UserID), 
+				logger.Warn("[ArticleService] failed to generate presigned URL for cover image",
+					zap.Error(err),
+					zap.Uint("userID", item.UserID),
 					zap.String("coverImage", item.CoverImage))
 			}
 			coverImage = presignedURL.String()
 		}
-			
+
 		return &dto.ListedArticle{
-			ID:          item.ID,
-			Slug:        item.Slug,
-			Title:       item.Title,
-			CoverImage:  coverImage,
+			ID:         item.ID,
+			Slug:       item.Slug,
+			Title:      item.Title,
+			CoverImage: coverImage,
 			Author: &dto.User{
-				ID:         user.ID,
-				Name:       user.Name,
-				Avatar:     user.Avatar,
+				ID:     user.ID,
+				Name:   user.Name,
+				Avatar: user.Avatar,
 			},
 			CreatedAt:   item.CreatedAt,
 			UpdatedAt:   item.UpdatedAt,
@@ -348,7 +347,6 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 
 		return nil
 	})
-
 	if err != nil {
 		logger.Error("[ArticleService] failed to update article", zap.Error(err), zap.Uint("articleID", req.Body.ID))
 		rsp.Error = constant.ErrInternalError
@@ -405,7 +403,6 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *dto.DeleteArtic
 
 		return nil
 	})
-
 	if err != nil {
 		logger.Error("[ArticleService] failed to delete article", zap.Error(err), zap.Uint("articleID", req.ID))
 		rsp.Error = constant.ErrInternalError
@@ -413,13 +410,13 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *dto.DeleteArtic
 	}
 
 	// 删除成功后，同步删除COS中的封面图片
-	if article.CoverImage != "" {	
+	if article.CoverImage != "" {
 		err := s.imageObjDAO.DeleteObject(ctx, article.UserID, article.CoverImage)
 		if err != nil {
 			// Log the error but don't fail the request since article is already deleted
-			logger.Warn("[ArticleService] failed to delete cover image from storage", 
-				zap.Error(err), 
-				zap.Uint("articleID", req.ID), 
+			logger.Warn("[ArticleService] failed to delete cover image from storage",
+				zap.Error(err),
+				zap.Uint("articleID", req.ID),
 				zap.String("coverImage", article.CoverImage))
 		}
 	}
@@ -498,9 +495,9 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 	if article.CoverImage != "" {
 		presignedURL, err := s.imageObjDAO.PresignObject(ctx, article.UserID, article.CoverImage)
 		if err != nil {
-			logger.Warn("[ArticleService] failed to generate presigned URL for cover image", 
-				zap.Error(err), 
-				zap.Uint("userID", article.UserID), 
+			logger.Warn("[ArticleService] failed to generate presigned URL for cover image",
+				zap.Error(err),
+				zap.Uint("userID", article.UserID),
 				zap.String("coverImage", article.CoverImage))
 		}
 		coverImage = presignedURL.String()
@@ -516,9 +513,9 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 		Status:      article.Status,
 		Tags:        tagNames,
 		Author: &dto.User{
-			ID:         user.ID,
-			Name:       user.Name,
-			Avatar:     user.Avatar,
+			ID:     user.ID,
+			Name:   user.Name,
+			Avatar: user.Avatar,
 		},
 		Article: dto.Article{
 			Title:      article.Title,
