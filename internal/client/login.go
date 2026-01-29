@@ -57,7 +57,7 @@ func (h *LoginHandler) Execute() error {
 			// Token is valid, ask if user wants to re-login
 			fmt.Println()
 			successColor.Printf("✓ Already logged in as: ")
-			fmt.Printf("%s (%s)\n", userResp.User.Name, userResp.User.Email)
+			fmt.Printf("%s\n", userResp.User.Name)
 			promptColor.Print("\n→ Re-login? (y/n): ")
 
 			if !h.readYesNo() {
@@ -128,7 +128,7 @@ func (h *LoginHandler) Execute() error {
 		successColor.Println("✓ Login successful!")
 	} else if userResp != nil && userResp.User != nil {
 		successColor.Println("✓ Login successful!")
-		fmt.Printf("  User: %s (%s)\n", userResp.User.Name, userResp.User.Email)
+		fmt.Printf("  User: %s\n", userResp.User.Name)
 	}
 
 	tokenFilePath := lo.Must1(getTokenFilePath())

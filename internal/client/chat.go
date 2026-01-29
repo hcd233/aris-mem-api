@@ -68,7 +68,7 @@ func (h *ChatHandler) Execute() error {
 	headerColor.Println("╚══════════════════════════════════════════════╝")
 	fmt.Println()
 	successColor.Printf("✓ Logged in as: ")
-	fmt.Printf("%s (%s)\n", userResp.User.Name, userResp.User.Email)
+	fmt.Printf("%s\n", userResp.User.Name)
 	fmt.Println()
 	infoColor.Println("💡 Type your message and press Enter to chat")
 	infoColor.Println("   Type 'exit' or 'quit' to end the session")

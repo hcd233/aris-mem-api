@@ -34,6 +34,7 @@ type ListedArticle struct {
 	ID          uint               `json:"id" doc:"ID of the article"`
 	Slug        string             `json:"slug" doc:"Slug of the article"`
 	Title       string             `json:"title" doc:"Title of the article"`
+	Author      *User               `json:"author" doc:"Author of the article"`
 	CreatedAt   time.Time          `json:"createdAt" doc:"Created time of the article"`
 	UpdatedAt   time.Time          `json:"updatedAt" doc:"Updated time of the article"`
 	PublishedAt time.Time          `json:"publishedAt" doc:"Published time of the article"`
@@ -46,6 +47,7 @@ type ListedArticle struct {
 type DetailedArticle struct {
 	ID          uint               `json:"id" doc:"ID of the article"`
 	Slug        string             `json:"slug" doc:"Slug of the article"`
+	Author      *User               `json:"author" doc:"Author of the article"`
 	CreatedAt   time.Time          `json:"createdAt" doc:"Created time of the article"`
 	UpdatedAt   time.Time          `json:"updatedAt" doc:"Updated time of the article"`
 	PublishedAt time.Time          `json:"publishedAt" doc:"Published time of the article"`

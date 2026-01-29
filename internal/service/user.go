@@ -69,15 +69,14 @@ func (s *userService) GetCurUser(ctx context.Context, _ *dto.EmptyReq) (*dto.Get
 	}
 
 	rsp.User = &dto.DetailedUser{
-		ID:         user.ID,
+		User: dto.User{
+			ID:         user.ID,
+			Name:       user.Name,
+			Avatar:     user.Avatar,
+		},
 		CreatedAt:  user.CreatedAt.Format(time.DateTime),
 		LastLogin:  user.LastLogin.Format(time.DateTime),
 		Permission: string(user.Permission),
-		User: dto.User{
-			Name:   user.Name,
-			Email:  user.Email,
-			Avatar: user.Avatar,
-		},
 	}
 
 	logger.Info("[UserService] get cur user info",

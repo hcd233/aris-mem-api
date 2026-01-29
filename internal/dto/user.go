@@ -3,9 +3,19 @@ package dto
 
 // User 用户实体
 //
+//	@author centonhuang
+//	@update 2026-01-29 14:38:14
+type User struct {
+    ID         uint   `json:"id" doc:"Unique identifier for the user"`
+	Name       string `json:"name" doc:"Display name of the user"`
+	Avatar     string `json:"avatar" doc:"URL or path to the user's avatar image"`
+}
+
+// UpdatedUser 用户实体
+//
 //	author centonhuang
 //	update 2025-01-05 11:37:01
-type User struct {
+type UpdatedUser struct {
 	Name   string `json:"name" doc:"Display name of the user"`
 	Email  string `json:"email" doc:"Email address of the user"`
 	Avatar string `json:"avatar" doc:"URL or path to the user's avatar image"`
@@ -16,7 +26,6 @@ type User struct {
 //	@author centonhuang
 //	@update 2025-11-07 02:43:56
 type DetailedUser struct {
-	ID         uint   `json:"id" doc:"Unique identifier for the user"`
 	CreatedAt  string `json:"createdAt" doc:"Timestamp when the user account was created"`
 	LastLogin  string `json:"lastLogin" doc:"Timestamp of the user's last login"`
 	Permission string `json:"permission" doc:"Permission level of the user"`
@@ -45,5 +54,5 @@ type UpdateUserReq struct {
 //	author centonhuang
 //	update 2025-10-31 02:33:48
 type UpdateUserReqBody struct {
-	User *User `json:"user" required:"true" doc:"User information to update"`
+	User *UpdatedUser `json:"user" required:"true" doc:"User information to update"`
 }

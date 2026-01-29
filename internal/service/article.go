@@ -31,6 +31,7 @@ type ArticleService interface {
 }
 
 type articleService struct {
+	userDAO       *dao.UserDAO
 	articleDAO    *dao.ArticleDAO
 	tagDAO        *dao.TagDAO
 	articleTagDAO *dao.ArticleTagDAO
@@ -43,6 +44,7 @@ type articleService struct {
 //	update 2026-01-29 10:00:00
 func NewArticleService() ArticleService {
 	return &articleService{
+		userDAO:       dao.GetUserDAO(),
 		articleDAO:    dao.GetArticleDAO(),
 		tagDAO:        dao.GetTagDAO(),
 		articleTagDAO: dao.GetArticleTagDAO(),
@@ -172,12 +174,32 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		return rsp, nil
 	}
 
+	userIDs := lo.Map(articles, func(item *dbmodel.Article, _ int) uint {
+		return item.UserID
+	})
+	users, err := s.userDAO.BatchGetByIDs(db, userIDs, []string{"id", "name", "avatar"})
+	if err != nil {
+		logger.Error("[ArticleService] failed to get users", zap.Error(err), zap.Uints("userIDs", userIDs))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
+	userIDUserMap := lo.SliceToMap(users, func(item *dbmodel.User) (uint, *dbmodel.User) {
+		return item.ID, item
+	})
+
 	// 组装文章列表并获取标签信息
 	rsp.Articles = lo.Map(articles, func(item *dbmodel.Article, _ int) *dto.ListedArticle {
+		user := userIDUserMap[item.UserID]
 		return &dto.ListedArticle{
 			ID:          item.ID,
 			Slug:        item.Slug,
 			Title:       item.Title,
+			Author: &dto.User{
+				ID:         user.ID,
+				Name:       user.Name,
+				Avatar:     user.Avatar,
+			},
 			CreatedAt:   item.CreatedAt,
 			UpdatedAt:   item.UpdatedAt,
 			PublishedAt: item.PublishedAt,
@@ -366,6 +388,13 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 	logger := logger.WithCtx(ctx)
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
+	user, err := s.userDAO.Get(db, &dbmodel.User{ID: userID}, []string{"id", "name", "avatar"})
+	if err != nil {
+		logger.Error("[ArticleService] failed to get user", zap.Error(err), zap.Uint("userID", userID))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
 	// 查询文章
 	article, err := s.articleDAO.Get(db, &dbmodel.Article{Slug: req.Slug}, []string{"id", "user_id", "title", "slug", "content", "created_at", "updated_at", "published_at", "status"})
 	if err != nil {
@@ -416,6 +445,11 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 		PublishedAt: article.PublishedAt,
 		Status:      article.Status,
 		Tags:        tagNames,
+		Author: &dto.User{
+			ID:         user.ID,
+			Name:       user.Name,
+			Avatar:     user.Avatar,
+		},
 		Article: dto.Article{
 			Title:   article.Title,
 			Content: article.Content,
