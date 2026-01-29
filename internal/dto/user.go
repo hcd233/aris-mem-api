@@ -6,9 +6,9 @@ package dto
 //	author centonhuang
 //	update 2025-01-05 11:37:01
 type User struct {
-	Name   string `json:"name,omitempty" doc:"Display name of the user"`
-	Email  string `json:"email,omitempty" doc:"Email address of the user"`
-	Avatar string `json:"avatar,omitempty" doc:"URL or path to the user's avatar image"`
+	Name   string `json:"name" doc:"Display name of the user"`
+	Email  string `json:"email" doc:"Email address of the user"`
+	Avatar string `json:"avatar" doc:"URL or path to the user's avatar image"`
 }
 
 // DetailedUser 显示用户实体
@@ -17,9 +17,9 @@ type User struct {
 //	@update 2025-11-07 02:43:56
 type DetailedUser struct {
 	ID         uint   `json:"id" doc:"Unique identifier for the user"`
-	CreatedAt  string `json:"createdAt,omitempty" doc:"Timestamp when the user account was created"`
-	LastLogin  string `json:"lastLogin,omitempty" doc:"Timestamp of the user's last login"`
-	Permission string `json:"permission,omitempty" doc:"Permission level of the user"`
+	CreatedAt  string `json:"createdAt" doc:"Timestamp when the user account was created"`
+	LastLogin  string `json:"lastLogin" doc:"Timestamp of the user's last login"`
+	Permission string `json:"permission" doc:"Permission level of the user"`
 	User
 }
 
@@ -29,7 +29,7 @@ type DetailedUser struct {
 //	update 2025-01-04 21:00:59
 type GetCurUserRsp struct {
 	CommonRsp
-	User *DetailedUser `json:"user,omitempty" doc:"Complete user information including permissions"`
+	User *DetailedUser `json:"user" doc:"Complete user information including permissions"`
 }
 
 // UpdateUserReq represents a request to update the current user's information

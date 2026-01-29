@@ -18,8 +18,8 @@ type Tag struct {
 //	@update 2026-01-29 10:00:00
 type DetailedTag struct {
 	ID        uint   `json:"id" doc:"Unique identifier for the tag"`
-	CreatedAt string `json:"createdAt,omitempty" doc:"Timestamp when the tag was created"`
-	UpdatedAt string `json:"updatedAt,omitempty" doc:"Timestamp when the tag was updated"`
+	CreatedAt string `json:"createdAt" doc:"Timestamp when the tag was created"`
+	UpdatedAt string `json:"updatedAt" doc:"Timestamp when the tag was updated"`
 	Tag
 }
 
@@ -39,5 +39,5 @@ type ListTagsReq struct {
 type ListTagsRsp struct {
 	CommonRsp
 	Tags     []*DetailedTag  `json:"tags" doc:"Tags to list"`
-	PageInfo *model.PageInfo `json:"pageInfo,omitempty" doc:"Page info"`
+	PageInfo *model.PageInfo `json:"pageInfo" doc:"Page info"`
 }

@@ -87,7 +87,7 @@ type ListArticlesReq struct {
 type ListArticlesRsp struct {
 	CommonRsp
 	Articles []*ListedArticle `json:"articles" doc:"Articles to list"`
-	PageInfo *model.PageInfo    `json:"pageInfo,omitempty" doc:"Page info"`
+	PageInfo *model.PageInfo    `json:"pageInfo" doc:"Page info"`
 }
 
 // UpdateArticleReq 更新文章请求

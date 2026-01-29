@@ -17,7 +17,7 @@ type LoginReq struct {
 //	update 2025-01-05 21:00:00
 type LoginResp struct {
 	CommonRsp
-	RedirectURL string `json:"redirectURL,omitempty" doc:"URL to redirect the user to for OAuth2 authorization"`
+	RedirectURL string `json:"redirectURL" doc:"URL to redirect the user to for OAuth2 authorization"`
 }
 
 // CallbackReq represents a request to handle OAuth2 callback with authorization code
@@ -44,6 +44,6 @@ type CallbackReqBody struct {
 //	update 2025-01-05 21:00:00
 type CallbackRsp struct {
 	CommonRsp
-	AccessToken  string `json:"accessToken,omitempty" doc:"JWT access token for API authentication"`
-	RefreshToken string `json:"refreshToken,omitempty" doc:"JWT refresh token for obtaining future access tokens"`
+	AccessToken  string `json:"accessToken" doc:"JWT access token for API authentication"`
+	RefreshToken string `json:"refreshToken" doc:"JWT refresh token for obtaining future access tokens"`
 }

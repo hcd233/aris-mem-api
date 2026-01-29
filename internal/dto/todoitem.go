@@ -22,7 +22,7 @@ type TodoItem struct {
 //	@update 2025-11-07 15:21:39
 type UpdatedTodoItem struct {
 	ID     uint                `json:"id" minimum:"1" required:"true" doc:"Unique identifier for the todo item"`
-	Status enum.TodoItemStatus `json:"status,omitempty" enum:"pending,completed,cancelled,timeout" doc:"Status of the todo item"`
+	Status enum.TodoItemStatus `json:"status" enum:"pending,completed,cancelled,timeout" doc:"Status of the todo item"`
 	TodoItem
 }
 
@@ -41,8 +41,8 @@ type TodoItemFilterParam struct {
 //	@update 2025-11-07 02:45:30
 type DatailedTodoItem struct {
 	ID        uint                `json:"id" doc:"Unique identifier for the todo item"`
-	CreatedAt string              `json:"createdAt,omitempty" doc:"Timestamp when the todo item was created"`
-	UpdatedAt string              `json:"updatedAt,omitempty" doc:"Timestamp when the todo item was updated"`
+	CreatedAt string              `json:"createdAt" doc:"Timestamp when the todo item was created"`
+	UpdatedAt string              `json:"updatedAt" doc:"Timestamp when the todo item was updated"`
 	Status    enum.TodoItemStatus `json:"status" enum:"pending,completed,cancelled,timeout" doc:"Status of the todo item"`
 	TodoItem
 }
@@ -80,7 +80,7 @@ type ListTodoItemsReq struct {
 type ListTodoItemsRsp struct {
 	CommonRsp
 	TodoItems []*DatailedTodoItem `json:"todoItems" doc:"Items to list"`
-	PageInfo  *model.PageInfo     `json:"pageInfo,omitempty" doc:"Page info"`
+	PageInfo  *model.PageInfo     `json:"pageInfo" doc:"Page info"`
 }
 
 // UpdateTodoItemReq 更新待办事项请求

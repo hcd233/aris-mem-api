@@ -6,5 +6,5 @@ package dto
 //	@update 2025-11-07 01:36:32
 type PingResponse struct {
 	CommonRsp
-	Status string `json:"status,omitempty" doc:"Status of the ping response"`
+	Status string `json:"status" doc:"Status of the ping response"`
 }
