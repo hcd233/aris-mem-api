@@ -63,7 +63,7 @@ type CreateArticleReq struct {
 type CreateArticleReqBody struct {
 	Title      string `json:"title" doc:"Title of the article"`
 	Content    string `json:"content" doc:"Content of the article"`
-	CoverImage []byte `contentType:"image/png,image/jpeg,image/jpg,image/webp" maxItems:"10485760" doc:"Cover image file (max 10MB), optional"`
+	CoverImage []byte `json:"coverImage" maxItems:"10485760" doc:"Cover image file (max 10MB), optional"`
 }
 
 // ListArticlesReq 获取文章列表请求
@@ -91,8 +91,7 @@ type ListArticlesRsp struct {
 //	@author centonhuang
 //	@update 2026-01-29 17:00:00
 type UpdateArticleReq struct {
-	Body       *UpdateArticleReqBody `json:"body" doc:"Request body containing fields to update"`
-	CoverImage []byte                `contentType:"image/png,image/jpeg,image/jpg,image/webp" maxLength:"10485760" doc:"Cover image file (max 10MB), optional"`
+	Body *UpdateArticleReqBody `json:"body" doc:"Request body containing fields to update"`
 }
 
 // UpdateArticleReqBody 更新文章请求体
@@ -100,10 +99,11 @@ type UpdateArticleReq struct {
 //	@author centonhuang
 //	@update 2026-01-29 17:00:00
 type UpdateArticleReqBody struct {
-	ID      uint               `json:"id" doc:"ID of the article"`
-	Status  enum.ArticleStatus `json:"status" doc:"Status of the article"`
-	Title   string             `json:"title" doc:"Title of the article"`
-	Content string             `json:"content" doc:"Content of the article"`
+	ID         uint               `json:"id" doc:"ID of the article"`
+	Status     enum.ArticleStatus `json:"status" doc:"Status of the article"`
+	Title      string             `json:"title" doc:"Title of the article"`
+	Content    string             `json:"content" doc:"Content of the article"`
+	CoverImage []byte             `json:"coverImage" maxLength:"10485760" doc:"Cover image file (max 10MB), optional"`
 }
 
 // DeleteArticleReq 删除文章请求
