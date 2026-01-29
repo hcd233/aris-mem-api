@@ -6,6 +6,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/google/uuid"
 	"github.com/mozillazg/go-pinyin"
 )
 
@@ -55,6 +56,8 @@ func GenerateSlug(s string) string {
 	if len(buffer) > 0 {
 		parts = append(parts, strings.ToLower(string(buffer)))
 	}
+
+	parts = append(parts, uuid.New().String()[:8])
 	
 	return strings.Join(parts, "-")
 }
