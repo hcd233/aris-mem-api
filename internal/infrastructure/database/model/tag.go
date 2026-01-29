@@ -9,5 +9,5 @@ type Tag struct {
 	DeletedAt int64  `json:"deleted_at" gorm:"column:deleted_at;uniqueIndex:idx_name_deleted_at;comment:删除时间，默认为0"`
 	ID        uint   `json:"id" gorm:"column:id;primary_key;auto_increment;comment:ID"`
 	Name      string `json:"name" gorm:"column:name;not null;uniqueIndex:idx_name_deleted_at;comment:名称"`
-	Slug      string `json:"slug" gorm:"column:slug;not null;comment:简写"`
+	Slug      string `json:"slug" gorm:"column:slug;not null;default:'';comment:简写"`
 }
