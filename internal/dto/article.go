@@ -44,7 +44,7 @@ type DetailedArticle struct {
 	UpdatedAt   time.Time          `json:"updatedAt" doc:"Updated time of the article"`
 	PublishedAt time.Time          `json:"publishedAt" doc:"Published time of the article"`
 	Status      enum.ArticleStatus `json:"status" doc:"Status of the article"`
-	Tags        []string           `json:"tags" doc:"Tags of the article"`
+	Tags        []*DetailedTag     `json:"tags" doc:"Tags of the article"`
 	Article
 }
 
@@ -73,7 +73,7 @@ type CreateArticleReqBody struct {
 type ListArticlesReq struct {
 	model.CommonParam
 	SortField string `query:"sortField" enum:"id,createdAt,updatedAt,name" doc:"Sort field"`
-	TagName   string `query:"tagName" doc:"Filter by tag name"`
+	TagSlug   string `query:"tagSlug" doc:"Filter by tag slug"`
 }
 
 // ListArticlesRsp 获取文章列表响应

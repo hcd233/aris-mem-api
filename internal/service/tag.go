@@ -74,7 +74,7 @@ func (s *tagService) ListTags(ctx context.Context, req *dto.ListTagsReq) (*dto.L
 		},
 	}
 
-	tags, pageInfo, err := s.tagDAO.Paginate(db, &model.Tag{}, []string{"id", "created_at", "updated_at", "name"}, commonParam)
+	tags, pageInfo, err := s.tagDAO.Paginate(db, &model.Tag{}, []string{"id", "name", "slug", "created_at", "updated_at"}, commonParam)
 	if err != nil {
 		logger.Error("[TagService] failed to list tags", zap.Error(err))
 		rsp.Error = constant.ErrInternalError
@@ -84,6 +84,7 @@ func (s *tagService) ListTags(ctx context.Context, req *dto.ListTagsReq) (*dto.L
 	rsp.Tags = lo.Map(tags, func(item *model.Tag, _ int) *dto.DetailedTag {
 		return &dto.DetailedTag{
 			ID:        item.ID,
+			Slug:      item.Slug,
 			CreatedAt: item.CreatedAt.Format(time.RFC3339),
 			UpdatedAt: item.UpdatedAt.Format(time.RFC3339),
 			Tag: dto.Tag{

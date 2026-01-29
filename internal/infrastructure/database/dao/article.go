@@ -42,7 +42,7 @@ func (dao *ArticleDAO) Paginate(db *gorm.DB, where *dbmodel.Article, fields []st
 	if ok && tag != "" {
 		sql = sql.Joins("JOIN article_tags ON article_tags.article_id = articles.id").
 			Joins("JOIN tags ON tags.id = article_tags.tag_id").
-			Where("tags.name = ? AND tags.deleted_at = 0 AND article_tags.deleted_at = 0", tag)
+			Where("tags.slug = ? AND tags.deleted_at = 0 AND article_tags.deleted_at = 0", tag)
 	}
 
 	delete(param.FieldValueMap, "tag")

@@ -18,6 +18,7 @@ type Tag struct {
 //	@update 2026-01-29 10:00:00
 type DetailedTag struct {
 	ID        uint   `json:"id" doc:"Unique identifier for the tag"`
+	Slug      string `json:"slug" doc:"Slug of the tag"`
 	CreatedAt string `json:"createdAt" doc:"Timestamp when the tag was created"`
 	UpdatedAt string `json:"updatedAt" doc:"Timestamp when the tag was updated"`
 	Tag

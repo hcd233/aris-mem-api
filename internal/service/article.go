@@ -113,8 +113,9 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 		if len(tagNames) > 0 {
 			tags := make([]*dbmodel.Tag, 0, len(tagNames))
 			for _, tagName := range tagNames {
-				tag := &dbmodel.Tag{Name: tagName}
-				tag, err := s.tagDAO.GetOrCreate(tx, tag, tag, []string{"id"})
+				where := &dbmodel.Tag{Name: tagName}
+				tag := &dbmodel.Tag{Name: tagName, Slug: util.GenerateSlug(tagName)}
+				tag, err := s.tagDAO.GetOrCreate(tx, where, tag, []string{"id"})
 				if err != nil {
 					return err
 				}
@@ -154,13 +155,13 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 	logger := logger.WithCtx(ctx)
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	_, err := s.tagDAO.Get(db, &dbmodel.Tag{Name: req.TagName}, []string{"id"})
+	_, err := s.tagDAO.Get(db, &dbmodel.Tag{Slug: req.TagSlug}, []string{"id"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			rsp.Error = constant.ErrDataNotExists
 			return rsp, nil
 		}
-		logger.Error("[ArticleService] failed to get tag", zap.Error(err), zap.String("tagName", req.TagName))
+		logger.Error("[ArticleService] failed to get tag", zap.Error(err), zap.String("tagSlug", req.TagSlug))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}
@@ -180,7 +181,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		},
 		FilterParam: dao.FilterParam{
 			FieldValueMap: map[string]any{
-				"tag":    req.TagName,
+				"tag":    req.TagSlug,
 				"status": enum.ArticleStatusPublished,
 			},
 		},
@@ -326,8 +327,9 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 			if len(tagNames) > 0 {
 				tags := make([]*dbmodel.Tag, 0, len(tagNames))
 				for _, tagName := range tagNames {
-					tag := &dbmodel.Tag{Name: tagName}
-					tag, err := s.tagDAO.GetOrCreate(tx, tag, tag, []string{"id"})
+					where := &dbmodel.Tag{Name: tagName}
+					tag := &dbmodel.Tag{Name: tagName, Slug: util.GenerateSlug(tagName)}
+					tag, err := s.tagDAO.GetOrCreate(tx, where, tag, []string{"id"})
 					if err != nil {
 						return err
 					}
@@ -475,18 +477,11 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 		return rsp, nil
 	}
 
-	// 获取标签名称
-	tagNames := []string{}
-	if len(tagIDs) > 0 {
-		tags, err := s.tagDAO.BatchGetByIDs(db, tagIDs, []string{"id", "name"})
-		if err != nil {
-			logger.Error("[ArticleService] failed to get tags", zap.Error(err), zap.Uints("tagIDs", tagIDs))
-			rsp.Error = constant.ErrInternalError
-			return rsp, nil
-		}
-		tagNames = lo.Map(tags, func(item *dbmodel.Tag, _ int) string {
-			return item.Name
-		})
+	tags, err := s.tagDAO.BatchGetByIDs(db, tagIDs, []string{"id", "name", "slug", "created_at", "updated_at"})
+	if err != nil {
+		logger.Error("[ArticleService] failed to get tags", zap.Error(err), zap.Uints("tagIDs", tagIDs))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
 	}
 
 	// Generate presigned URL for cover image
@@ -511,7 +506,17 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 		UpdatedAt:   article.UpdatedAt,
 		PublishedAt: article.PublishedAt,
 		Status:      article.Status,
-		Tags:        tagNames,
+		Tags: lo.Map(tags, func(item *dbmodel.Tag, _ int) *dto.DetailedTag {
+			return &dto.DetailedTag{
+				ID:        item.ID,
+				Slug:      item.Slug,
+				CreatedAt: item.CreatedAt.Format(time.RFC3339),
+				UpdatedAt: item.UpdatedAt.Format(time.RFC3339),
+				Tag: dto.Tag{
+					Name: item.Name,
+				},
+			}
+		}),
 		Author: &dto.User{
 			ID:     user.ID,
 			Name:   user.Name,
