@@ -186,7 +186,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		},
 	}
 
-	articles, pageInfo, err := s.articleDAO.Paginate(db, &dbmodel.Article{UserID: userID}, []string{"id", "created_at", "updated_at", "published_at", "title", "slug", "content", "cover_image", "status"}, commonParam)
+	articles, pageInfo, err := s.articleDAO.Paginate(db, &dbmodel.Article{UserID: userID}, []string{"id", "created_at", "updated_at", "published_at", "user_id", "title", "slug", "content", "cover_image", "status"}, commonParam)
 	if err != nil {
 		logger.Error("[ArticleService] failed to list articles", zap.Error(err))
 		rsp.Error = constant.ErrInternalError
@@ -277,8 +277,8 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 		return rsp, nil
 	}
 
-	if len(req.CoverImage) > 0 {
-		err := s.imageObjDAO.UploadObject(ctx, userID, article.CoverImage, int64(len(req.CoverImage)), bytes.NewReader(req.CoverImage))
+	if len(req.Body.CoverImage) > 0 {
+		err := s.imageObjDAO.UploadObject(ctx, userID, article.CoverImage, int64(len(req.Body.CoverImage)), bytes.NewReader(req.Body.CoverImage))
 		if err != nil {
 			logger.Error("[ArticleService] failed to upload cover image", zap.Error(err), zap.Uint("userID", userID))
 			rsp.Error = constant.ErrInternalError
