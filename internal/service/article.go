@@ -1,16 +1,20 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/dto"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/dao"
 	dbmodel "github.com/hcd233/aris-mem-api/internal/infrastructure/database/model"
+	objdao "github.com/hcd233/aris-mem-api/internal/infrastructure/storage/obj_dao"
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/util"
 	"github.com/samber/lo"
@@ -21,7 +25,7 @@ import (
 // ArticleService 文章服务
 //
 //	author centonhuang
-//	update 2026-01-29 10:00:00
+//	update 2026-01-29 14:00:00
 type ArticleService interface {
 	CreateArticle(ctx context.Context, req *dto.CreateArticleReq) (rsp *dto.EmptyRsp, err error)
 	ListArticles(ctx context.Context, req *dto.ListArticlesReq) (rsp *dto.ListArticlesRsp, err error)
@@ -35,27 +39,28 @@ type articleService struct {
 	articleDAO    *dao.ArticleDAO
 	tagDAO        *dao.TagDAO
 	articleTagDAO *dao.ArticleTagDAO
+	imageObjDAO   objdao.ObjDAO
 }
 
 // NewArticleService 创建文章服务
 //
 //	return ArticleService
 //	author centonhuang
-//	update 2026-01-29 10:00:00
+//	update 2026-01-29 16:00:00
 func NewArticleService() ArticleService {
 	return &articleService{
 		userDAO:       dao.GetUserDAO(),
 		articleDAO:    dao.GetArticleDAO(),
 		tagDAO:        dao.GetTagDAO(),
 		articleTagDAO: dao.GetArticleTagDAO(),
+		imageObjDAO:   objdao.GetImageObjDAO(),
 	}
 }
-
 // CreateArticle 创建文章
 //
 //	return *CreateArticleRsp
 //	author centonhuang
-//	update 2026-01-29 10:00:00
+//	update 2026-01-29 17:00:00
 func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArticleReq) (*dto.EmptyRsp, error) {
 	rsp := &dto.EmptyRsp{}
 
@@ -74,13 +79,27 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 	// 提取标签
 	tagNames := util.ExtractTags(req.Body.Content)
 
+	// 上传封面图片（如果提供）
+	var coverImage string
+	if len(req.CoverImage) > 0 {
+		coverImage := fmt.Sprintf("article-cover-%s.jpg", uuid.New().String()[:8])
+	
+		err := s.imageObjDAO.UploadObject(ctx, userID, coverImage, int64(len(req.CoverImage)), bytes.NewReader(req.CoverImage))
+		if err != nil {
+			logger.Error("[ArticleService] failed to upload cover image", zap.Error(err), zap.Uint("userID", userID))
+			rsp.Error = constant.ErrInternalError
+			return rsp, nil
+		}
+	}
+
 	// 创建文章
 	article := &dbmodel.Article{
-		UserID:  userID,
-		Title:   req.Body.Title,
-		Slug:    slug,
-		Content: req.Body.Content,
-		Status:  enum.ArticleStatusDraft,
+		UserID:     userID,
+		Title:      req.Body.Title,
+		Slug:       slug,
+		Content:    req.Body.Content,
+		CoverImage: coverImage,
+		Status:     enum.ArticleStatusDraft,
 	}
 
 	err := db.Transaction(func(tx *gorm.DB) error {
@@ -167,7 +186,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		},
 	}
 
-	articles, pageInfo, err := s.articleDAO.Paginate(db, &dbmodel.Article{UserID: userID}, []string{"id", "created_at", "updated_at", "published_at", "title", "slug", "content", "status"}, commonParam)
+	articles, pageInfo, err := s.articleDAO.Paginate(db, &dbmodel.Article{UserID: userID}, []string{"id", "created_at", "updated_at", "published_at", "title", "slug", "content", "cover_image", "status"}, commonParam)
 	if err != nil {
 		logger.Error("[ArticleService] failed to list articles", zap.Error(err))
 		rsp.Error = constant.ErrInternalError
@@ -191,10 +210,26 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 	// 组装文章列表并获取标签信息
 	rsp.Articles = lo.Map(articles, func(item *dbmodel.Article, _ int) *dto.ListedArticle {
 		user := userIDUserMap[item.UserID]
+		
+
+		// Generate presigned URL for cover image
+		coverImage := ""
+		if item.CoverImage != "" {
+			presignedURL, err := s.imageObjDAO.PresignObject(ctx, item.UserID, item.CoverImage)
+			if err != nil {
+				logger.Warn("[ArticleService] failed to generate presigned URL for cover image", 
+					zap.Error(err), 
+					zap.Uint("userID", item.UserID), 
+					zap.String("coverImage", item.CoverImage))
+			}
+			coverImage = presignedURL.String()
+		}
+			
 		return &dto.ListedArticle{
 			ID:          item.ID,
 			Slug:        item.Slug,
 			Title:       item.Title,
+			CoverImage:  coverImage,
 			Author: &dto.User{
 				ID:         user.ID,
 				Name:       user.Name,
@@ -213,7 +248,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 //
 //	return *EmptyRsp
 //	author centonhuang
-//	update 2026-01-29 10:00:00
+//	update 2026-01-29 17:00:00
 func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArticleReq) (*dto.EmptyRsp, error) {
 	rsp := &dto.EmptyRsp{}
 
@@ -226,8 +261,8 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	// 检查文章是否存在且属于当前用户
-	article, err := s.articleDAO.Get(db, &dbmodel.Article{ID: req.Body.ID}, []string{"id", "user_id"})
+	// 检查文章是否存在且属于当前用户，同时获取旧的封面图片
+	article, err := s.articleDAO.Get(db, &dbmodel.Article{ID: req.Body.ID}, []string{"id", "user_id", "cover_image"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			rsp.Error = constant.ErrDataNotExists
@@ -241,6 +276,15 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 	if article.UserID != userID {
 		rsp.Error = constant.ErrNoPermission
 		return rsp, nil
+	}
+
+	if len(req.CoverImage) > 0 {
+		err := s.imageObjDAO.UploadObject(ctx, userID, article.CoverImage, int64(len(req.CoverImage)), bytes.NewReader(req.CoverImage))
+		if err != nil {
+			logger.Error("[ArticleService] failed to upload cover image", zap.Error(err), zap.Uint("userID", userID))
+			rsp.Error = constant.ErrInternalError
+			return rsp, nil
+		}
 	}
 
 	// 构建更新字段
@@ -318,7 +362,7 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 //
 //	return *EmptyRsp
 //	author centonhuang
-//	update 2026-01-29 10:00:00
+//	update 2026-01-29 16:00:00
 func (s *articleService) DeleteArticle(ctx context.Context, req *dto.DeleteArticleReq) (*dto.EmptyRsp, error) {
 	rsp := &dto.EmptyRsp{}
 
@@ -331,8 +375,8 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *dto.DeleteArtic
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	// 检查文章是否存在且属于当前用户
-	article, err := s.articleDAO.Get(db, &dbmodel.Article{ID: req.ID}, []string{"id", "user_id"})
+	// 检查文章是否存在且属于当前用户，同时获取封面图片信息
+	article, err := s.articleDAO.Get(db, &dbmodel.Article{ID: req.ID}, []string{"id", "user_id", "cover_image"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			rsp.Error = constant.ErrDataNotExists
@@ -368,6 +412,18 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *dto.DeleteArtic
 		return rsp, nil
 	}
 
+	// 删除成功后，同步删除COS中的封面图片
+	if article.CoverImage != "" {	
+		err := s.imageObjDAO.DeleteObject(ctx, article.UserID, article.CoverImage)
+		if err != nil {
+			// Log the error but don't fail the request since article is already deleted
+			logger.Warn("[ArticleService] failed to delete cover image from storage", 
+				zap.Error(err), 
+				zap.Uint("articleID", req.ID), 
+				zap.String("coverImage", article.CoverImage))
+		}
+	}
+
 	return rsp, nil
 }
 
@@ -396,7 +452,7 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 	}
 
 	// 查询文章
-	article, err := s.articleDAO.Get(db, &dbmodel.Article{Slug: req.Slug}, []string{"id", "user_id", "title", "slug", "content", "created_at", "updated_at", "published_at", "status"})
+	article, err := s.articleDAO.Get(db, &dbmodel.Article{Slug: req.Slug}, []string{"id", "user_id", "title", "slug", "content", "cover_image", "created_at", "updated_at", "published_at", "status"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			rsp.Error = constant.ErrDataNotExists
@@ -436,6 +492,20 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 		})
 	}
 
+	// Generate presigned URL for cover image
+	// Generate presigned URL for cover image
+	coverImage := ""
+	if article.CoverImage != "" {
+		presignedURL, err := s.imageObjDAO.PresignObject(ctx, article.UserID, article.CoverImage)
+		if err != nil {
+			logger.Warn("[ArticleService] failed to generate presigned URL for cover image", 
+				zap.Error(err), 
+				zap.Uint("userID", article.UserID), 
+				zap.String("coverImage", article.CoverImage))
+		}
+		coverImage = presignedURL.String()
+	}
+
 	// 组装响应
 	rsp.Article = &dto.DetailedArticle{
 		ID:          article.ID,
@@ -451,8 +521,9 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 			Avatar:     user.Avatar,
 		},
 		Article: dto.Article{
-			Title:   article.Title,
-			Content: article.Content,
+			Title:      article.Title,
+			Content:    article.Content,
+			CoverImage: coverImage,
 		},
 	}
 

@@ -7,33 +7,26 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/common/model"
 )
 
-// Article 文章实体
+// Article 文章基础实体（用于详情返回）
 //
 //	@author centonhuang
-//	@update 2026-01-28 21:55:06
+//	@update 2026-01-29 17:00:00
 type Article struct {
-	Title   string `json:"title" doc:"Title of the article"`
-	Content string `json:"content" doc:"Content of the article"`
+	Title      string `json:"title" doc:"Title of the article"`
+	Content    string `json:"content" doc:"Content of the article"`
+	CoverImage string `json:"coverImage,omitempty" doc:"Cover image URL of the article (presigned URL)"`
 }
 
-// UpdatedArticle 更新文章实体
-//
-//	@author centonhuang
-//	@update 2026-01-28 21:55:37
-type UpdatedArticle struct {
-	ID     uint               `json:"id" doc:"ID of the article"`
-	Status enum.ArticleStatus `json:"status" doc:"Status of the article"`
-	Article
-}
 
 // ListedArticle 详细文章实体
 //
 //	@author centonhuang
-//	@update 2026-01-28 21:56:04
+//	@update 2026-01-29 12:00:00
 type ListedArticle struct {
 	ID          uint               `json:"id" doc:"ID of the article"`
 	Slug        string             `json:"slug" doc:"Slug of the article"`
 	Title       string             `json:"title" doc:"Title of the article"`
+	CoverImage  string             `json:"coverImage,omitempty" doc:"Cover image URL of the article"`
 	Author      *User               `json:"author" doc:"Author of the article"`
 	CreatedAt   time.Time          `json:"createdAt" doc:"Created time of the article"`
 	UpdatedAt   time.Time          `json:"updatedAt" doc:"Updated time of the article"`
@@ -59,17 +52,19 @@ type DetailedArticle struct {
 // CreateArticleReq 创建文章请求
 //
 //	@author centonhuang
-//	@update 2026-01-29 10:00:00
+//	@update 2026-01-29 17:00:00
 type CreateArticleReq struct {
-	Body *CreateArticleReqBody `json:"body" doc:"Request body containing fields to create"`
+	Body       *CreateArticleReqBody `json:"body" doc:"Request body containing fields to create"`
+	CoverImage []byte                `contentType:"image/png,image/jpeg,image/jpg,image/webp" maxLength:"10485760" doc:"Cover image file (max 10MB), optional"`
 }
 
 // CreateArticleReqBody 创建文章请求体
 //
 //	@author centonhuang
-//	@update 2026-01-29 10:00:00
+//	@update 2026-01-29 17:00:00
 type CreateArticleReqBody struct {
-	Article
+	Title   string `json:"title" doc:"Title of the article"`
+	Content string `json:"content" doc:"Content of the article"`
 }
 
 // ListArticlesReq 获取文章列表请求
@@ -95,17 +90,21 @@ type ListArticlesRsp struct {
 // UpdateArticleReq 更新文章请求
 //
 //	@author centonhuang
-//	@update 2026-01-29 10:00:00
+//	@update 2026-01-29 17:00:00
 type UpdateArticleReq struct {
-	Body *UpdateArticleReqBody `json:"body" doc:"Request body containing fields to update"`
+	Body       *UpdateArticleReqBody `json:"body" doc:"Request body containing fields to update"`
+	CoverImage []byte                `contentType:"image/png,image/jpeg,image/jpg,image/webp" maxLength:"10485760" doc:"Cover image file (max 10MB), optional"`
 }
 
 // UpdateArticleReqBody 更新文章请求体
 //
 //	@author centonhuang
-//	@update 2026-01-29 10:00:00
+//	@update 2026-01-29 17:00:00
 type UpdateArticleReqBody struct {
-	UpdatedArticle
+	ID     uint               `json:"id" doc:"ID of the article"`
+	Status enum.ArticleStatus `json:"status" doc:"Status of the article"`
+	Title  string             `json:"title" doc:"Title of the article"`
+	Content string            `json:"content" doc:"Content of the article"`
 }
 
 // DeleteArticleReq 删除文章请求

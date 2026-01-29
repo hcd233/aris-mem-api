@@ -11,7 +11,7 @@ import (
 // ArticleHandler 文章处理器
 //
 //	author centonhuang
-//	update 2026-01-29 10:00:00
+//	update 2026-01-29 14:00:00
 type ArticleHandler interface {
 	HandleCreateArticle(ctx context.Context, req *dto.CreateArticleReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
 	HandleListArticles(ctx context.Context, req *dto.ListArticlesReq) (*dto.HTTPResponse[*dto.ListArticlesRsp], error)
