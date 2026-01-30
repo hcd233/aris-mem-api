@@ -17,6 +17,7 @@ import (
 	objdao "github.com/hcd233/aris-mem-api/internal/infrastructure/storage/obj_dao"
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/util"
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -191,8 +192,8 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 			QueryFields: []string{"title", "content"},
 		},
 		SortParam: dao.SortParam{
-			Sort:      enum.SortDesc,
-			SortField: "published_at",
+			Sort:      req.Sort,
+			SortField: strcase.ToSnake(req.SortField),
 		},
 		FilterParam: dao.FilterParam{
 			FieldValueMap: map[string]any{},
@@ -260,6 +261,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 					zap.String("coverImage", item.CoverImage))
 			}
 			coverImage = presignedURL.String()
+			coverImage = util.ToThumbnailURL(coverImage)
 		}
 
 		return &dto.ListedArticle{

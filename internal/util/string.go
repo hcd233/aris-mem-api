@@ -3,11 +3,14 @@ package util
 import (
 	"encoding/base64"
 	"fmt"
+	"net/url"
 	"strings"
 	"unicode"
 
 	"github.com/google/uuid"
+	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/mozillazg/go-pinyin"
+	"github.com/samber/lo"
 )
 
 // ToDataURL 将文件转换为 data URL
@@ -97,4 +100,21 @@ func GenerateSlug(s string) string {
 	parts = append(parts, uuid.New().String()[:8])
 
 	return strings.Join(parts, "-")
+}
+
+// ToThumbnailURL 将图片 URL 转换为缩略图 URL
+//
+//	@param imageURL
+//	@return string
+//	@author centonhuang
+//	@update 2026-01-30 15:05:04
+func ToThumbnailURL(imageURL string) string {
+	u := lo.Must1(url.Parse(imageURL))
+	q := u.RawQuery
+	if q != "" {
+		u.RawQuery = fmt.Sprintf("%s&imageView2/1/q/%d", q, constant.DefaultThumbnailQuality)
+	} else {
+		u.RawQuery = fmt.Sprintf("imageView2/1/q/%d", constant.DefaultThumbnailQuality)
+	}
+	return u.String()
 }
