@@ -4,6 +4,8 @@
 
 **Aris Mem API** - 基于 Go 1.25.1 和整洁架构模式构建的 RESTful API 服务。
 
+**重要提示：AGENTS.md中必须使用中文。后续所有更新、修改和新功能开发都必须遵循此规定。**
+
 ### 技术栈
 
 - **语言**: Go 1.25.1 (CGO_ENABLED=0)
@@ -251,7 +253,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
     // 系统错误作为 Go error 返回
     db := database.GetDBInstance(ctx)
     if err := db.Create(&article).Error; err != nil {
-        logger.Error("[ArticleService] 创建失败", zap.Error(err))
+        logger.Error("[ArticleService] failed to create article", zap.Error(err))
         return nil, err  // 返回系统错误
     }
     
@@ -436,10 +438,10 @@ logger := logger.WithCtx(ctx)
 logger := logger.WithFCtx(c) // Fiber context
 
 // 日志级别
-logger.Debug("[Service] 调试信息", zap.String("key", value))
-logger.Info("[Service] 信息", zap.Uint("userID", userID))
-logger.Warn("[Service] 警告", zap.Error(err))
-logger.Error("[Service] 错误", zap.Error(err), zap.Stack("stack"))
+logger.Debug("[Service] Debug", zap.String("key", value))
+logger.Info("[Service] Info", zap.Uint("userID", userID))
+logger.Warn("[Service] Warn", zap.Error(err))
+logger.Error("[Service] Error", zap.Error(err), zap.Stack("stack"))
 
 // 命名约定：[组件名] 消息
 ```
@@ -538,8 +540,6 @@ docker run -d -p 8080:8080 \
 ```
 
 ---
-
-**重要提示：本项目所有代码注释必须使用中文。后续所有更新、修改和新功能开发都必须遵循此规定。**
 
 ## Bug修复日志
 

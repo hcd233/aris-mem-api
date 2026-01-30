@@ -16,4 +16,23 @@ const (
 	// DefaultImageExtension 默认图片扩展名（使用 JPEG 保证纯 Go 实现）
 	//	@update 2026-01-30 12:46:44
 	DefaultImageExtension = ".jpg"
+
+	// DefaultImageUploadPoolMaxWorkers 图片上传协程池默认最大工作协程数
+	//	@update 2026-01-31 16:00:00
+	DefaultImageUploadPoolMaxWorkers = 10
+
+	// DefaultImageUploadPoolQueueSize 图片上传协程池默认任务队列大小
+	//	@update 2026-01-31 16:00:00
+	DefaultImageUploadPoolQueueSize = 100
+)
+
+// 图片上传协程池配置键
+const (
+	// ConfigKeyImageUploadPoolMaxWorkers 图片上传协程池最大工作协程数配置键
+	//	@update 2026-01-31 16:00:00
+	ConfigKeyImageUploadPoolMaxWorkers = "image.upload.pool.max.workers"
+
+	// ConfigKeyImageUploadPoolQueueSize 图片上传协程池任务队列大小配置键
+	//	@update 2026-01-31 16:00:00
+	ConfigKeyImageUploadPoolQueueSize = "image.upload.pool.queue.size"
 )

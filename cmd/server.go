@@ -6,17 +6,17 @@ import (
 	"runtime/debug"
 
 	"github.com/hcd233/aris-mem-api/internal/api"
-	"github.com/hcd233/aris-mem-api/internal/logger"
-	"github.com/hcd233/aris-mem-api/internal/middleware"
-	"go.uber.org/zap"
-
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/cache"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/pool"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/smtp"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/storage"
+	"github.com/hcd233/aris-mem-api/internal/logger"
+	"github.com/hcd233/aris-mem-api/internal/middleware"
 	"github.com/hcd233/aris-mem-api/internal/router"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 var serverCmd = &cobra.Command{
@@ -43,6 +43,11 @@ var startServerCmd = &cobra.Command{
 		cache.InitCache()
 		storage.InitObjectStorage()
 		smtp.InitSMTPClient()
+
+		// 初始化全局协程池
+		pool.InitPoolManager()
+		defer pool.StopPoolManager()
+
 		// cron.InitCronJobs()
 
 		app := api.GetFiberApp()

@@ -180,6 +180,14 @@ var (
 
 	// EmailTLS bool Enable TLS for email
 	SMTPTLS bool
+
+	// PoolWorkers int 协程池工作协程数
+	//	@update 2026-01-31 03:26:11
+	PoolWorkers int
+
+	// PoolQueueSize int 协程池任务队列大小
+	//	@update 2026-01-31 03:26:08
+	PoolQueueSize int
 )
 
 func init() {
@@ -198,6 +206,9 @@ func initEnvironment() {
 	config.SetDefault("log.dir", "./logs")
 
 	config.SetDefault("postgres.sslmode", "disable")
+
+	config.SetDefault("pool.workers", 8)
+	config.SetDefault("pool.queue.size", 64)
 
 	config.AutomaticEnv()
 
@@ -260,4 +271,7 @@ func initEnvironment() {
 	SMTPFrom = config.GetString("smtp.from")
 	SMTPFromName = config.GetString("smtp.from.name")
 	SMTPTLS = config.GetBool("smtp.tls")
+
+	PoolWorkers = config.GetInt("pool.workers")
+	PoolQueueSize = config.GetInt("pool.queue.size")
 }
