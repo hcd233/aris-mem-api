@@ -589,6 +589,28 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 		coverImage = presignedURL.String()
 	}
 
+	liked, saved := true, true
+	_, err = s.actionDAO.Get(db, &dbmodel.Action{UserID: userID, EntityType: enum.ActionEntityArticle, EntityID: article.ID, ActionType: enum.ActionTypeLike}, []string{"id"})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			liked = false
+		} else {
+			logger.Error("[ArticleService] failed to get like action", zap.Error(err), zap.Uint("userID", userID), zap.Uint("articleID", article.ID))
+			rsp.Error = constant.ErrInternalError
+			return rsp, nil
+		}
+	}
+	_, err = s.actionDAO.Get(db, &dbmodel.Action{UserID: userID, EntityType: enum.ActionEntityArticle, EntityID: article.ID, ActionType: enum.ActionTypeSave}, []string{"id"})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			saved = false
+		} else {
+			logger.Error("[ArticleService] failed to get save action", zap.Error(err), zap.Uint("userID", userID), zap.Uint("articleID", article.ID))
+			rsp.Error = constant.ErrInternalError
+			return rsp, nil
+		}
+	}
+
 	// 组装响应
 	rsp.Article = &dto.DetailedArticle{
 		ID:          article.ID,
@@ -600,6 +622,8 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 		Likes:       article.Likes,
 		Saves:       article.Saves,
 		Views:       article.Views,
+		Liked:       liked,
+		Saved:       saved,
 		Tags: lo.Map(tags, func(item *dbmodel.Tag, _ int) *dto.DetailedTag {
 			return &dto.DetailedTag{
 				ID:        item.ID,
