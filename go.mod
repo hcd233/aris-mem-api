@@ -3,6 +3,7 @@ module github.com/hcd233/aris-mem-api
 go 1.25.1
 
 require (
+	github.com/chai2010/webp v1.4.0
 	github.com/cloudwego/eino v0.5.14
 	github.com/cloudwego/eino-ext/components/model/openai v0.1.4
 	github.com/danielgtaylor/huma/v2 v2.34.1
@@ -66,7 +67,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	github.com/yargevad/filepathx v1.0.0 // indirect
-	golang.org/x/sync v0.17.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
@@ -114,7 +115,7 @@ require (
 	golang.org/x/exp v0.0.0-20240604190554-fc45aab8b7f8 // indirect
 	golang.org/x/net v0.44.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect
-	golang.org/x/text v0.29.0 // indirect
+	golang.org/x/text v0.33.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

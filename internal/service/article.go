@@ -82,10 +82,36 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 
 	// 上传封面图片（如果提供）
 	var coverImage string
-	if len(req.Body.CoverImage) > 0 {
-		coverImage := fmt.Sprintf("article-cover-%s.jpg", uuid.New().String()[:8])
+	if req.Body.CoverImage != "" {
+		// 解码 base64 或 Data URL
+		imageData, mimeType, err := util.DecodeBase64OrDataURL(req.Body.CoverImage)
+		if err != nil {
+			logger.Error("[ArticleService] failed to decode cover image", zap.Error(err), zap.Uint("userID", userID))
+			rsp.Error = constant.ErrInvalidFile
+			return rsp, nil
+		}
 
-		err := s.imageObjDAO.UploadObject(ctx, userID, coverImage, int64(len(req.Body.CoverImage)), bytes.NewReader(req.Body.CoverImage))
+		// 验证并转换图片格式为统一的 JPEG 格式
+		convertedData, err := util.ConvertImageToWebp(imageData, mimeType)
+		if err != nil {
+			logger.Error("[ArticleService] failed to convert image format",
+				zap.Error(err),
+				zap.Uint("userID", userID),
+				zap.String("mimeType", mimeType))
+			rsp.Error = constant.ErrInvalidFile
+			return rsp, nil
+		}
+
+		if len(convertedData) > constant.DefaultMaxImageSize {
+			logger.Error("[ArticleService] cover image is too large", zap.Uint("userID", userID), zap.Int("size", len(convertedData)))
+			rsp.Error = constant.ErrInvalidFile
+			return rsp, nil
+		}
+
+		// 使用统一的文件扩展名
+		coverImage = fmt.Sprintf("article-cover-%s%s", uuid.New().String()[:8], constant.DefaultImageExtension)
+
+		err = s.imageObjDAO.UploadObject(ctx, userID, coverImage, int64(len(convertedData)), bytes.NewReader(convertedData))
 		if err != nil {
 			logger.Error("[ArticleService] failed to upload cover image", zap.Error(err), zap.Uint("userID", userID))
 			rsp.Error = constant.ErrInternalError
@@ -282,8 +308,34 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 		return rsp, nil
 	}
 
-	if len(req.Body.CoverImage) > 0 {
-		err := s.imageObjDAO.UploadObject(ctx, userID, article.CoverImage, int64(len(req.Body.CoverImage)), bytes.NewReader(req.Body.CoverImage))
+	// 处理封面图片上传
+	if req.Body.CoverImage != "" {
+		// 解码 base64 或 Data URL
+		imageData, mimeType, err := util.DecodeBase64OrDataURL(req.Body.CoverImage)
+		if err != nil {
+			logger.Error("[ArticleService] failed to decode cover image", zap.Error(err), zap.Uint("userID", userID))
+			rsp.Error = constant.ErrInvalidFile
+			return rsp, nil
+		}
+
+		// 验证并转换图片格式为统一的 JPEG 格式
+		convertedData, err := util.ConvertImageToWebp(imageData, mimeType)
+		if err != nil {
+			logger.Error("[ArticleService] failed to convert image format",
+				zap.Error(err),
+				zap.Uint("userID", userID),
+				zap.String("mimeType", mimeType))
+			rsp.Error = constant.ErrInvalidFile
+			return rsp, nil
+		}
+
+		if len(convertedData) > constant.DefaultMaxImageSize {
+			logger.Error("[ArticleService] cover image is too large", zap.Uint("userID", userID), zap.Int("size", len(convertedData)))
+			rsp.Error = constant.ErrInvalidFile
+			return rsp, nil
+		}
+
+		err = s.imageObjDAO.UploadObject(ctx, userID, article.CoverImage, int64(len(convertedData)), bytes.NewReader(convertedData))
 		if err != nil {
 			logger.Error("[ArticleService] failed to upload cover image", zap.Error(err), zap.Uint("userID", userID))
 			rsp.Error = constant.ErrInternalError

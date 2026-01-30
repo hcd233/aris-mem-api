@@ -55,4 +55,9 @@ var (
 	//
 	//	update 2025-11-13 17:48:00
 	ErrResourceLocked = model.NewError(10009, "ResourceLocked")
+
+	// ErrInvalidFile 文件非法错误
+	//
+	//	update 2026-01-30 12:40:00
+	ErrInvalidFile = model.NewError(10010, "InvalidFile")
 )

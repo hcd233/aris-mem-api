@@ -67,7 +67,7 @@ type CreateArticleReq struct {
 type CreateArticleReqBody struct {
 	Title      string `json:"title" doc:"Title of the article"`
 	Content    string `json:"content" doc:"Content of the article"`
-	CoverImage []byte `json:"coverImage" maxItems:"10485760" doc:"Cover image file (max 10MB), optional"`
+	CoverImage string `json:"coverImage" maxLength:"15000000" doc:"Cover image in base64 or Data URL format (max ~10MB), optional"`
 }
 
 // ListArticlesReq 获取文章列表请求
@@ -107,7 +107,7 @@ type UpdateArticleReqBody struct {
 	Status     enum.ArticleStatus `json:"status" doc:"Status of the article"`
 	Title      string             `json:"title" doc:"Title of the article"`
 	Content    string             `json:"content" doc:"Content of the article"`
-	CoverImage []byte             `json:"coverImage" maxLength:"10485760" doc:"Cover image file (max 10MB), optional"`
+	CoverImage string             `json:"coverImage" maxLength:"15000000" doc:"Cover image in base64 or Data URL format (max ~10MB), optional"`
 }
 
 // DeleteArticleReq 删除文章请求
