@@ -62,7 +62,7 @@ func NewAgentService() AgentService {
 //	param ctx context.Context
 //	param req *dto.ChatReq
 //	return *huma.StreamResponse, error
-func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (rsp *huma.StreamResponse, err error) {
+func (s *agentService) HandleChat(ctx context.Context, req *dto.ChatReq) (*huma.StreamResponse, error) {
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
 	logger := logger.WithCtx(ctx)

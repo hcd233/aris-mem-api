@@ -48,8 +48,8 @@ func NewUserService() UserService {
 //	@return error
 //	@author centonhuang
 //	@update 2025-11-11 04:59:13
-func (s *userService) GetCurUser(ctx context.Context, _ *dto.EmptyReq) (*dto.GetCurUserRsp, error) {
-	rsp := &dto.GetCurUserRsp{}
+func (s *userService) GetCurUser(ctx context.Context, _ *dto.EmptyReq) (rsp *dto.GetCurUserRsp, err error) {
+	rsp = &dto.GetCurUserRsp{}
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 

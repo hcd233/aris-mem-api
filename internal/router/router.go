@@ -54,6 +54,9 @@ func RegisterAPIRouter() {
 	userGroup := huma.NewGroup(v1Group, "/user")
 	initUserRouter(userGroup)
 
+	actionGroup := huma.NewGroup(v1Group, "/action")
+	initActionRouter(actionGroup)
+
 	todoItemGroup := huma.NewGroup(v1Group, "/todoItem")
 	initTodoItemRouter(todoItemGroup)
 
