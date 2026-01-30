@@ -1,15 +1,8 @@
 package service
 
 import (
-	"bytes"
 	"context"
-	"crypto/md5"
-	"encoding/hex"
 	"errors"
-	"fmt"
-	"io"
-	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
@@ -37,7 +30,6 @@ type ArticleService interface {
 	UpdateArticle(ctx context.Context, req *dto.UpdateArticleReq) (rsp *dto.EmptyRsp, err error)
 	DeleteArticle(ctx context.Context, req *dto.DeleteArticleReq) (rsp *dto.EmptyRsp, err error)
 	GetArticle(ctx context.Context, req *dto.GetArticleReq) (rsp *dto.GetArticleRsp, err error)
-	UploadArticleImage(ctx context.Context, req *dto.UploadArticleImageReq) (rsp *dto.UploadArticleImageRsp, err error)
 }
 
 type articleService struct {
@@ -284,73 +276,6 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		}
 	})
 	rsp.PageInfo = pageInfo
-	return rsp, nil
-}
-
-// UploadArticleImage 上传文章图片
-//
-//	return *UploadArticleImageRsp
-//	author centonhuang
-//	update 2026-01-31 10:00:00
-func (s *articleService) UploadArticleImage(ctx context.Context, req *dto.UploadArticleImageReq) (*dto.UploadArticleImageRsp, error) {
-	rsp := &dto.UploadArticleImageRsp{}
-
-	logger := logger.WithCtx(ctx)
-	userID := ctx.Value(constant.CtxKeyUserID).(uint)
-
-	if req.RawBody.Size > constant.DefaultMaxImageSize {
-		logger.Error("[ArticleService] image size exceeds limit", zap.Uint("userID", userID), zap.Int64("size", req.RawBody.Size))
-		rsp.Error = constant.ErrInvalidFile
-		return rsp, nil
-	}
-
-	// 解码 base64 或 Data URL
-	file, err := req.RawBody.Open()
-	if err != nil {
-		logger.Error("[ArticleService] failed to decode image", zap.Error(err), zap.Uint("userID", userID))
-		rsp.Error = constant.ErrInvalidFile
-		return rsp, nil
-	}
-	defer file.Close()
-
-	ext := filepath.Ext(req.RawBody.Filename)
-	ext = strings.ToLower(ext)
-	if ext == "" {
-		ext = constant.DefaultImageExtension
-	}
-
-	imageData, err := io.ReadAll(file)
-	if err != nil {
-		logger.Error("[ArticleService] failed to read image", zap.Error(err), zap.Uint("userID", userID))
-		rsp.Error = constant.ErrInvalidFile
-		return rsp, nil
-	}
-	// 验证并转换图片格式为统一的 JPEG 格式
-	imageData, err = util.ConvertImageToJPEG(imageData, ext)
-	if err != nil {
-		logger.Error("[ArticleService] failed to convert image format",
-			zap.Error(err),
-			zap.Uint("userID", userID),
-			zap.String("ext", ext))
-		rsp.Error = constant.ErrInvalidFile
-		return rsp, nil
-	}
-
-	md5Hash := md5.Sum(imageData)
-	md5Str := hex.EncodeToString(md5Hash[:])
-
-	// 生成图片文件名
-	imageName := fmt.Sprintf("atc-img-%s%s", md5Str[:8], constant.DefaultImageExtension)
-
-	// 上传图片到对象存储
-	err = s.imageObjDAO.UploadObject(ctx, userID, imageName, int64(len(imageData)), bytes.NewReader(imageData))
-	if err != nil {
-		logger.Error("[ArticleService] 上传图片失败", zap.Error(err), zap.Uint("userID", userID))
-		rsp.Error = constant.ErrInternalError
-		return rsp, nil
-	}
-
-	rsp.ImageName = imageName
 	return rsp, nil
 }
 

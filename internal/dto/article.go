@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"mime/multipart"
 	"time"
 
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
@@ -145,21 +144,4 @@ type GetArticleReq struct {
 type GetArticleRsp struct {
 	CommonRsp
 	Article *DetailedArticle `json:"article" doc:"Detailed article information"`
-}
-
-// UploadArticleImageReq 上传文章图片请求
-//
-//	@author centonhuang
-//	@update 2026-01-31 10:00:00
-type UploadArticleImageReq struct {
-	RawBody multipart.FileHeader
-}
-
-// UploadArticleImageRsp 上传文章图片响应
-//
-//	@author centonhuang
-//	@update 2026-01-31 10:00:00
-type UploadArticleImageRsp struct {
-	CommonRsp
-	ImageName string `json:"imageName" doc:"Name of the uploaded image"`
 }
