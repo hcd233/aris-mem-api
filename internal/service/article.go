@@ -92,7 +92,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 		}
 
 		// 验证并转换图片格式为统一的 JPEG 格式
-		convertedData, err := util.ConvertImageToWebp(imageData, mimeType)
+		convertedData, err := util.ConvertImageToJPEG(imageData, mimeType)
 		if err != nil {
 			logger.Error("[ArticleService] failed to convert image format",
 				zap.Error(err),
@@ -319,7 +319,7 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 		}
 
 		// 验证并转换图片格式为统一的 JPEG 格式
-		convertedData, err := util.ConvertImageToWebp(imageData, mimeType)
+		convertedData, err := util.ConvertImageToJPEG(imageData, mimeType)
 		if err != nil {
 			logger.Error("[ArticleService] failed to convert image format",
 				zap.Error(err),
