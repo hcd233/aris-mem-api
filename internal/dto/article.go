@@ -76,7 +76,7 @@ type CreateArticleReqBody struct {
 //	@update 2026-01-29 10:00:00
 type ListArticlesReq struct {
 	model.CommonParam
-	SortField string `query:"sortField" enum:"id,createdAt,updatedAt,name" doc:"Sort field"`
+	SortField string `query:"sortField" enum:"id,createdAt,updatedAt,title" doc:"Sort field"`
 	ArticleFilterParam
 }
 
