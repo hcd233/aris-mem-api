@@ -74,21 +74,21 @@ func (s *tokenService) RefreshToken(ctx context.Context, req *dto.RefreshTokenRe
 			rsp.Error = constant.ErrDataNotExists
 			return rsp, nil
 		}
-		logger.Error("[TokenService] failed to get user by id", zap.Error(err))
+		logger.Error("[TokenService] failed to get user by id", zap.Uint("userID", userID), zap.Error(err))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}
 
 	accessToken, err := s.accessTokenSigner.EncodeToken(userID)
 	if err != nil {
-		logger.Error("[TokenService] failed to encode access token", zap.Error(err))
+		logger.Error("[TokenService] failed to encode access token", zap.Uint("userID", userID), zap.Error(err))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}
 
 	refreshToken, err := s.refreshTokenSigner.EncodeToken(userID)
 	if err != nil {
-		logger.Error("[TokenService] failed to encode refresh token", zap.Error(err))
+		logger.Error("[TokenService] failed to encode refresh token", zap.Uint("userID", userID), zap.Error(err))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}

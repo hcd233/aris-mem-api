@@ -51,12 +51,11 @@ func (s *imageService) UploadImage(ctx context.Context, req *dto.UploadImageReq)
 	rsp := &dto.UploadImageRsp{}
 
 	log := logger.WithCtx(ctx)
-	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
 	image := req.RawBody.Data().Image
 
 	if image.Size > constant.DefaultMaxImageSize {
-		log.Error("[ImageService] image size exceeds limit", zap.Uint("userID", userID), zap.Int64("size", image.Size))
+		log.Error("[ImageService] image size exceeds limit", zap.Int64("size", image.Size), zap.Int64("expectedSize", constant.DefaultMaxImageSize))
 		rsp.Error = constant.ErrInvalidFile
 		return rsp, nil
 	}
@@ -69,7 +68,7 @@ func (s *imageService) UploadImage(ctx context.Context, req *dto.UploadImageReq)
 
 	imageData, err := io.ReadAll(image.File)
 	if err != nil {
-		log.Error("[ImageService] failed to read image", zap.Error(err), zap.Uint("userID", userID))
+		log.Error("[ImageService] failed to read image", zap.Error(err))
 		rsp.Error = constant.ErrInvalidFile
 		return rsp, nil
 	}
@@ -78,7 +77,6 @@ func (s *imageService) UploadImage(ctx context.Context, req *dto.UploadImageReq)
 	if err != nil {
 		log.Error("[ImageService] failed to convert image format",
 			zap.Error(err),
-			zap.Uint("userID", userID),
 			zap.String("ext", ext))
 		rsp.Error = constant.ErrInvalidFile
 		return rsp, nil
@@ -101,7 +99,7 @@ func (s *imageService) UploadImage(ctx context.Context, req *dto.UploadImageReq)
 	poolMgr := pool.GetPoolManager()
 	err = poolMgr.SubmitImageUploadTask(task)
 	if err != nil {
-		log.Error("[ImageService] failed to submit image upload task", zap.Error(err), zap.Uint("userID", userID), zap.String("imageName", imageName))
+		log.Error("[ImageService] failed to submit image upload task", zap.Error(err), zap.String("imageName", imageName))
 		rsp.Error = constant.ErrInvalidFile
 		return rsp, nil
 	}

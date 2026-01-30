@@ -84,12 +84,12 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 	for _, image := range req.Body.Images {
 		exists, err := s.imageObjDAO.CheckObject(ctx, userID, image)
 		if err != nil {
-			logger.Error("[ArticleService] failed to check image", zap.Error(err), zap.Uint("userID", userID), zap.String("image", image))
+			logger.Error("[ArticleService] failed to check image", zap.Error(err), zap.String("image", image))
 			rsp.Error = constant.ErrInternalError
 			return rsp, nil
 		}
 		if !exists {
-			logger.Error("[ArticleService] image not exists", zap.Uint("userID", userID), zap.String("image", image))
+			logger.Error("[ArticleService] image not exists", zap.String("image", image))
 			rsp.Error = constant.ErrDataNotExists
 			return rsp, nil
 		}
@@ -247,7 +247,6 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 			if err != nil {
 				logger.Warn("[ArticleService] failed to generate presigned URL for cover image",
 					zap.Error(err),
-					zap.Uint("userID", item.UserID),
 					zap.String("coverImage", item.Images[0]))
 			}
 			coverImage = presignedURL.String()
@@ -480,7 +479,7 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 
 	user, err := s.userDAO.Get(db, &dbmodel.User{ID: userID}, []string{"id", "name", "avatar"})
 	if err != nil {
-		logger.Error("[ArticleService] failed to get user", zap.Error(err), zap.Uint("userID", userID))
+		logger.Error("[ArticleService] failed to get user", zap.Error(err))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}
@@ -528,7 +527,7 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 	for _, image := range article.Images {
 		presignedURL, err := s.imageObjDAO.PresignObject(ctx, article.UserID, image)
 		if err != nil {
-			logger.Warn("[ArticleService] failed to generate presigned URL for image", zap.Error(err), zap.Uint("userID", article.UserID), zap.String("image", image))
+			logger.Warn("[ArticleService] failed to generate presigned URL for image", zap.Error(err), zap.String("image", image))
 		}
 		images = append(images, presignedURL.String())
 	}
@@ -539,7 +538,7 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			liked = false
 		} else {
-			logger.Error("[ArticleService] failed to get like action", zap.Error(err), zap.Uint("userID", userID), zap.Uint("articleID", article.ID))
+			logger.Error("[ArticleService] failed to get like action", zap.Error(err), zap.Uint("articleID", article.ID))
 			rsp.Error = constant.ErrInternalError
 			return rsp, nil
 		}

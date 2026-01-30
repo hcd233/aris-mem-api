@@ -70,10 +70,10 @@ func (pm *PoolManager) SubmitImageUploadTask(task *dto.ImageUploadTask) error {
 		userID := task.Ctx.Value(constant.CtxKeyUserID).(uint)
 		err := pm.imageObjDAO.UploadObject(task.Ctx, userID, task.ImageName, int64(len(task.ImageData)), bytes.NewReader(task.ImageData))
 		if err != nil {
-			logger.Error("[PoolManager] async upload image failed", zap.Error(err), zap.Uint("userID", userID), zap.String("imageName", task.ImageName))
+			logger.Error("[PoolManager] async upload image failed", zap.Error(err), zap.String("imageName", task.ImageName))
 			return
 		}
-		logger.Info("[PoolManager] async upload image success", zap.Uint("userID", userID), zap.String("imageName", task.ImageName))
+		logger.Info("[PoolManager] async upload image success", zap.String("imageName", task.ImageName))
 	})
 }
 
