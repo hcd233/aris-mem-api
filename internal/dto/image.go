@@ -7,7 +7,7 @@ import "mime/multipart"
 //	@author centonhuang
 //	@update 2026-01-31 14:00:00
 type UploadImageReq struct {
-	RawBody multipart.FileHeader
+	RawBody *multipart.FileHeader
 }
 
 // UploadImageRsp 上传图片响应
