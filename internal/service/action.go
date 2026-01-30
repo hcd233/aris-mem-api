@@ -11,6 +11,7 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/dao"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/model"
 	"github.com/hcd233/aris-mem-api/internal/logger"
+	"github.com/hcd233/aris-mem-api/internal/util"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -18,7 +19,7 @@ import (
 // ActionService action service
 //
 //	author centonhuang
-//	update 2026-01-30 21:00:00
+//	update 2026-01-30 22:00:00
 type ActionService interface {
 	Do(ctx context.Context, req *dto.ActionReq) (rsp *dto.EmptyRsp, err error)
 	Undo(ctx context.Context, req *dto.ActionReq) (rsp *dto.EmptyRsp, err error)
@@ -33,7 +34,7 @@ type actionService struct {
 //
 //	return ActionService
 //	author centonhuang
-//	update 2026-01-30 21:00:00
+//	update 2026-01-30 22:00:00
 func NewActionService() ActionService {
 	return &actionService{
 		articleDAO: dao.GetArticleDAO(),
@@ -83,9 +84,16 @@ func (s *actionService) Do(ctx context.Context, req *dto.ActionReq) (*dto.EmptyR
 
 		switch req.Body.ActionType {
 		case enum.ActionTypeLike:
-			updateFields["likes"] = article.Likes + 1
+			newLikes := article.Likes + 1
+			updateFields["likes"] = &newLikes
 		case enum.ActionTypeSave:
-			updateFields["saves"] = article.Saves + 1
+			newSaves := article.Saves + 1
+			updateFields["saves"] = &newSaves
+		}
+
+		if !util.HasNonZeroValue(updateFields) {
+			rsp.Error = constant.ErrBadRequest
+			return rsp, nil
 		}
 
 		err = db.Transaction(func(tx *gorm.DB) error {
@@ -103,16 +111,13 @@ func (s *actionService) Do(ctx context.Context, req *dto.ActionReq) (*dto.EmptyR
 		})
 		if err != nil {
 			rsp.Error = constant.ErrInternalError
-			return rsp, nil
 		}
 	case enum.ActionEntityComment:
 		logger.Info("[ActionService] comment action not implemented", zap.String("entityType", string(req.Body.EntityType)))
 		rsp.Error = constant.ErrNoImplement
-		return rsp, nil
 	default:
 		logger.Error("[ActionService] invalid entity type", zap.String("entityType", string(req.Body.EntityType)))
 		rsp.Error = constant.ErrBadRequest
-		return rsp, nil
 	}
 	return rsp, nil
 }
@@ -158,9 +163,20 @@ func (s *actionService) Undo(ctx context.Context, req *dto.ActionReq) (*dto.Empt
 
 		switch req.Body.ActionType {
 		case enum.ActionTypeLike:
-			updateFields["likes"] = article.Likes - 1
+			if article.Likes > 0 {
+				newLikes := article.Likes - 1
+				updateFields["likes"] = &newLikes
+			}
 		case enum.ActionTypeSave:
-			updateFields["saves"] = article.Saves - 1
+			if article.Saves > 0 {
+				newSaves := article.Saves - 1
+				updateFields["saves"] = &newSaves
+			}
+		}
+
+		if !util.HasNonZeroValue(updateFields) {
+			rsp.Error = constant.ErrBadRequest
+			return rsp, nil
 		}
 
 		err = db.Transaction(func(tx *gorm.DB) error {
@@ -178,17 +194,13 @@ func (s *actionService) Undo(ctx context.Context, req *dto.ActionReq) (*dto.Empt
 		})
 		if err != nil {
 			rsp.Error = constant.ErrInternalError
-			return rsp, nil
 		}
-		return rsp, nil
 	case enum.ActionEntityComment:
 		logger.Info("[ActionService] comment action not implemented", zap.String("entityType", string(req.Body.EntityType)))
 		rsp.Error = constant.ErrNoImplement
-		return rsp, nil
 	default:
 		logger.Error("[ActionService] invalid entity type", zap.String("entityType", string(req.Body.EntityType)))
 		rsp.Error = constant.ErrBadRequest
-		return rsp, nil
 	}
 	return rsp, nil
 }

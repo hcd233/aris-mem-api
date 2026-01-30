@@ -64,7 +64,7 @@ func (dao *baseDAO[ModelT]) BatchGetByIDs(db *gorm.DB, ids []uint, fields []stri
 //	param dao *BaseDAO[T]
 //	return Update
 //	author centonhuang
-//	update 2024-10-17 02:52:18
+//	update 2026-01-30 22:00:00
 func (dao *baseDAO[ModelT]) Update(db *gorm.DB, data *ModelT, info map[string]interface{}) (err error) {
 	updateAtField := "updated_at"
 	info[updateAtField] = time.Now().UTC()
