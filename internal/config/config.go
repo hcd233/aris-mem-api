@@ -137,10 +137,6 @@ var (
 	//	@update 2026-01-31 18:00:00
 	CosSTSDuration int
 
-	// CosSTSAllowPrefix string COS临时密钥允许上传路径前缀
-	//	@update 2026-01-31 18:00:00
-	CosSTSAllowPrefix string
-
 	// OpenAIModel string OpenAI Model
 	OpenAIModel string
 
@@ -227,7 +223,7 @@ func initEnvironment() {
 	config.SetDefault("pool.workers", 8)
 	config.SetDefault("pool.queue.size", 64)
 
-	config.SetDefault("cos.sts.duration", 1800)
+	config.SetDefault("cos.sts.duration", 300) // 默认5分钟
 	config.SetDefault("cos.sts.allow.prefix", "*")
 
 	config.AutomaticEnv()
@@ -272,7 +268,6 @@ func initEnvironment() {
 	CosSecretID = config.GetString("cos.secret.id")
 	CosSecretKey = config.GetString("cos.secret.key")
 	CosSTSDuration = config.GetInt("cos.sts.duration")
-	CosSTSAllowPrefix = config.GetString("cos.sts.allow.prefix")
 
 	OpenAIModel = config.GetString("openai.model")
 	OpenAIAPIKey = config.GetString("openai.api.key")

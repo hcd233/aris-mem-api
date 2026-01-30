@@ -173,8 +173,8 @@ func (s *imageService) GetCosTempCredential(ctx context.Context, _ *dto.EmptyReq
 		// 缓存命中，直接返回
 		var credential dto.CosTempCredential
 		if err := json.Unmarshal([]byte(cachedData), &credential); err == nil {
-			// 检查是否即将过期（剩余时间小于5分钟）
-			if credential.ExpiredTime-time.Now().Unix() > 300 {
+			// 检查是否即将过期（剩余时间小于1/4时重新申请）
+			if credential.ExpiredTime-time.Now().Unix() > int64(1/4*float64(config.CosSTSDuration)) {
 				logger.Info("[ImageService] return cached credential", zap.Uint("userID", userID))
 				rsp.CosTempCredential = &credential
 				return rsp, nil
@@ -189,7 +189,7 @@ func (s *imageService) GetCosTempCredential(ctx context.Context, _ *dto.EmptyReq
 		config.CosAppID,
 		config.CosBucketName,
 		config.CosAppID,
-		config.CosSTSAllowPrefix,
+		fmt.Sprintf("user-%d/image/*", userID),
 	)
 
 	// 构建策略
@@ -264,8 +264,8 @@ func (s *imageService) GetCosTempCredential(ctx context.Context, _ *dto.EmptyReq
 		AppID:        config.CosAppID,
 	}
 
-	// 缓存临时密钥（有效期减去5分钟作为缓存时间，预留刷新时间）
-	cacheDuration := time.Duration(config.CosSTSDuration-300) * time.Second
+	// 缓存临时密钥（有效期减去1分钟作为缓存时间，预留刷新时间）
+	cacheDuration := time.Duration(config.CosSTSDuration-60) * time.Second
 	if cacheData, err := json.Marshal(rsp.CosTempCredential); err == nil {
 		redisClient.Set(ctx, cacheKey, cacheData, cacheDuration)
 	}
