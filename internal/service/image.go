@@ -50,12 +50,14 @@ func NewImageService() ImageService {
 func (s *imageService) UploadImage(ctx context.Context, req *dto.UploadImageReq) (*dto.UploadImageRsp, error) {
 	rsp := &dto.UploadImageRsp{}
 
-	log := logger.WithCtx(ctx)
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	logger := logger.WithCtx(ctx)
 
 	image := req.RawBody.Data().Image
 
 	if image.Size > constant.DefaultMaxImageSize {
-		log.Error("[ImageService] image size exceeds limit", zap.Int64("size", image.Size), zap.Int64("expectedSize", constant.DefaultMaxImageSize))
+		logger.Error("[ImageService] image size exceeds limit", zap.Int64("size", image.Size), zap.Int64("expectedSize", constant.DefaultMaxImageSize))
 		rsp.Error = constant.ErrInvalidFile
 		return rsp, nil
 	}
@@ -68,14 +70,14 @@ func (s *imageService) UploadImage(ctx context.Context, req *dto.UploadImageReq)
 
 	imageData, err := io.ReadAll(image.File)
 	if err != nil {
-		log.Error("[ImageService] failed to read image", zap.Error(err))
+		logger.Error("[ImageService] failed to read image", zap.Error(err))
 		rsp.Error = constant.ErrInvalidFile
 		return rsp, nil
 	}
 	// 验证并转换图片格式为统一的 JPEG 格式
 	imageData, err = util.ConvertImageToJPEG(imageData, ext)
 	if err != nil {
-		log.Error("[ImageService] failed to convert image format",
+		logger.Error("[ImageService] failed to convert image format",
 			zap.Error(err),
 			zap.String("ext", ext))
 		rsp.Error = constant.ErrInvalidFile
@@ -85,13 +87,13 @@ func (s *imageService) UploadImage(ctx context.Context, req *dto.UploadImageReq)
 	// 压缩图片至2MB以内
 	imageData, err = util.CompressImageToSize(imageData, constant.DefaultMaxCompressedImageSize)
 	if err != nil {
-		log.Error("[ImageService] failed to compress image",
+		logger.Error("[ImageService] failed to compress image",
 			zap.Error(err))
 		rsp.Error = constant.ErrInvalidFile
 		return rsp, nil
 	}
 
-	log.Info("[ImageService] image compressed successfully",
+	logger.Info("[ImageService] image compressed successfully",
 		zap.Int64("originalSize", image.Size),
 		zap.Int("compressedSize", len(imageData)))
 
@@ -100,6 +102,18 @@ func (s *imageService) UploadImage(ctx context.Context, req *dto.UploadImageReq)
 
 	// 生成图片文件名
 	imageName := fmt.Sprintf("atc-img-%s%s", md5Str[:8], constant.DefaultImageExtension)
+
+	exists, err := s.imageObjDAO.CheckObject(ctx, userID, imageName)
+	if err != nil {
+		logger.Error("[ImageService] failed to check object", zap.Error(err))
+		rsp.Error = constant.ErrInvalidFile
+		return rsp, nil
+	}
+	if exists {
+		logger.Info("[ImageService] image already exists", zap.String("imageName", imageName))
+		rsp.ImageName = imageName
+		return rsp, nil
+	}
 
 	// 创建上传任务
 	task := &dto.ImageUploadTask{
@@ -112,7 +126,7 @@ func (s *imageService) UploadImage(ctx context.Context, req *dto.UploadImageReq)
 	poolMgr := pool.GetPoolManager()
 	err = poolMgr.SubmitImageUploadTask(task)
 	if err != nil {
-		log.Error("[ImageService] failed to submit image upload task", zap.Error(err), zap.String("imageName", imageName))
+		logger.Error("[ImageService] failed to submit image upload task", zap.Error(err), zap.String("imageName", imageName))
 		rsp.Error = constant.ErrInvalidFile
 		return rsp, nil
 	}

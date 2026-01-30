@@ -79,14 +79,7 @@ func (dao *CosObjDAO) CreateDir(ctx context.Context, userID uint) (objectInfo *O
 func (dao *CosObjDAO) CheckObject(ctx context.Context, userID uint, objectName string) (exists bool, err error) {
 	dirName := dao.composeDirName(userID)
 	objectName = path.Join(dirName, objectName)
-
-	_, err = dao.client.Object.Head(ctx, objectName, nil)
-	if err != nil {
-		return
-	}
-
-	exists = true
-	return
+	return dao.client.Object.IsExist(ctx, objectName)
 }
 
 // ListObjects 列出桶中的对象
