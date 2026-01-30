@@ -80,6 +80,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 
 	// 提取标签
 	tagNames := util.ExtractTags(req.Body.Content)
+	tagNames = lo.Uniq(tagNames)
 
 	// 上传封面图片（如果提供）
 	var coverImage string
