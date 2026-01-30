@@ -1,90 +1,90 @@
-# AGENTS.md - AI Coding Assistant Guidelines
+# AGENTS.md - AI 编码助手指南
 
-## Project Overview
+## 项目概述
 
-**Aris Mem API** - A RESTful API service built with Go 1.25.1 using Clean Architecture patterns.
+**Aris Mem API** - 基于 Go 1.25.1 和整洁架构模式构建的 RESTful API 服务。
 
-### Tech Stack
+### 技术栈
 
-- **Language**: Go 1.25.1 (CGO_ENABLED=0)
-- **Web Framework**: Fiber v2 + Huma v2 (OpenAPI 3.1)
-- **Database**: PostgreSQL (GORM v1.25)
-- **Cache**: Redis (go-redis v9)
-- **Object Storage**: MinIO / Tencent COS
-- **Authentication**: JWT (golang-jwt/jwt/v5)
+- **语言**: Go 1.25.1 (CGO_ENABLED=0)
+- **Web 框架**: Fiber v2 + Huma v2 (OpenAPI 3.1)
+- **数据库**: PostgreSQL (GORM v1.25)
+- **缓存**: Redis (go-redis v9)
+- **对象存储**: MinIO / 腾讯云 COS
+- **认证**: JWT (golang-jwt/jwt/v5)
 - **CLI**: Cobra
-- **Logging**: Zap + Lumberjack
+- **日志**: Zap + Lumberjack
 - **JSON**: Sonic (bytedance)
-- **AI/LLM**: CloudWeGo Eino with OpenAI
+- **AI/LLM**: CloudWeGo Eino + OpenAI
 
-## Build & Development Commands
+## 构建与开发命令
 
 ```bash
-# Build the application
+# 构建应用程序
 go build -o aris-mem-api
 
-# Run the server
+# 运行服务器
 go run main.go server start
 go run main.go server start --host 0.0.0.0 --port 8080
 
-# Run all tests
+# 运行所有测试
 go test ./...
 
-# Run tests for a specific package
+# 运行指定包的测试
 go test ./internal/service/...
 go test ./internal/handler/...
 
-# Run a single test function
+# 运行单个测试函数
 go test -run TestFunctionName ./package/path
 
-# Run tests with coverage
+# 运行测试并生成覆盖率报告
 go test -cover ./...
 
-# Download dependencies
+# 下载依赖
 go mod tidy
 
-# Docker build
+# Docker 构建
 docker build -f docker/dockerfile -t aris-mem-api:latest .
 ```
 
-## Architecture & Project Structure
+## 架构与项目结构
 
 ```
 .
-├── cmd/                    # Cobra CLI commands
-│   ├── server.go          # Server start/stop commands
-│   ├── database.go        # Database CLI tools
-│   └── client.go          # Client commands
-├── internal/              # Private application code
-│   ├── api/               # Fiber & Huma API setup
-│   ├── handler/           # HTTP handlers (Controller layer)
-│   ├── service/           # Business logic layer
-│   ├── dto/               # Data Transfer Objects (Request/Response)
-│   ├── router/            # Route definitions
-│   ├── middleware/        # Fiber middlewares
-│   ├── common/            # Shared constants, enums, models
-│   │   ├── constant/      # Constants (CtxKey*, error codes)
-│   │   ├── enum/          # Enumerations (Status, Type)
-│   │   └── model/         # Domain models (Error, etc.)
-│   ├── infrastructure/    # External services
-│   │   ├── database/      # DB connections & DAOs
-│   │   │   ├── dao/       # Data Access Objects
-│   │   │   └── model/     # GORM models
-│   │   ├── cache/         # Redis cache
-│   │   ├── storage/       # Object storage
-│   │   └── smtp/          # Email service
-│   ├── util/              # Utility functions
-│   ├── logger/            # Zap logger setup
-│   ├── config/            # Configuration
-│   ├── jwt/               # JWT utilities
-│   ├── lock/              # Distributed locking
-│   └── oauth2/            # OAuth2 implementations
-├── docker/                # Docker configurations
-├── script/                # Deployment scripts
-└── env/                   # Environment configurations
+├── cmd/                    # Cobra CLI 命令
+│   ├── server.go          # 服务器启动/停止命令
+│   ├── database.go        # 数据库 CLI 工具
+│   └── client.go          # 客户端命令
+├── internal/              # 私有应用代码
+│   ├── api/               # Fiber 和 Huma API 设置
+│   ├── handler/           # HTTP 处理器（控制层）
+│   ├── service/           # 业务逻辑层
+│   ├── dto/               # 数据传输对象（请求/响应）
+│   ├── router/            # 路由定义
+│   ├── middleware/        # Fiber 中间件
+│   ├── common/            # 共享常量、枚举、模型
+│   │   ├── constant/      # 常量（CtxKey*、错误码）
+│   │   ├── enum/          # 枚举（Status、Type）
+│   │   └── model/         # 领域模型（Error 等）
+│   ├── infrastructure/    # 外部服务
+│   │   ├── database/      # 数据库连接和 DAO
+│   │   │   ├── dao/       # 数据访问对象
+│   │   │   └── model/     # GORM 模型
+│   │   ├── cache/         # Redis 缓存
+│   │   ├── storage/       # 对象存储
+│   │   └── smtp/          # 邮件服务
+│   ├── util/              # 工具函数
+│   ├── logger/            # Zap 日志设置
+│   ├── config/            # 配置
+│   ├── jwt/               # JWT 工具
+│   ├── lock/              # 分布式锁
+│   └── oauth2/            # OAuth2 实现
+├── docker/                # Docker 配置
+├── script/                # 部署脚本
+└── env/                   # 环境配置
 ```
 
-### Layer Dependencies
+### 分层依赖关系
 
 ```
 Handler → Service → DAO → Database
@@ -92,57 +92,57 @@ Handler → Service → DAO → Database
   DTO      DTO     Model
 ```
 
-## Code Style Guidelines
+## 代码风格指南
 
-### General Principles
+### 一般原则
 
-1. **Follow standard Go conventions** (gofmt, golint)
-2. **All comments in English** (except Chinese in doc comments)
-3. **Use explicit error handling** - never ignore errors
-4. **Prefer composition over inheritance**
-5. **Keep functions small and focused**
+1. **遵循标准 Go 约定**（gofmt、golint）
+2. **所有注释使用中文**（要求后续更新必须使用中文）
+3. **显式错误处理** - 永不忽略错误
+4. **优先使用组合而非继承**
+5. **保持函数小而专注**
 
-### Naming Conventions
+### 命名规范
 
 ```go
-// Packages: lowercase, single word
+// 包名：小写，单个单词
 package handler
 package article
 
-// Interfaces: noun, ending with -er/-or or descriptive
+// 接口名：名词，以 -er/-or 结尾或描述性名称
 type ArticleService interface{}
 type Handler interface{}
 
-// Structs: PascalCase for exported, camelCase for internal
-type articleService struct{}  // internal
-type Article struct{}        // exported
+// 结构体名：导出用大驼峰，内部用小驼峰
+type articleService struct{}  // 内部使用
+type Article struct{}        // 导出使用
 
-// Functions: PascalCase for exported, camelCase for internal
+// 函数名：导出用大驼峰，内部用小驼峰
 func NewArticleService() ArticleService {}
 func handleRequest() {}
 
-// Variables: camelCase
+// 变量名：小驼峰
 var articleCount int
 var userID uint
 
-// Constants: CamelCase or UPPER_SNAKE_CASE for exported
+// 常量名：导出用驼峰或大写下划线
 const CtxKeyUserID = "userID"
 const DefaultMaxImageSize = 10 * 1024 * 1024
 
-// Acronyms: Keep uppercase (HTTP, URL, ID, JSON, SSE)
+// 缩写保持大写（HTTP、URL、ID、JSON、SSE）
 HTTPResponse
 CoverImageURL
 UserID
 ```
 
-### File Organization
+### 文件组织
 
 ```go
-// 1. Package declaration with doc comment
-// Package handler Article handlers
+// 1. 包声明带文档注释
+// Package handler 文章处理器
 package handler
 
-// 2. Imports grouped: stdlib, third-party, internal
+// 2. 导入分组：标准库、第三方库、内部包
 import (
     "context"
     "errors"
@@ -155,8 +155,8 @@ import (
     "github.com/hcd233/aris-mem-api/internal/service"
 )
 
-// 3. Interface definitions (public API)
-// ArticleHandler Article handler interface
+// 3. 接口定义（公共 API）
+// ArticleHandler 文章处理器接口
 //
 //	author centonhuang
 //	update 2026-01-29 14:00:00
@@ -164,14 +164,14 @@ type ArticleHandler interface {
     HandleCreateArticle(ctx context.Context, req *dto.CreateArticleReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
 }
 
-// 4. Struct definitions
-// articleHandler Article handler implementation
+// 4. 结构体定义
+// articleHandler 文章处理器实现
 type articleHandler struct {
     svc service.ArticleService
 }
 
-// 5. Constructor functions
-// NewArticleHandler Create new article handler
+// 5. 构造函数
+// NewArticleHandler 创建文章处理器
 //
 //	return ArticleHandler
 //	author centonhuang
@@ -180,42 +180,42 @@ func NewArticleHandler() ArticleHandler {
     return &articleHandler{svc: service.NewArticleService()}
 }
 
-// 6. Method implementations
+// 6. 方法实现
 func (h *articleHandler) HandleCreateArticle(ctx context.Context, req *dto.CreateArticleReq) (*dto.HTTPResponse[*dto.EmptyRsp], error) {
     return util.WrapHTTPResponse(h.svc.CreateArticle(ctx, req))
 }
 ```
 
-### Documentation Style
+### 文档风格
 
 ```go
-// Function/Interface doc comments:
-// FunctionName Brief description
+// 函数/接口文档注释：
+// FunctionName 简要描述
 //
-//	Detailed description if needed
-//	@param paramName description
-//	@return description
+//	详细描述（如需要）
+//	@param paramName 描述
+//	@return 描述
 //	author centonhuang
 //	update YYYY-MM-DD HH:MM:SS
 
-// Struct doc comments:
-// StructName Description
+// 结构体文档注释：
+// StructName 描述
 //
 //	author centonhuang
 //	update YYYY-MM-DD HH:MM:SS
 
 type Article struct {
-    ID     uint   `json:"id" gorm:"column:id;primary_key" doc:"Article ID"`
-    Title  string `json:"title" doc:"Title of the article"`
+    ID     uint   `json:"id" gorm:"column:id;primary_key" doc:"文章 ID"`
+    Title  string `json:"title" doc:"文章标题"`
 }
 ```
 
-## Error Handling Patterns
+## 错误处理模式
 
-### Custom Error Model
+### 自定义错误模型
 
 ```go
-// Errors are defined in internal/common/constant/error.go
+// 错误定义在 internal/common/constant/error.go
 var (
     ErrInternalError     = model.NewError(10000, "InternalError")
     ErrUnauthorized      = model.NewError(10001, "Unauthorized")
@@ -230,61 +230,61 @@ var (
 )
 ```
 
-### Service Layer Error Handling
+### Service 层错误处理
 
 ```go
 func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArticleReq) (*dto.EmptyRsp, error) {
     rsp := &dto.EmptyRsp{}
     
-    // Validate input
+    // 验证输入
     if req == nil || req.Body == nil {
         rsp.Error = constant.ErrBadRequest
-        return rsp, nil  // Return nil error, error is in response
+        return rsp, nil  // 返回 nil 错误，错误在响应中
     }
     
-    // Business logic errors go in rsp.Error
+    // 业务逻辑错误放入 rsp.Error
     if !isValid {
         rsp.Error = constant.ErrDataExists
         return rsp, nil
     }
     
-    // System errors return as Go error
+    // 系统错误作为 Go error 返回
     db := database.GetDBInstance(ctx)
     if err := db.Create(&article).Error; err != nil {
-        logger.Error("[ArticleService] failed to create", zap.Error(err))
-        return nil, err  // Return system error
+        logger.Error("[ArticleService] 创建失败", zap.Error(err))
+        return nil, err  // 返回系统错误
     }
     
     return rsp, nil
 }
 ```
 
-### Handler Error Pattern
+### Handler 错误模式
 
 ```go
-// Handlers use util.WrapHTTPResponse to wrap service responses
+// Handler 使用 util.WrapHTTPResponse 包装 Service 响应
 func (h *articleHandler) HandleCreateArticle(ctx context.Context, req *dto.CreateArticleReq) (*dto.HTTPResponse[*dto.EmptyRsp], error) {
     return util.WrapHTTPResponse(h.svc.CreateArticle(ctx, req))
 }
 ```
 
-## DTO Patterns
+## DTO 模式
 
-### Request/Response Structure
+### 请求/响应结构
 
 ```go
-// Request wrapper
+// 请求包装器
 type CreateArticleReq struct {
-    Body *CreateArticleReqBody `json:"body" doc:"Request body"`
+    Body *CreateArticleReqBody `json:"body" doc:"请求体"`
 }
 
 type CreateArticleReqBody struct {
-    Title      string `json:"title" doc:"Title of the article"`
-    Content    string `json:"content" doc:"Content of the article"`
-    CoverImage string `json:"coverImage" maxLength:"15000000" doc:"Cover image base64"`
+    Title      string `json:"title" doc:"文章标题"`
+    Content    string `json:"content" doc:"文章内容"`
+    CoverImage string `json:"coverImage" maxLength:"15000000" doc:"封面图片 base64"`
 }
 
-// Response wrapper using generics
+// 响应包装器使用泛型
 type HTTPResponse[BodyT any] struct {
     Body BodyT `json:"data"`
 }
@@ -293,30 +293,30 @@ type EmptyRsp struct {
     Error *model.Error `json:"error,omitempty"`
 }
 
-// Listed items use List prefix
+// 列表项使用 List 前缀
 type ListArticlesRsp struct {
-    Items []*ListedArticle `json:"items" doc:"List of articles"`
-    Total int64            `json:"total" doc:"Total count"`
+    Items []*ListedArticle `json:"items" doc:"文章列表"`
+    Total int64            `json:"total" doc:"总数"`
 }
 
-// Detailed view uses Detailed prefix
+// 详情视图使用 Detailed 前缀
 type GetArticleRsp struct {
-    Article *DetailedArticle `json:"article" doc:"Article details"`
+    Article *DetailedArticle `json:"article" doc:"文章详情"`
 }
 ```
 
-## Database Patterns
+## 数据库模式
 
-### GORM Model Structure
+### GORM 模型结构
 
 ```go
-// BaseModel contains common fields
+// BaseModel 包含公共字段
 type BaseModel struct {
     CreatedAt time.Time `json:"created_at" gorm:"column:created_at"`
     UpdatedAt time.Time `json:"updated_at" gorm:"column:updated_at"`
 }
 
-// Entity models
+// 实体模型
 type Article struct {
     BaseModel
     DeletedAt   int64              `json:"deleted_at" gorm:"column:deleted_at;uniqueIndex:uidx_slug_deleted_at"`
@@ -326,19 +326,19 @@ type Article struct {
     Slug        string             `json:"slug" gorm:"column:slug;not null;uniqueIndex:uidx_slug_deleted_at"`
     Content     string             `json:"content" gorm:"column:content;not null"`
     Status      enum.ArticleStatus `json:"status" gorm:"column:status;not null"`
-    // ... fields
+    // ... 字段
 }
 
-// TableName override if needed
+// 如需可覆盖表名
 func (Article) TableName() string {
     return "article"
 }
 ```
 
-### DAO Pattern
+### DAO 模式
 
 ```go
-// DAO is singleton per entity
+// DAO 每实体单例
 type ArticleDAO struct{}
 
 var (
@@ -346,7 +346,7 @@ var (
     articleDAOOnce sync.Once
 )
 
-// GetArticleDAO returns singleton instance
+// GetArticleDAO 返回单例实例
 func GetArticleDAO() *ArticleDAO {
     articleDAOOnce.Do(func() {
         articleDAO = &ArticleDAO{}
@@ -354,7 +354,7 @@ func GetArticleDAO() *ArticleDAO {
     return articleDAO
 }
 
-// DAO methods
+// DAO 方法
 type ArticleQuery struct {
     ID       *uint
     Slug     *string
@@ -366,11 +366,11 @@ type ArticleQuery struct {
 
 func (dao *ArticleDAO) GetByQuery(ctx context.Context, query *ArticleQuery) (*Article, error) {
     db := database.GetDBInstance(ctx)
-    // Build query dynamically
+    // 动态构建查询
     if query.ID != nil {
         db = db.Where("id = ?", *query.ID)
     }
-    // ... more conditions
+    // ... 更多条件
     var article Article
     if err := db.First(&article).Error; err != nil {
         return nil, err
@@ -379,26 +379,26 @@ func (dao *ArticleDAO) GetByQuery(ctx context.Context, query *ArticleQuery) (*Ar
 }
 ```
 
-## Middleware Patterns
+## 中间件模式
 
 ```go
-// Middleware returns fiber.Handler
+// 中间件返回 fiber.Handler
 //
 //	@author centonhuang
 //	@update YYYY-MM-DD HH:MM:SS
 func MiddlewareName() fiber.Handler {
     return func(c *fiber.Ctx) error {
-        // Pre-processing
+        // 预处理
         
         err := c.Next()
         
-        // Post-processing
+        // 后处理
         
         return err
     }
 }
 
-// Configuration-based middleware
+// 基于配置的中间件
 func RecoverMiddleware() fiber.Handler {
     return recover.New(recover.Config{
         EnableStackTrace: true,
@@ -411,10 +411,10 @@ func RecoverMiddleware() fiber.Handler {
 }
 ```
 
-## Context Values
+## Context 值
 
 ```go
-// Context keys defined in internal/common/constant/ctx.go
+// Context 键定义在 internal/common/constant/ctx.go
 const (
     CtxKeyUserID     = "userID"
     CtxKeyUserName   = "userName"
@@ -423,31 +423,31 @@ const (
     CtxKeyLimiter    = "limiter"
 )
 
-// Usage in services
+// 在 Service 中使用
 userID := ctx.Value(constant.CtxKeyUserID).(uint)
 traceID := ctx.Value(constant.CtxKeyTraceID).(string)
 ```
 
-## Logger Usage
+## 日志使用
 
 ```go
-// Get logger with context
+// 获取带 context 的日志
 logger := logger.WithCtx(ctx)
 logger := logger.WithFCtx(c) // Fiber context
 
-// Log levels
-logger.Debug("[Service] debug message", zap.String("key", value))
-logger.Info("[Service] info message", zap.Uint("userID", userID))
-logger.Warn("[Service] warning", zap.Error(err))
-logger.Error("[Service] error occurred", zap.Error(err), zap.Stack("stack"))
+// 日志级别
+logger.Debug("[Service] 调试信息", zap.String("key", value))
+logger.Info("[Service] 信息", zap.Uint("userID", userID))
+logger.Warn("[Service] 警告", zap.Error(err))
+logger.Error("[Service] 错误", zap.Error(err), zap.Stack("stack"))
 
-// Naming convention: [ComponentName] message
+// 命名约定：[组件名] 消息
 ```
 
-## Testing Guidelines
+## 测试指南
 
 ```go
-// Test files: *_test.go in same package
+// 测试文件：*_test.go 在同一包中
 package service
 
 import (
@@ -472,7 +472,7 @@ func TestArticleService_CreateArticle(t *testing.T) {
     assert.Nil(t, rsp.Error)
 }
 
-// Table-driven tests
+// 表驱动测试
 func TestArticleService_ValidateArticle(t *testing.T) {
     tests := []struct {
         name    string
@@ -492,47 +492,51 @@ func TestArticleService_ValidateArticle(t *testing.T) {
 }
 ```
 
-## Common Utilities
+## 常用工具
 
 ```go
-// String utilities
-util.GenerateSlug(title string) string           // Generate URL-friendly slug
-util.ExtractTags(content string) []string        // Extract #tags from content
+// 字符串工具
+util.GenerateSlug(title string) string           // 生成 URL 友好 slug
+util.ExtractTags(content string) []string        // 从内容提取 #标签
 
-// Image utilities
+// 图片工具
 util.DecodeBase64OrDataURL(data string) ([]byte, string, error)
 util.ConvertImageToJPEG(data []byte, mimeType string) ([]byte, error)
 
-// Response wrapper
+// 响应包装器
 util.WrapHTTPResponse[rspT any](rsp rspT, err error) (*dto.HTTPResponse[rspT], error)
 
-// Map utilities
+// Map 工具
 util.MergeMaps(maps ...map[string]any) map[string]any
 ```
 
-## Key Conventions Summary
+## 关键约定总结
 
-1. **Always use struct tags**: `json:"fieldName" doc:"Description"`
-2. **Pointer receivers** for methods that modify state
-3. **Value receivers** for methods that only read
-4. **Context first** parameter for all service/handler methods
-5. **Return response + error**, not just error
-6. **Use samber/lo** for functional programming helpers
-7. **Use sonic** for JSON operations (fastest in Go)
-8. **Never use init()** for business logic (only for config setup)
-9. **Prefer dependency injection** via constructors
-10. **Check all errors** - use `lo.Must0()` or `lo.Must1()` only when safe
+1. **始终使用结构体标签**：`json:"fieldName" doc:"描述"`
+2. **修改状态的方法使用指针接收器**
+3. **只读方法使用值接收器**
+4. **所有 Service/Handler 方法的第一个参数是 Context**
+5. **返回响应 + 错误，而非仅返回错误**
+6. **使用 samber/lo** 进行函数式编程
+7. **使用 sonic** 进行 JSON 操作（Go 中最快）
+8. **永远不要使用 init()** 处理业务逻辑（仅用于配置设置）
+9. **优先通过构造函数进行依赖注入**
+10. **检查所有错误** - 仅在安全时使用 `lo.Must0()` 或 `lo.Must1()`
 
-## Docker Deployment
+## Docker 部署
 
 ```bash
-# Build
+# 构建
 docker build -f docker/dockerfile -t aris-mem-api:latest .
 
-# Run with env file
+# 使用环境文件运行
 docker run -d -p 8080:8080 \
   --env-file env/api.env \
   --name aris-mem-api \
   aris-mem-api:latest \
   /app/aris-mem-api server start --host 0.0.0.0 --port 8080
 ```
+
+---
+
+**重要提示：本项目所有代码注释必须使用中文。后续所有更新、修改和新功能开发都必须遵循此规定。**
