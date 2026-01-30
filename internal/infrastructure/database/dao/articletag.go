@@ -21,9 +21,20 @@ type ArticleTagDAO struct {
 //	param articleID uint
 //	return error
 //	author centonhuang
-//	update 2026-01-29 10:00:00
+//	@update 2026-01-29 10:00:00
 func (dao *ArticleTagDAO) DeleteByArticleID(db *gorm.DB, articleID uint) error {
 	return db.Model(&model.ArticleTag{}).Where("article_id = ?", articleID).Where("deleted_at = 0").Update("deleted_at", time.Now().UTC().Unix()).Error
+}
+
+// DeleteByTagID 根据标签ID软删除关联
+//
+//	param db *gorm.DB
+//	param tagID uint
+//	return error
+//	author centonhuang
+//	@update 2026-01-31 10:00:00
+func (dao *ArticleTagDAO) DeleteByTagID(db *gorm.DB, tagID uint) error {
+	return db.Model(&model.ArticleTag{}).Where("tag_id = ?", tagID).Where("deleted_at = 0").Update("deleted_at", time.Now().UTC().Unix()).Error
 }
 
 // GetTagIDsByArticleID 获取文章关联的标签ID列表（仅未删除的）

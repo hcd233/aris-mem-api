@@ -36,6 +36,14 @@ type ListTagsReq struct {
 	SortField string `query:"sortField" enum:"id,createdAt,updatedAt,name" doc:"Sort field"`
 }
 
+// DeleteTagReq 删除标签请求
+//
+//	@author centonhuang
+//	@update 2026-01-31 10:00:00
+type DeleteTagReq struct {
+	ID uint `json:"id" query:"id" required:"true" minimum:"1" doc:"Unique identifier for the tag"`
+}
+
 // ListTagsRsp 获取标签列表响应
 //
 //	@author centonhuang

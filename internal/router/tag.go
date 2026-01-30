@@ -26,4 +26,16 @@ func initTagRouter(tagGroup huma.API) {
 			{"jwtAuth": {}},
 		},
 	}, tagHandler.HandleListTags)
+
+	huma.Register(tagGroup, huma.Operation{
+		OperationID: "deleteTag",
+		Method:      http.MethodDelete,
+		Path:        "/",
+		Summary:     "DeleteTag",
+		Description: "Delete tag and its article associations",
+		Tags:        []string{"Tag"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, tagHandler.HandleDeleteTag)
 }

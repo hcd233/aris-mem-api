@@ -11,9 +11,10 @@ import (
 // TagHandler 标签处理器
 //
 //	author centonhuang
-//	update 2026-01-29 10:00:00
+//	@update 2026-01-29 10:00:00
 type TagHandler interface {
 	HandleListTags(ctx context.Context, req *dto.ListTagsReq) (*dto.HTTPResponse[*dto.ListTagsRsp], error)
+	HandleDeleteTag(ctx context.Context, req *dto.DeleteTagReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
 }
 
 type tagHandler struct {
@@ -33,4 +34,8 @@ func NewTagHandler() TagHandler {
 
 func (h *tagHandler) HandleListTags(ctx context.Context, req *dto.ListTagsReq) (*dto.HTTPResponse[*dto.ListTagsRsp], error) {
 	return util.WrapHTTPResponse(h.svc.ListTags(ctx, req))
+}
+
+func (h *tagHandler) HandleDeleteTag(ctx context.Context, req *dto.DeleteTagReq) (*dto.HTTPResponse[*dto.EmptyRsp], error) {
+	return util.WrapHTTPResponse(h.svc.DeleteTag(ctx, req))
 }
