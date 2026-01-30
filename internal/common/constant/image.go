@@ -17,13 +17,9 @@ const (
 	//	@update 2026-01-30 12:46:44
 	DefaultImageExtension = ".jpg"
 
-	// DefaultImageUploadPoolMaxWorkers 图片上传协程池默认最大工作协程数
-	//	@update 2026-01-31 16:00:00
-	DefaultImageUploadPoolMaxWorkers = 10
-
-	// DefaultImageUploadPoolQueueSize 图片上传协程池默认任务队列大小
-	//	@update 2026-01-31 16:00:00
-	DefaultImageUploadPoolQueueSize = 100
+	// DefaultMaxCompressedImageSize 默认最大压缩图片大小
+	//	@update 2026-01-31 04:07:31
+	DefaultMaxCompressedImageSize = 2 * 1024 * 1024
 )
 
 // 图片上传协程池配置键

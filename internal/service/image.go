@@ -82,6 +82,19 @@ func (s *imageService) UploadImage(ctx context.Context, req *dto.UploadImageReq)
 		return rsp, nil
 	}
 
+	// 压缩图片至2MB以内
+	imageData, err = util.CompressImageToSize(imageData, constant.DefaultMaxCompressedImageSize)
+	if err != nil {
+		log.Error("[ImageService] failed to compress image",
+			zap.Error(err))
+		rsp.Error = constant.ErrInvalidFile
+		return rsp, nil
+	}
+
+	log.Info("[ImageService] image compressed successfully",
+		zap.Int64("originalSize", image.Size),
+		zap.Int("compressedSize", len(imageData)))
+
 	md5Hash := md5.Sum(imageData)
 	md5Str := hex.EncodeToString(md5Hash[:])
 
