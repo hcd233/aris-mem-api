@@ -77,7 +77,16 @@ type CreateArticleReqBody struct {
 type ListArticlesReq struct {
 	model.CommonParam
 	SortField string `query:"sortField" enum:"id,createdAt,updatedAt,name" doc:"Sort field"`
-	TagSlug   string `query:"tagSlug" doc:"Filter by tag slug"`
+	ArticleFilterParam
+}
+
+// ArticleFilterParam 文章过滤参数
+//
+//	@author centonhuang
+//	@update 2026-01-30 14:27:56
+type ArticleFilterParam struct {
+	TagSlug string `query:"tagSlug" doc:"Filter by tag slug"`
+	UserID  uint   `query:"userID" doc:"Filter by user ID"`
 }
 
 // ListArticlesRsp 获取文章列表响应

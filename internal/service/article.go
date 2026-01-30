@@ -126,7 +126,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 		Slug:       slug,
 		Content:    req.Body.Content,
 		CoverImage: coverImage,
-		Status:     enum.ArticleStatusDraft,
+		Status:     enum.ArticleStatusPublished,
 	}
 
 	err := db.Transaction(func(tx *gorm.DB) error {
@@ -181,17 +181,6 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 	logger := logger.WithCtx(ctx)
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	_, err := s.tagDAO.Get(db, &dbmodel.Tag{Slug: req.TagSlug}, []string{"id"})
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			rsp.Error = constant.ErrDataNotExists
-			return rsp, nil
-		}
-		logger.Error("[ArticleService] failed to get tag", zap.Error(err), zap.String("tagSlug", req.TagSlug))
-		rsp.Error = constant.ErrInternalError
-		return rsp, nil
-	}
-
 	commonParam := &dao.CommonParam{
 		PageParam: dao.PageParam{
 			Page:     req.Page,
@@ -206,14 +195,33 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 			SortField: "published_at",
 		},
 		FilterParam: dao.FilterParam{
-			FieldValueMap: map[string]any{
-				"tag":    req.TagSlug,
-				"status": enum.ArticleStatusPublished,
-			},
+			FieldValueMap: map[string]any{},
 		},
 	}
 
-	articles, pageInfo, err := s.articleDAO.Paginate(db, &dbmodel.Article{UserID: userID}, []string{
+	if req.TagSlug != "" {
+		_, err := s.tagDAO.Get(db, &dbmodel.Tag{Slug: req.TagSlug}, []string{"id"})
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				rsp.Error = constant.ErrDataNotExists
+				return rsp, nil
+			}
+			logger.Error("[ArticleService] failed to get tag", zap.Error(err), zap.String("tagSlug", req.TagSlug))
+			rsp.Error = constant.ErrInternalError
+			return rsp, nil
+		}
+		commonParam.FilterParam.FieldValueMap["tag"] = req.TagSlug
+	}
+
+	if req.UserID != userID {
+		commonParam.FilterParam.FieldValueMap["status"] = enum.ArticleStatusPublished
+	}
+
+	if req.UserID != 0 {
+		commonParam.FilterParam.FieldValueMap["user_id"] = req.UserID
+	}
+
+	articles, pageInfo, err := s.articleDAO.Paginate(db, &dbmodel.Article{}, []string{
 		"id", "created_at", "updated_at", "published_at",
 		"user_id", "title", "slug", "content", "cover_image", "status", "likes",
 	}, commonParam)
