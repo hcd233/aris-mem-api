@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/handler"
 	"github.com/hcd233/aris-mem-api/internal/middleware"
@@ -25,5 +26,6 @@ func initImageRouter(imageGroup huma.API) {
 		Security: []map[string][]string{
 			{"jwtAuth": {}},
 		},
+		Middlewares: huma.Middlewares{middleware.RateLimiterMiddleware("imageUpload", "", constant.PeriodImageUpload, constant.LimitImageUpload)},
 	}, imageHandler.HandleUploadImage)
 }
