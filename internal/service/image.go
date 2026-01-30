@@ -52,28 +52,21 @@ func (s *imageService) UploadImage(ctx context.Context, req *dto.UploadImageReq)
 	logger := logger.WithCtx(ctx)
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	if req.RawBody.Size > constant.DefaultMaxImageSize {
-		logger.Error("[ImageService] image size exceeds limit", zap.Uint("userID", userID), zap.Int64("size", req.RawBody.Size))
+	image := req.RawBody.Data().Image
+
+	if image.Size > constant.DefaultMaxImageSize {
+		logger.Error("[ImageService] image size exceeds limit", zap.Uint("userID", userID), zap.Int64("size", image.Size))
 		rsp.Error = constant.ErrInvalidFile
 		return rsp, nil
 	}
 
-	// 解码 base64 或 Data URL
-	file, err := req.RawBody.Open()
-	if err != nil {
-		logger.Error("[ImageService] failed to decode image", zap.Error(err), zap.Uint("userID", userID))
-		rsp.Error = constant.ErrInvalidFile
-		return rsp, nil
-	}
-	defer file.Close()
-
-	ext := filepath.Ext(req.RawBody.Filename)
+	ext := filepath.Ext(image.Filename)
 	ext = strings.ToLower(ext)
 	if ext == "" {
 		ext = constant.DefaultImageExtension
 	}
 
-	imageData, err := io.ReadAll(file)
+	imageData, err := io.ReadAll(image.File)
 	if err != nil {
 		logger.Error("[ImageService] failed to read image", zap.Error(err), zap.Uint("userID", userID))
 		rsp.Error = constant.ErrInvalidFile
