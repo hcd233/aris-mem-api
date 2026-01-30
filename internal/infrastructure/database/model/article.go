@@ -23,4 +23,7 @@ type Article struct {
 	CoverImage  string             `json:"cover_image" gorm:"column:cover_image;comment:封面图片URL"`
 	PublishedAt time.Time          `json:"published_at" gorm:"column:published_at;not null;comment:发布时间"`
 	Status      enum.ArticleStatus `json:"status" gorm:"column:status;not null;comment:状态"`
+	Likes       uint               `json:"likes" gorm:"column:likes;not null;default:0;comment:点赞数"`
+	Saves       uint               `json:"saves" gorm:"column:saves;not null;default:0;comment:收藏数"`
+	Views       uint               `json:"views" gorm:"column:views;not null;default:0;comment:浏览数"`
 }

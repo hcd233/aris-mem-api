@@ -187,7 +187,10 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		},
 	}
 
-	articles, pageInfo, err := s.articleDAO.Paginate(db, &dbmodel.Article{UserID: userID}, []string{"id", "created_at", "updated_at", "published_at", "user_id", "title", "slug", "content", "cover_image", "status"}, commonParam)
+	articles, pageInfo, err := s.articleDAO.Paginate(db, &dbmodel.Article{UserID: userID}, []string{
+		"id", "created_at", "updated_at", "published_at",
+		"user_id", "title", "slug", "content", "cover_image", "status", "likes",
+	}, commonParam)
 	if err != nil {
 		logger.Error("[ArticleService] failed to list articles", zap.Error(err))
 		rsp.Error = constant.ErrInternalError
@@ -238,6 +241,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 			CreatedAt:   item.CreatedAt,
 			UpdatedAt:   item.UpdatedAt,
 			PublishedAt: item.PublishedAt,
+			Likes:       item.Likes,
 		}
 	})
 	rsp.PageInfo = pageInfo
@@ -451,7 +455,11 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 	}
 
 	// 查询文章
-	article, err := s.articleDAO.Get(db, &dbmodel.Article{Slug: req.Slug}, []string{"id", "user_id", "title", "slug", "content", "cover_image", "created_at", "updated_at", "published_at", "status"})
+	article, err := s.articleDAO.Get(db, &dbmodel.Article{Slug: req.Slug}, []string{
+		"id", "user_id", "title", "slug", "content", "cover_image", "status",
+		"created_at", "updated_at", "published_at",
+		"likes", "saves", "views",
+	})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			rsp.Error = constant.ErrDataNotExists
@@ -477,7 +485,7 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 		return rsp, nil
 	}
 
-	tags, err := s.tagDAO.BatchGetByIDs(db, tagIDs, []string{"id", "name", "slug", "created_at", "updated_at"})
+	tags, err := s.tagDAO.BatchGetByIDs(db, tagIDs, []string{"id", "name", "slug", "views", "created_at", "updated_at"})
 	if err != nil {
 		logger.Error("[ArticleService] failed to get tags", zap.Error(err), zap.Uints("tagIDs", tagIDs))
 		rsp.Error = constant.ErrInternalError
@@ -506,12 +514,16 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 		UpdatedAt:   article.UpdatedAt,
 		PublishedAt: article.PublishedAt,
 		Status:      article.Status,
+		Likes:       article.Likes,
+		Saves:       article.Saves,
+		Views:       article.Views,
 		Tags: lo.Map(tags, func(item *dbmodel.Tag, _ int) *dto.DetailedTag {
 			return &dto.DetailedTag{
 				ID:        item.ID,
 				Slug:      item.Slug,
-				CreatedAt: item.CreatedAt.Format(time.RFC3339),
-				UpdatedAt: item.UpdatedAt.Format(time.RFC3339),
+				Views:     item.Views,
+				CreatedAt: item.CreatedAt,
+				UpdatedAt: item.UpdatedAt,
 				Tag: dto.Tag{
 					Name: item.Name,
 				},

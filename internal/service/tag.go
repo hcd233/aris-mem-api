@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"time"
 
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
@@ -74,7 +73,7 @@ func (s *tagService) ListTags(ctx context.Context, req *dto.ListTagsReq) (*dto.L
 		},
 	}
 
-	tags, pageInfo, err := s.tagDAO.Paginate(db, &model.Tag{}, []string{"id", "name", "slug", "created_at", "updated_at"}, commonParam)
+	tags, pageInfo, err := s.tagDAO.Paginate(db, &model.Tag{}, []string{"id", "name", "slug", "views", "created_at", "updated_at"}, commonParam)
 	if err != nil {
 		logger.Error("[TagService] failed to list tags", zap.Error(err))
 		rsp.Error = constant.ErrInternalError
@@ -85,8 +84,9 @@ func (s *tagService) ListTags(ctx context.Context, req *dto.ListTagsReq) (*dto.L
 		return &dto.DetailedTag{
 			ID:        item.ID,
 			Slug:      item.Slug,
-			CreatedAt: item.CreatedAt.Format(time.RFC3339),
-			UpdatedAt: item.UpdatedAt.Format(time.RFC3339),
+			Views:     item.Views,
+			CreatedAt: item.CreatedAt,
+			UpdatedAt: item.UpdatedAt,
 			Tag: dto.Tag{
 				Name: item.Name,
 			},

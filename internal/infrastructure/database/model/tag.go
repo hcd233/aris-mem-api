@@ -10,4 +10,5 @@ type Tag struct {
 	ID        uint   `json:"id" gorm:"column:id;primary_key;auto_increment;comment:ID"`
 	Name      string `json:"name" gorm:"column:name;not null;uniqueIndex:idx_name_deleted_at;comment:名称"`
 	Slug      string `json:"slug" gorm:"column:slug;not null;default:'';comment:简写"`
+	Views     uint   `json:"views" gorm:"column:views;not null;default:0;comment:浏览数"`
 }
