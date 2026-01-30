@@ -31,6 +31,7 @@ type ListedArticle struct {
 	UpdatedAt   time.Time `json:"updatedAt" doc:"Updated time of the article"`
 	PublishedAt time.Time `json:"publishedAt" doc:"Published time of the article"`
 	Likes       uint      `json:"likes" doc:"Likes of the article"`
+	Liked       bool      `json:"liked" doc:"Whether the current user has liked the article"`
 }
 
 // DetailedArticle 详细文章实体
@@ -49,6 +50,8 @@ type DetailedArticle struct {
 	Likes       uint               `json:"likes" doc:"Likes of the article"`
 	Saves       uint               `json:"saves" doc:"Saves of the article"`
 	Views       uint               `json:"views" doc:"Views of the article"`
+	Liked       bool               `json:"liked" doc:"Whether the current user has liked the article"`
+	Saved       bool               `json:"saved" doc:"Whether the current user has saved the article"`
 	Article
 }
 

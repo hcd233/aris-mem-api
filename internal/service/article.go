@@ -40,6 +40,7 @@ type articleService struct {
 	articleDAO    *dao.ArticleDAO
 	tagDAO        *dao.TagDAO
 	articleTagDAO *dao.ArticleTagDAO
+	actionDAO     *dao.ActionDAO
 	imageObjDAO   objdao.ObjDAO
 }
 
@@ -54,6 +55,7 @@ func NewArticleService() ArticleService {
 		articleDAO:    dao.GetArticleDAO(),
 		tagDAO:        dao.GetTagDAO(),
 		articleTagDAO: dao.GetArticleTagDAO(),
+		actionDAO:     dao.GetActionDAO(),
 		imageObjDAO:   objdao.GetImageObjDAO(),
 	}
 }
@@ -247,6 +249,21 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		return item.ID, item
 	})
 
+	articleIDs := lo.Map(articles, func(item *dbmodel.Article, _ int) uint {
+		return item.ID
+	})
+
+	actions, err := s.actionDAO.BatchGetByUserIDAndActionType(db, userID, enum.ActionTypeLike, enum.ActionEntityArticle, articleIDs, []string{"id", "entity_id"})
+	if err != nil {
+		logger.Error("[ArticleService] failed to get actions", zap.Error(err), zap.Uints("articleIDs", articleIDs))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
+	likedArticleIDSet := lo.SliceToMap(actions, func(item *dbmodel.Action) (uint, struct{}) {
+		return item.EntityID, struct{}{}
+	})
+
 	// 组装文章列表并获取标签信息
 	rsp.Articles = lo.Map(articles, func(item *dbmodel.Article, _ int) *dto.ListedArticle {
 		user := userIDUserMap[item.UserID]
@@ -265,6 +282,8 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 			coverImage = util.ToThumbnailURL(coverImage)
 		}
 
+		_, liked := likedArticleIDSet[item.ID]
+
 		return &dto.ListedArticle{
 			ID:         item.ID,
 			Slug:       item.Slug,
@@ -279,6 +298,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 			UpdatedAt:   item.UpdatedAt,
 			PublishedAt: item.PublishedAt,
 			Likes:       item.Likes,
+			Liked:       liked,
 		}
 	})
 	rsp.PageInfo = pageInfo
