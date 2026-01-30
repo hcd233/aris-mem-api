@@ -16,11 +16,13 @@ type ObjDAO interface {
 	GetBucketName(ctx context.Context) string
 	CreateBucket(ctx context.Context) (err error)
 	CreateDir(ctx context.Context, userID uint) (objectInfo *ObjectInfo, err error)
+	CheckObject(ctx context.Context, userID uint, objectName string) (exists bool, err error)
 	ListObjects(ctx context.Context, userID uint) (objectInfos []ObjectInfo, err error)
 	UploadObject(ctx context.Context, userID uint, objectName string, size int64, reader io.Reader) (err error)
 	DownloadObject(ctx context.Context, userID uint, objectName string, writer io.Writer) (objectInfo *ObjectInfo, err error)
 	PresignObject(ctx context.Context, userID uint, objectName string) (presignedURL *url.URL, err error)
 	DeleteObject(ctx context.Context, userID uint, objectName string) (err error)
+	DeleteObjects(ctx context.Context, userID uint, objectNames []string) (err error)
 }
 
 // ObjectInfo 对象信息

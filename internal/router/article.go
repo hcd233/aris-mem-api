@@ -74,4 +74,16 @@ func initArticleRouter(articleGroup huma.API) {
 			{"jwtAuth": {}},
 		},
 	}, articleHandler.HandleGetArticle)
+
+	huma.Register(articleGroup, huma.Operation{
+		OperationID: "uploadArticleImage",
+		Method:      http.MethodPost,
+		Path:        "/image",
+		Summary:     "UploadArticleImage",
+		Description: "Upload an image for article. Returns presigned URL of the uploaded image.",
+		Tags:        []string{"Article"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, articleHandler.HandleUploadArticleImage)
 }

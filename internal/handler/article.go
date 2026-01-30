@@ -11,13 +11,14 @@ import (
 // ArticleHandler 文章处理器
 //
 //	author centonhuang
-//	update 2026-01-29 14:00:00
+//	update 2026-01-31 10:00:00
 type ArticleHandler interface {
 	HandleCreateArticle(ctx context.Context, req *dto.CreateArticleReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
 	HandleListArticles(ctx context.Context, req *dto.ListArticlesReq) (*dto.HTTPResponse[*dto.ListArticlesRsp], error)
 	HandleUpdateArticle(ctx context.Context, req *dto.UpdateArticleReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
 	HandleDeleteArticle(ctx context.Context, req *dto.DeleteArticleReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
 	HandleGetArticle(ctx context.Context, req *dto.GetArticleReq) (*dto.HTTPResponse[*dto.GetArticleRsp], error)
+	HandleUploadArticleImage(ctx context.Context, req *dto.UploadArticleImageReq) (*dto.HTTPResponse[*dto.UploadArticleImageRsp], error)
 }
 
 type articleHandler struct {
@@ -53,4 +54,8 @@ func (h *articleHandler) HandleDeleteArticle(ctx context.Context, req *dto.Delet
 
 func (h *articleHandler) HandleGetArticle(ctx context.Context, req *dto.GetArticleReq) (*dto.HTTPResponse[*dto.GetArticleRsp], error) {
 	return util.WrapHTTPResponse(h.svc.GetArticle(ctx, req))
+}
+
+func (h *articleHandler) HandleUploadArticleImage(ctx context.Context, req *dto.UploadArticleImageReq) (*dto.HTTPResponse[*dto.UploadArticleImageRsp], error) {
+	return util.WrapHTTPResponse(h.svc.UploadArticleImage(ctx, req))
 }

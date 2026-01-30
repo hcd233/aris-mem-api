@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"mime/multipart"
 	"time"
 
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
@@ -12,9 +13,8 @@ import (
 //	@author centonhuang
 //	@update 2026-01-29 17:00:00
 type Article struct {
-	Title      string `json:"title" doc:"Title of the article"`
-	Content    string `json:"content" doc:"Content of the article"`
-	CoverImage string `json:"coverImage,omitempty" doc:"Cover image URL of the article (presigned URL)"`
+	Title  string `json:"title" doc:"Title of the article"`
+	Author *User  `json:"author" doc:"Author of the article"`
 }
 
 // ListedArticle 详细文章实体
@@ -24,14 +24,13 @@ type Article struct {
 type ListedArticle struct {
 	ID          uint      `json:"id" doc:"ID of the article"`
 	Slug        string    `json:"slug" doc:"Slug of the article"`
-	Title       string    `json:"title" doc:"Title of the article"`
 	CoverImage  string    `json:"coverImage,omitempty" doc:"Cover image URL of the article"`
-	Author      *User     `json:"author" doc:"Author of the article"`
 	CreatedAt   time.Time `json:"createdAt" doc:"Created time of the article"`
 	UpdatedAt   time.Time `json:"updatedAt" doc:"Updated time of the article"`
 	PublishedAt time.Time `json:"publishedAt" doc:"Published time of the article"`
 	Likes       uint      `json:"likes" doc:"Likes of the article"`
 	Liked       bool      `json:"liked" doc:"Whether the current user has liked the article"`
+	Article
 }
 
 // DetailedArticle 详细文章实体
@@ -41,7 +40,8 @@ type ListedArticle struct {
 type DetailedArticle struct {
 	ID          uint               `json:"id" doc:"ID of the article"`
 	Slug        string             `json:"slug" doc:"Slug of the article"`
-	Author      *User              `json:"author" doc:"Author of the article"`
+	Content     string             `json:"content" doc:"Content of the article"`
+	Images      []string           `json:"images" doc:"Images of the article"`
 	CreatedAt   time.Time          `json:"createdAt" doc:"Created time of the article"`
 	UpdatedAt   time.Time          `json:"updatedAt" doc:"Updated time of the article"`
 	PublishedAt time.Time          `json:"publishedAt" doc:"Published time of the article"`
@@ -66,11 +66,11 @@ type CreateArticleReq struct {
 // CreateArticleReqBody 创建文章请求体
 //
 //	@author centonhuang
-//	@update 2026-01-29 17:00:00
+//	@update 2026-01-31 10:00:00
 type CreateArticleReqBody struct {
-	Title      string `json:"title" doc:"Title of the article"`
-	Content    string `json:"content" doc:"Content of the article"`
-	CoverImage string `json:"coverImage" maxLength:"15000000" doc:"Cover image in base64 or Data URL format (max ~10MB), optional"`
+	Title   string   `json:"title" doc:"Title of the article"`
+	Content string   `json:"content" doc:"Content of the article"`
+	Images  []string `json:"images" doc:"Images of the article"`
 }
 
 // ListArticlesReq 获取文章列表请求
@@ -113,13 +113,13 @@ type UpdateArticleReq struct {
 // UpdateArticleReqBody 更新文章请求体
 //
 //	@author centonhuang
-//	@update 2026-01-29 17:00:00
+//	@update 2026-01-31 10:00:00
 type UpdateArticleReqBody struct {
-	ID         uint               `json:"id" doc:"ID of the article"`
-	Status     enum.ArticleStatus `json:"status" doc:"Status of the article"`
-	Title      string             `json:"title" doc:"Title of the article"`
-	Content    string             `json:"content" doc:"Content of the article"`
-	CoverImage string             `json:"coverImage" maxLength:"15000000" doc:"Cover image in base64 or Data URL format (max ~10MB), optional"`
+	ID      uint               `json:"id" doc:"ID of the article"`
+	Status  enum.ArticleStatus `json:"status" doc:"Status of the article"`
+	Title   string             `json:"title" doc:"Title of the article"`
+	Content string             `json:"content" doc:"Content of the article"`
+	Images  []string           `json:"images" doc:"Images of the article"`
 }
 
 // DeleteArticleReq 删除文章请求
@@ -145,4 +145,21 @@ type GetArticleReq struct {
 type GetArticleRsp struct {
 	CommonRsp
 	Article *DetailedArticle `json:"article" doc:"Detailed article information"`
+}
+
+// UploadArticleImageReq 上传文章图片请求
+//
+//	@author centonhuang
+//	@update 2026-01-31 10:00:00
+type UploadArticleImageReq struct {
+	RawBody multipart.FileHeader
+}
+
+// UploadArticleImageRsp 上传文章图片响应
+//
+//	@author centonhuang
+//	@update 2026-01-31 10:00:00
+type UploadArticleImageRsp struct {
+	CommonRsp
+	ImageName string `json:"imageName" doc:"Name of the uploaded image"`
 }

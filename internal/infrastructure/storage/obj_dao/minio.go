@@ -2,6 +2,7 @@ package objdao
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -81,6 +82,20 @@ func (dao *MinioObjDAO) CreateDir(ctx context.Context, userID uint) (objectInfo 
 		ETag:         object.ETag,
 	}
 
+	return
+}
+
+// CheckObject 检查对象是否存在
+func (dao *MinioObjDAO) CheckObject(ctx context.Context, userID uint, objectName string) (exists bool, err error) {
+	dirName := dao.composeDirName(userID)
+	objectName = path.Join(dirName, objectName)
+
+	_, err = dao.client.StatObject(ctx, dao.BucketName, objectName, minio.StatObjectOptions{})
+	if err != nil {
+		return
+	}
+
+	exists = true
 	return
 }
 
@@ -222,5 +237,26 @@ func (dao *MinioObjDAO) DeleteObject(ctx context.Context, userID uint, objectNam
 	objectName = path.Join(dirName, objectName)
 
 	err = dao.client.RemoveObject(ctx, dao.BucketName, objectName, minio.RemoveObjectOptions{})
+	return
+}
+
+// DeleteObjects 删除多个对象
+func (dao *MinioObjDAO) DeleteObjects(ctx context.Context, userID uint, objectNames []string) (err error) {
+	dirName := dao.composeDirName(userID)
+
+	objectsCh := lo.SliceToChannel(len(objectNames), lo.Map(objectNames, func(item string, _ int) minio.ObjectInfo {
+		return minio.ObjectInfo{
+			Key: path.Join(dirName, item),
+		}
+	}))
+	errCh := dao.client.RemoveObjects(ctx, dao.BucketName, objectsCh, minio.RemoveObjectsOptions{})
+	errs := lo.Filter(lo.ChannelToSlice(errCh), func(item minio.RemoveObjectError, _ int) bool {
+		return item.Err != nil
+	})
+	if len(errs) > 0 {
+		return errors.Join(lo.Map(errs, func(item minio.RemoveObjectError, _ int) error {
+			return fmt.Errorf("failed to delete object %s: %w", item.ObjectName, item.Err)
+		})...)
+	}
 	return
 }

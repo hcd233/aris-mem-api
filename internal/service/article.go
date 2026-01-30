@@ -3,11 +3,15 @@ package service
 import (
 	"bytes"
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
+	"path/filepath"
+	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/dto"
@@ -26,13 +30,14 @@ import (
 // ArticleService 文章服务
 //
 //	author centonhuang
-//	update 2026-01-29 14:00:00
+//	update 2026-01-31 10:00:00
 type ArticleService interface {
 	CreateArticle(ctx context.Context, req *dto.CreateArticleReq) (rsp *dto.EmptyRsp, err error)
 	ListArticles(ctx context.Context, req *dto.ListArticlesReq) (rsp *dto.ListArticlesRsp, err error)
 	UpdateArticle(ctx context.Context, req *dto.UpdateArticleReq) (rsp *dto.EmptyRsp, err error)
 	DeleteArticle(ctx context.Context, req *dto.DeleteArticleReq) (rsp *dto.EmptyRsp, err error)
 	GetArticle(ctx context.Context, req *dto.GetArticleReq) (rsp *dto.GetArticleRsp, err error)
+	UploadArticleImage(ctx context.Context, req *dto.UploadArticleImageReq) (rsp *dto.UploadArticleImageRsp, err error)
 }
 
 type articleService struct {
@@ -64,7 +69,7 @@ func NewArticleService() ArticleService {
 //
 //	return *CreateArticleRsp
 //	author centonhuang
-//	update 2026-01-29 17:00:00
+//	update 2026-01-31 10:00:00
 func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArticleReq) (*dto.EmptyRsp, error) {
 	rsp := &dto.EmptyRsp{}
 
@@ -84,53 +89,28 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 	tagNames := util.ExtractTags(req.Body.Content)
 	tagNames = lo.Uniq(tagNames)
 
-	// 上传封面图片（如果提供）
-	var coverImage string
-	if req.Body.CoverImage != "" {
-		// 解码 base64 或 Data URL
-		imageData, mimeType, err := util.DecodeBase64OrDataURL(req.Body.CoverImage)
+	for _, image := range req.Body.Images {
+		exists, err := s.imageObjDAO.CheckObject(ctx, userID, image)
 		if err != nil {
-			logger.Error("[ArticleService] failed to decode cover image", zap.Error(err), zap.Uint("userID", userID))
-			rsp.Error = constant.ErrInvalidFile
-			return rsp, nil
-		}
-
-		// 验证并转换图片格式为统一的 JPEG 格式
-		convertedData, err := util.ConvertImageToJPEG(imageData, mimeType)
-		if err != nil {
-			logger.Error("[ArticleService] failed to convert image format",
-				zap.Error(err),
-				zap.Uint("userID", userID),
-				zap.String("mimeType", mimeType))
-			rsp.Error = constant.ErrInvalidFile
-			return rsp, nil
-		}
-
-		if len(convertedData) > constant.DefaultMaxImageSize {
-			logger.Error("[ArticleService] cover image is too large", zap.Uint("userID", userID), zap.Int("size", len(convertedData)))
-			rsp.Error = constant.ErrInvalidFile
-			return rsp, nil
-		}
-
-		// 使用统一的文件扩展名
-		coverImage = fmt.Sprintf("article-cover-%s%s", uuid.New().String()[:8], constant.DefaultImageExtension)
-
-		err = s.imageObjDAO.UploadObject(ctx, userID, coverImage, int64(len(convertedData)), bytes.NewReader(convertedData))
-		if err != nil {
-			logger.Error("[ArticleService] failed to upload cover image", zap.Error(err), zap.Uint("userID", userID))
+			logger.Error("[ArticleService] failed to check image", zap.Error(err), zap.Uint("userID", userID), zap.String("image", image))
 			rsp.Error = constant.ErrInternalError
+			return rsp, nil
+		}
+		if !exists {
+			logger.Error("[ArticleService] image not exists", zap.Uint("userID", userID), zap.String("image", image))
+			rsp.Error = constant.ErrDataNotExists
 			return rsp, nil
 		}
 	}
 
 	// 创建文章
 	article := &dbmodel.Article{
-		UserID:     userID,
-		Title:      req.Body.Title,
-		Slug:       slug,
-		Content:    req.Body.Content,
-		CoverImage: coverImage,
-		Status:     enum.ArticleStatusPublished,
+		UserID:  userID,
+		Title:   req.Body.Title,
+		Slug:    slug,
+		Content: req.Body.Content,
+		Images:  req.Body.Images,
+		Status:  enum.ArticleStatusPublished,
 	}
 
 	err := db.Transaction(func(tx *gorm.DB) error {
@@ -230,7 +210,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		"user_id", "title", "slug", "content", "cover_image", "status", "likes",
 	}, commonParam)
 	if err != nil {
-		logger.Error("[ArticleService] failed to list articles", zap.Error(err))
+		logger.Error("[ArticleService] failed to paginate articles", zap.Error(err))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}
@@ -255,7 +235,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 
 	actions, err := s.actionDAO.BatchGetByUserIDAndActionType(db, userID, enum.ActionTypeLike, enum.ActionEntityArticle, articleIDs, []string{"id", "entity_id"})
 	if err != nil {
-		logger.Error("[ArticleService] failed to get actions", zap.Error(err), zap.Uints("articleIDs", articleIDs))
+		logger.Error("[ArticleService] failed to get like actions", zap.Error(err), zap.Uints("articleIDs", articleIDs))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}
@@ -268,15 +248,15 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 	rsp.Articles = lo.Map(articles, func(item *dbmodel.Article, _ int) *dto.ListedArticle {
 		user := userIDUserMap[item.UserID]
 
-		// Generate presigned URL for cover image
+		// 为封面图片生成预签名 URL
 		coverImage := ""
-		if item.CoverImage != "" {
-			presignedURL, err := s.imageObjDAO.PresignObject(ctx, item.UserID, item.CoverImage)
+		if len(item.Images) > 0 {
+			presignedURL, err := s.imageObjDAO.PresignObject(ctx, item.UserID, item.Images[0])
 			if err != nil {
 				logger.Warn("[ArticleService] failed to generate presigned URL for cover image",
 					zap.Error(err),
 					zap.Uint("userID", item.UserID),
-					zap.String("coverImage", item.CoverImage))
+					zap.String("coverImage", item.Images[0]))
 			}
 			coverImage = presignedURL.String()
 			coverImage = util.ToThumbnailURL(coverImage)
@@ -285,23 +265,92 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		_, liked := likedArticleIDSet[item.ID]
 
 		return &dto.ListedArticle{
-			ID:         item.ID,
-			Slug:       item.Slug,
-			Title:      item.Title,
-			CoverImage: coverImage,
-			Author: &dto.User{
-				ID:     user.ID,
-				Name:   user.Name,
-				Avatar: user.Avatar,
-			},
+			ID:          item.ID,
+			Slug:        item.Slug,
+			CoverImage:  coverImage,
 			CreatedAt:   item.CreatedAt,
 			UpdatedAt:   item.UpdatedAt,
 			PublishedAt: item.PublishedAt,
 			Likes:       item.Likes,
 			Liked:       liked,
+			Article: dto.Article{
+				Title: item.Title,
+				Author: &dto.User{
+					ID:     user.ID,
+					Name:   user.Name,
+					Avatar: user.Avatar,
+				},
+			},
 		}
 	})
 	rsp.PageInfo = pageInfo
+	return rsp, nil
+}
+
+// UploadArticleImage 上传文章图片
+//
+//	return *UploadArticleImageRsp
+//	author centonhuang
+//	update 2026-01-31 10:00:00
+func (s *articleService) UploadArticleImage(ctx context.Context, req *dto.UploadArticleImageReq) (*dto.UploadArticleImageRsp, error) {
+	rsp := &dto.UploadArticleImageRsp{}
+
+	logger := logger.WithCtx(ctx)
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	if req.RawBody.Size > constant.DefaultMaxImageSize {
+		logger.Error("[ArticleService] image size exceeds limit", zap.Uint("userID", userID), zap.Int64("size", req.RawBody.Size))
+		rsp.Error = constant.ErrInvalidFile
+		return rsp, nil
+	}
+
+	// 解码 base64 或 Data URL
+	file, err := req.RawBody.Open()
+	if err != nil {
+		logger.Error("[ArticleService] failed to decode image", zap.Error(err), zap.Uint("userID", userID))
+		rsp.Error = constant.ErrInvalidFile
+		return rsp, nil
+	}
+	defer file.Close()
+
+	ext := filepath.Ext(req.RawBody.Filename)
+	ext = strings.ToLower(ext)
+	if ext == "" {
+		ext = constant.DefaultImageExtension
+	}
+
+	imageData, err := io.ReadAll(file)
+	if err != nil {
+		logger.Error("[ArticleService] failed to read image", zap.Error(err), zap.Uint("userID", userID))
+		rsp.Error = constant.ErrInvalidFile
+		return rsp, nil
+	}
+	// 验证并转换图片格式为统一的 JPEG 格式
+	imageData, err = util.ConvertImageToJPEG(imageData, ext)
+	if err != nil {
+		logger.Error("[ArticleService] failed to convert image format",
+			zap.Error(err),
+			zap.Uint("userID", userID),
+			zap.String("ext", ext))
+		rsp.Error = constant.ErrInvalidFile
+		return rsp, nil
+	}
+
+	md5Hash := md5.Sum(imageData)
+	md5Str := hex.EncodeToString(md5Hash[:])
+
+	// 生成图片文件名
+	imageName := fmt.Sprintf("atc-img-%s%s", md5Str[:8], constant.DefaultImageExtension)
+
+	// 上传图片到对象存储
+	err = s.imageObjDAO.UploadObject(ctx, userID, imageName, int64(len(imageData)), bytes.NewReader(imageData))
+	if err != nil {
+		logger.Error("[ArticleService] 上传图片失败", zap.Error(err), zap.Uint("userID", userID))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
+	rsp.ImageName = imageName
 	return rsp, nil
 }
 
@@ -339,41 +388,6 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 		return rsp, nil
 	}
 
-	// 处理封面图片上传
-	if req.Body.CoverImage != "" {
-		// 解码 base64 或 Data URL
-		imageData, mimeType, err := util.DecodeBase64OrDataURL(req.Body.CoverImage)
-		if err != nil {
-			logger.Error("[ArticleService] failed to decode cover image", zap.Error(err), zap.Uint("userID", userID))
-			rsp.Error = constant.ErrInvalidFile
-			return rsp, nil
-		}
-
-		// 验证并转换图片格式为统一的 JPEG 格式
-		convertedData, err := util.ConvertImageToJPEG(imageData, mimeType)
-		if err != nil {
-			logger.Error("[ArticleService] failed to convert image format",
-				zap.Error(err),
-				zap.Uint("userID", userID),
-				zap.String("mimeType", mimeType))
-			rsp.Error = constant.ErrInvalidFile
-			return rsp, nil
-		}
-
-		if len(convertedData) > constant.DefaultMaxImageSize {
-			logger.Error("[ArticleService] cover image is too large", zap.Uint("userID", userID), zap.Int("size", len(convertedData)))
-			rsp.Error = constant.ErrInvalidFile
-			return rsp, nil
-		}
-
-		err = s.imageObjDAO.UploadObject(ctx, userID, article.CoverImage, int64(len(convertedData)), bytes.NewReader(convertedData))
-		if err != nil {
-			logger.Error("[ArticleService] failed to upload cover image", zap.Error(err), zap.Uint("userID", userID))
-			rsp.Error = constant.ErrInternalError
-			return rsp, nil
-		}
-	}
-
 	// 构建更新字段
 	updateFields := map[string]interface{}{}
 	if req.Body.Title != "" {
@@ -389,6 +403,9 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 		if req.Body.Status == enum.ArticleStatusPublished {
 			updateFields["published_at"] = time.Now()
 		}
+	}
+	if req.Body.Images != nil {
+		updateFields["images"] = req.Body.Images
 	}
 
 	if !util.HasNonZeroValue(updateFields) {
@@ -499,14 +516,14 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *dto.DeleteArtic
 	}
 
 	// 删除成功后，同步删除COS中的封面图片
-	if article.CoverImage != "" {
-		err := s.imageObjDAO.DeleteObject(ctx, article.UserID, article.CoverImage)
+	if len(article.Images) > 0 {
+		err := s.imageObjDAO.DeleteObjects(ctx, article.UserID, article.Images)
 		if err != nil {
 			// Log the error but don't fail the request since article is already deleted
 			logger.Warn("[ArticleService] failed to delete cover image from storage",
 				zap.Error(err),
 				zap.Uint("articleID", req.ID),
-				zap.String("coverImage", article.CoverImage))
+				zap.Strings("images", article.Images))
 		}
 	}
 
@@ -576,17 +593,13 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 	}
 
 	// Generate presigned URL for cover image
-	// Generate presigned URL for cover image
-	coverImage := ""
-	if article.CoverImage != "" {
-		presignedURL, err := s.imageObjDAO.PresignObject(ctx, article.UserID, article.CoverImage)
+	images := make([]string, 0, len(article.Images))
+	for _, image := range article.Images {
+		presignedURL, err := s.imageObjDAO.PresignObject(ctx, article.UserID, image)
 		if err != nil {
-			logger.Warn("[ArticleService] failed to generate presigned URL for cover image",
-				zap.Error(err),
-				zap.Uint("userID", article.UserID),
-				zap.String("coverImage", article.CoverImage))
+			logger.Warn("[ArticleService] failed to generate presigned URL for image", zap.Error(err), zap.Uint("userID", article.UserID), zap.String("image", image))
 		}
-		coverImage = presignedURL.String()
+		images = append(images, presignedURL.String())
 	}
 
 	liked, saved := true, true
@@ -618,6 +631,8 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 		CreatedAt:   article.CreatedAt,
 		UpdatedAt:   article.UpdatedAt,
 		PublishedAt: article.PublishedAt,
+		Content:     article.Content,
+		Images:      images,
 		Status:      article.Status,
 		Likes:       article.Likes,
 		Saves:       article.Saves,
@@ -636,15 +651,13 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 				},
 			}
 		}),
-		Author: &dto.User{
-			ID:     user.ID,
-			Name:   user.Name,
-			Avatar: user.Avatar,
-		},
 		Article: dto.Article{
-			Title:      article.Title,
-			Content:    article.Content,
-			CoverImage: coverImage,
+			Title: article.Title,
+			Author: &dto.User{
+				ID:     user.ID,
+				Name:   user.Name,
+				Avatar: user.Avatar,
+			},
 		},
 	}
 

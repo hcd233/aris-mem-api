@@ -75,6 +75,20 @@ func (dao *CosObjDAO) CreateDir(ctx context.Context, userID uint) (objectInfo *O
 	return
 }
 
+// CheckObject 检查对象是否存在
+func (dao *CosObjDAO) CheckObject(ctx context.Context, userID uint, objectName string) (exists bool, err error) {
+	dirName := dao.composeDirName(userID)
+	objectName = path.Join(dirName, objectName)
+
+	_, err = dao.client.Object.Head(ctx, objectName, nil)
+	if err != nil {
+		return
+	}
+
+	exists = true
+	return
+}
+
 // ListObjects 列出桶中的对象
 func (dao *CosObjDAO) ListObjects(ctx context.Context, userID uint) (objectInfos []ObjectInfo, err error) {
 	dirName := dao.composeDirName(userID)
@@ -174,5 +188,19 @@ func (dao *CosObjDAO) DeleteObject(ctx context.Context, userID uint, objectName 
 	objectName = path.Join(dirName, objectName)
 
 	_, err = dao.client.Object.Delete(ctx, objectName)
+	return
+}
+
+// DeleteObjects 删除多个对象
+func (dao *CosObjDAO) DeleteObjects(ctx context.Context, userID uint, objectNames []string) (err error) {
+	dirName := dao.composeDirName(userID)
+	_, _, err = dao.client.Object.DeleteMulti(ctx, &cos.ObjectDeleteMultiOptions{
+		Quiet: false,
+		Objects: lo.Map(objectNames, func(item string, _ int) cos.Object {
+			return cos.Object{
+				Key: path.Join(dirName, item),
+			}
+		}),
+	})
 	return
 }

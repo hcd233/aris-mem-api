@@ -20,7 +20,7 @@ type Article struct {
 	Title       string             `json:"title" gorm:"column:title;not null;comment:标题"`
 	Slug        string             `json:"slug" gorm:"column:slug;not null;default:'';uniqueIndex:uidx_slug_deleted_at;comment:简写"`
 	Content     string             `json:"content" gorm:"column:content;not null;comment:内容"`
-	CoverImage  string             `json:"cover_image" gorm:"column:cover_image;comment:封面图片URL"`
+	Images      []string           `json:"cover_image" gorm:"column:cover_image;serializer:json;comment:封面图片URL"`
 	PublishedAt time.Time          `json:"published_at" gorm:"column:published_at;not null;comment:发布时间"`
 	Status      enum.ArticleStatus `json:"status" gorm:"column:status;not null;comment:状态"`
 	Likes       uint               `json:"likes" gorm:"column:likes;not null;default:0;comment:点赞数"`
