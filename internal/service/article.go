@@ -199,7 +199,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 
 	articles, pageInfo, err := s.articleDAO.Paginate(db, &dbmodel.Article{}, []string{
 		"id", "created_at", "updated_at", "published_at",
-		"user_id", "title", "slug", "content", "cover_image", "status", "likes",
+		"user_id", "title", "slug", "content", "images", "status", "likes",
 	}, commonParam)
 	if err != nil {
 		logger.Error("[ArticleService] failed to paginate articles", zap.Error(err))
@@ -297,7 +297,7 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 	db := database.GetDBInstance(ctx)
 
 	// 检查文章是否存在且属于当前用户，同时获取旧的封面图片
-	article, err := s.articleDAO.Get(db, &dbmodel.Article{ID: req.Body.ID}, []string{"id", "user_id", "cover_image"})
+	article, err := s.articleDAO.Get(db, &dbmodel.Article{ID: req.Body.ID}, []string{"id", "user_id", "images"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			rsp.Error = constant.ErrDataNotExists
@@ -384,6 +384,12 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 		return rsp, nil
 	}
 
+	deleteImages, _ := lo.Difference(article.Images, req.Body.Images)
+	err = s.imageObjDAO.DeleteObjects(ctx, article.UserID, deleteImages)
+	if err != nil {
+		logger.Warn("[ArticleService] failed to delete images", zap.Error(err), zap.Uint("articleID", req.Body.ID), zap.Strings("images", deleteImages))
+	}
+
 	return rsp, nil
 }
 
@@ -405,7 +411,7 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *dto.DeleteArtic
 	db := database.GetDBInstance(ctx)
 
 	// 检查文章是否存在且属于当前用户，同时获取封面图片信息
-	article, err := s.articleDAO.Get(db, &dbmodel.Article{ID: req.ID}, []string{"id", "user_id", "cover_image"})
+	article, err := s.articleDAO.Get(db, &dbmodel.Article{ID: req.ID}, []string{"id", "user_id", "images"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			rsp.Error = constant.ErrDataNotExists
@@ -481,7 +487,7 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 
 	// 查询文章
 	article, err := s.articleDAO.Get(db, &dbmodel.Article{Slug: req.Slug}, []string{
-		"id", "user_id", "title", "slug", "content", "cover_image", "status",
+		"id", "user_id", "title", "slug", "content", "images", "status",
 		"created_at", "updated_at", "published_at",
 		"likes", "saves", "views",
 	})
