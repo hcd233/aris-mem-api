@@ -12,6 +12,7 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/model"
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/util"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -84,11 +85,9 @@ func (s *actionService) Do(ctx context.Context, req *dto.ActionReq) (*dto.EmptyR
 
 		switch req.Body.ActionType {
 		case enum.ActionTypeLike:
-			newLikes := article.Likes + 1
-			updateFields["likes"] = &newLikes
+			updateFields["likes"] = lo.ToPtr(article.Likes + 1) // 防止0被判断出空值
 		case enum.ActionTypeSave:
-			newSaves := article.Saves + 1
-			updateFields["saves"] = &newSaves
+			updateFields["saves"] = lo.ToPtr(article.Saves + 1)
 		}
 
 		if !util.HasNonZeroValue(updateFields) {
@@ -164,13 +163,11 @@ func (s *actionService) Undo(ctx context.Context, req *dto.ActionReq) (*dto.Empt
 		switch req.Body.ActionType {
 		case enum.ActionTypeLike:
 			if article.Likes > 0 {
-				newLikes := article.Likes - 1
-				updateFields["likes"] = &newLikes
+				updateFields["likes"] = lo.ToPtr(article.Likes - 1)
 			}
 		case enum.ActionTypeSave:
 			if article.Saves > 0 {
-				newSaves := article.Saves - 1
-				updateFields["saves"] = &newSaves
+				updateFields["saves"] = lo.ToPtr(article.Saves - 1)
 			}
 		}
 
