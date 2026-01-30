@@ -28,4 +28,17 @@ func initImageRouter(imageGroup huma.API) {
 		},
 		Middlewares: huma.Middlewares{middleware.RateLimiterMiddleware("imageUpload", "", constant.PeriodImageUpload, constant.LimitImageUpload)},
 	}, imageHandler.HandleUploadImage)
+
+	huma.Register(imageGroup, huma.Operation{
+		OperationID: "GetCredential",
+		Method:      http.MethodGet,
+		Path:        "/credential",
+		Summary:     "GetCredential",
+		Description: "Get COS temporary credential for direct upload from frontend. Returns temporary SecretId, SecretKey and SessionToken.",
+		Tags:        []string{"Image"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+		Middlewares: huma.Middlewares{middleware.RateLimiterMiddleware("cosTempCredential", "", constant.PeriodCosTempCredential, constant.LimitCosTempCredential)},
+	}, imageHandler.HandleGetCredential)
 }

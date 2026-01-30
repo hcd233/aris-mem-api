@@ -31,4 +31,11 @@ const (
 	// LimitActionUndo Action撤销限频
 	//	@update 2026-01-31 16:00:00
 	LimitActionUndo = 16
+
+	// PeriodCosTempCredential COS临时密钥申请限频周期
+	//	@update 2026-01-31 18:00:00
+	PeriodCosTempCredential = 1 * time.Minute
+	// LimitCosTempCredential COS临时密钥申请限频
+	//	@update 2026-01-31 18:00:00
+	LimitCosTempCredential = 10
 )

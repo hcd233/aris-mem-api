@@ -4,40 +4,54 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
+	"github.com/hcd233/aris-mem-api/internal/config"
 	"github.com/hcd233/aris-mem-api/internal/dto"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/cache"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/pool"
 	objdao "github.com/hcd233/aris-mem-api/internal/infrastructure/storage/obj_dao"
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/hcd233/aris-mem-api/internal/util"
+	sts "github.com/tencentyun/qcloud-cos-sts-sdk/go"
 	"go.uber.org/zap"
 )
 
 // ImageService 图片服务
 //
 //	author centonhuang
-//	update 2026-01-31 16:00:00
+//	@update 2026-01-31 16:00:00
 type ImageService interface {
 	UploadImage(ctx context.Context, req *dto.UploadImageReq) (rsp *dto.UploadImageRsp, err error)
+	GetCosTempCredential(ctx context.Context, req *dto.EmptyReq) (rsp *dto.GetCosTempCredentialRsp, err error)
 }
 
 type imageService struct {
 	imageObjDAO objdao.ObjDAO
+	stsClient   *sts.Client
 }
 
 // NewImageService 创建图片服务
 //
 //	return ImageService
 //	author centonhuang
-//	update 2026-01-31 16:00:00
+//	@update 2026-01-31 16:00:00
 func NewImageService() ImageService {
+	stsClient := sts.NewClient(
+		config.CosSecretID,
+		config.CosSecretKey,
+		nil,
+	)
+
 	return &imageService{
 		imageObjDAO: objdao.GetImageObjDAO(),
+		stsClient:   stsClient,
 	}
 }
 
@@ -46,7 +60,7 @@ func NewImageService() ImageService {
 //
 //	return *UploadImageRsp
 //	author centonhuang
-//	update 2026-01-31 16:00:00
+//	@update 2026-01-31 16:00:00
 func (s *imageService) UploadImage(ctx context.Context, req *dto.UploadImageReq) (*dto.UploadImageRsp, error) {
 	rsp := &dto.UploadImageRsp{}
 
@@ -132,5 +146,134 @@ func (s *imageService) UploadImage(ctx context.Context, req *dto.UploadImageReq)
 	}
 
 	rsp.ImageName = imageName
+	return rsp, nil
+}
+
+// GetCosTempCredential 获取COS临时密钥
+//
+//	@param ctx context.Context
+//	@param req *dto.GetCosTempCredentialReq
+//	@return rsp *dto.GetCosTempCredentialRsp
+//	@return err error
+//	author centonhuang
+//	@update 2026-01-31 18:00:00
+func (s *imageService) GetCosTempCredential(ctx context.Context, _ *dto.EmptyReq) (*dto.GetCosTempCredentialRsp, error) {
+	rsp := &dto.GetCosTempCredentialRsp{}
+
+	logger := logger.WithCtx(ctx)
+
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	redisClient := cache.GetRedisClient()
+
+	// 检查缓存中是否已有临时密钥
+	cacheKey := fmt.Sprintf(constant.CacheKeyTemplateCosTempSecret, userID)
+	cachedData, err := redisClient.Get(ctx, cacheKey).Result()
+	if err == nil && cachedData != "" {
+		// 缓存命中，直接返回
+		var credential dto.CosTempCredential
+		if err := json.Unmarshal([]byte(cachedData), &credential); err == nil {
+			// 检查是否即将过期（剩余时间小于5分钟）
+			if credential.ExpiredTime-time.Now().Unix() > 300 {
+				logger.Info("[ImageService] return cached credential", zap.Uint("userID", userID))
+				rsp.CosTempCredential = &credential
+				return rsp, nil
+			}
+		}
+	}
+
+	// 构建COS资源路径
+	// 格式: qcs::cos:<region>:uid/<appid>:<bucketname>/<path>
+	resource := fmt.Sprintf("qcs::cos:%s:uid/%s:%s-%s/%s",
+		config.CosRegion,
+		config.CosAppID,
+		config.CosBucketName,
+		config.CosAppID,
+		config.CosSTSAllowPrefix,
+	)
+
+	// 构建策略
+	policy := &sts.CredentialPolicy{
+		Version: "2.0",
+		Statement: []sts.CredentialPolicyStatement{
+			{
+				// 允许的权限
+				Action: []string{
+					// 简单上传
+					"name/cos:PutObject",
+					"name/cos:PostObject",
+					// 分块上传
+					"name/cos:InitiateMultipartUpload",
+					"name/cos:ListMultipartUploads",
+					"name/cos:ListParts",
+					"name/cos:UploadPart",
+					"name/cos:CompleteMultipartUpload",
+					"name/cos:AbortMultipartUpload",
+				},
+				Effect: "allow",
+				Resource: []string{
+					resource,
+				},
+				// 条件限制（可选）
+				Condition: map[string]map[string]interface{}{
+					"string_equal": {
+						// 限制上传的文件类型
+						"cos:content-type": []string{
+							"image/jpeg",
+							"image/jpg",
+							"image/png",
+							"image/gif",
+							"image/webp",
+						},
+					},
+					"numeric_less_than_equal": {
+						// 限制文件大小（10MB）
+						"cos:content-length": 10 * 1024 * 1024,
+					},
+				},
+			},
+		},
+	}
+
+	// 申请临时密钥
+	opt := &sts.CredentialOptions{
+		Policy:          policy,
+		Region:          config.CosRegion,
+		DurationSeconds: int64(config.CosSTSDuration),
+	}
+
+	// 调用STS接口
+	credential, err := s.stsClient.GetCredential(opt)
+	if err != nil {
+		logger.Error("[ImageService] failed to get credential", zap.Error(err))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
+	// 构建响应
+	rsp.CosTempCredential = &dto.CosTempCredential{
+		SecretID:     credential.Credentials.TmpSecretID,
+		SecretKey:    credential.Credentials.TmpSecretKey,
+		SessionToken: credential.Credentials.SessionToken,
+		ExpiredTime:  int64(credential.ExpiredTime),
+		Expiration:   credential.Expiration,
+		StartTime:    int64(credential.StartTime),
+		RequestID:    credential.RequestId,
+		BucketName:   config.CosBucketName,
+		Region:       config.CosRegion,
+		AppID:        config.CosAppID,
+	}
+
+	// 缓存临时密钥（有效期减去5分钟作为缓存时间，预留刷新时间）
+	cacheDuration := time.Duration(config.CosSTSDuration-300) * time.Second
+	if cacheData, err := json.Marshal(rsp.CosTempCredential); err == nil {
+		redisClient.Set(ctx, cacheKey, cacheData, cacheDuration)
+	}
+
+	logger.Info("[ImageService] credential generated",
+		zap.Uint("userID", userID),
+		zap.Int("expiredTime", credential.ExpiredTime),
+	)
+
 	return rsp, nil
 }

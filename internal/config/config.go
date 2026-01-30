@@ -122,13 +122,24 @@ var (
 	CosSecretID string
 
 	// CosSecretKey string Cos Secret Key
+	//	@update 2024-06-22 09:01:02
 	CosSecretKey string
 
 	// CosBucketName string Cos Bucket Name
+	//	@update 2024-06-22 09:01:02
 	CosBucketName string
 
 	// CosAppID string Cos App ID
+	//	@update 2024-06-22 09:01:02
 	CosAppID string
+
+	// CosSTSDuration int COS临时密钥有效期(秒)
+	//	@update 2026-01-31 18:00:00
+	CosSTSDuration int
+
+	// CosSTSAllowPrefix string COS临时密钥允许上传路径前缀
+	//	@update 2026-01-31 18:00:00
+	CosSTSAllowPrefix string
 
 	// OpenAIModel string OpenAI Model
 	OpenAIModel string
@@ -163,22 +174,28 @@ var (
 	// SMTPHost string Email SMTP server host
 	SMTPHost string
 
-	// EmailPort int Email SMTP server port
+	// SMTPPort int Email SMTP server port
+	//	@update 2026-01-31 06:11:55
 	SMTPPort int
 
-	// EmailUsername string Email account username
+	// SMTPUsername string Email account username
+	//	@update 2026-01-31 06:11:55
 	SMTPUsername string
 
-	// EmailPassword string Email account password or app-specific password
+	// SMTPPassword string Email account password or app-specific password
+	//	@update 2026-01-31 06:11:55
 	SMTPPassword string
 
-	// EmailFrom string Sender email address
+	// SMTPFrom string Sender email address
+	//	@update 2026-01-31 06:11:55
 	SMTPFrom string
 
-	// EmailFromName string Sender name
+	// SMTPFromName string Sender name
+	//	@update 2026-01-31 06:11:55
 	SMTPFromName string
 
-	// EmailTLS bool Enable TLS for email
+	// SMTPTLS bool Enable TLS for email
+	//	@update 2026-01-31 06:11:55
 	SMTPTLS bool
 
 	// PoolWorkers int 协程池工作协程数
@@ -209,6 +226,9 @@ func initEnvironment() {
 
 	config.SetDefault("pool.workers", 8)
 	config.SetDefault("pool.queue.size", 64)
+
+	config.SetDefault("cos.sts.duration", 1800)
+	config.SetDefault("cos.sts.allow.prefix", "*")
 
 	config.AutomaticEnv()
 
@@ -251,6 +271,8 @@ func initEnvironment() {
 	CosRegion = config.GetString("cos.region")
 	CosSecretID = config.GetString("cos.secret.id")
 	CosSecretKey = config.GetString("cos.secret.key")
+	CosSTSDuration = config.GetInt("cos.sts.duration")
+	CosSTSAllowPrefix = config.GetString("cos.sts.allow.prefix")
 
 	OpenAIModel = config.GetString("openai.model")
 	OpenAIAPIKey = config.GetString("openai.api.key")
