@@ -78,7 +78,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 	slug := util.GenerateSlug(req.Body.Title)
 
 	// 提取标签
-	tagNames := util.ExtractTags(req.Body.Content)
+	tagNames := util.ExtractTags(util.ExtractTextFromHTML(req.Body.Content))
 	tagNames = lo.Uniq(tagNames)
 
 	for _, image := range req.Body.Images {

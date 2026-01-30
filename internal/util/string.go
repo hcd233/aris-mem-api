@@ -11,6 +11,7 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
 	"github.com/mozillazg/go-pinyin"
 	"github.com/samber/lo"
+	"golang.org/x/net/html"
 )
 
 // ToDataURL 将文件转换为 data URL
@@ -81,4 +82,29 @@ func ToThumbnailURL(imageURL string) string {
 		u.RawQuery = fmt.Sprintf("imageView2/1/q/%d", constant.DefaultThumbnailQuality)
 	}
 	return u.String()
+}
+
+// ExtractTextFromHTML 从 HTML 中提取纯文本
+//
+//	@param s HTML 内容
+//	@return string 提取的纯文本
+//	@author centonhuang
+//	@update 2026-01-31 10:00:00
+func ExtractTextFromHTML(s string) string {
+	doc, err := html.Parse(strings.NewReader(s))
+	if err != nil {
+		return ""
+	}
+	var text strings.Builder
+	var extractText func(*html.Node)
+	extractText = func(n *html.Node) {
+		if n.Type == html.TextNode {
+			text.WriteString(n.Data)
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			extractText(c)
+		}
+	}
+	extractText(doc)
+	return strings.Join(strings.Fields(text.String()), " ")
 }
