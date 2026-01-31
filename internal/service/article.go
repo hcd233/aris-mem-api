@@ -477,13 +477,6 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 	logger := logger.WithCtx(ctx)
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	user, err := s.userDAO.Get(db, &dbmodel.User{ID: userID}, []string{"id", "name", "avatar"})
-	if err != nil {
-		logger.Error("[ArticleService] failed to get user", zap.Error(err))
-		rsp.Error = constant.ErrInternalError
-		return rsp, nil
-	}
-
 	// 查询文章
 	article, err := s.articleDAO.Get(db, &dbmodel.Article{Slug: req.Slug}, []string{
 		"id", "user_id", "title", "slug", "content", "images", "status",
@@ -504,6 +497,13 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 	if article.UserID != userID && article.Status != enum.ArticleStatusPublished {
 		logger.Info("[ArticleService] user not allowed to access article", zap.Uint("articleID", article.ID), zap.String("slug", req.Slug), zap.Uint("articleUserID", article.UserID), zap.String("status", string(article.Status)))
 		rsp.Error = constant.ErrNoPermission
+		return rsp, nil
+	}
+
+	author, err := s.userDAO.Get(db, &dbmodel.User{ID: article.UserID}, []string{"id", "name", "avatar"})
+	if err != nil {
+		logger.Error("[ArticleService] failed to get user", zap.Error(err))
+		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}
 
@@ -584,9 +584,9 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 		Article: dto.Article{
 			Title: article.Title,
 			Author: &dto.User{
-				ID:     user.ID,
-				Name:   user.Name,
-				Avatar: user.Avatar,
+				ID:     author.ID,
+				Name:   author.Name,
+				Avatar: author.Avatar,
 			},
 		},
 	}
