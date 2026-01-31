@@ -6,6 +6,8 @@ import (
 	"runtime/debug"
 
 	"github.com/hcd233/aris-mem-api/internal/api"
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
+	"github.com/hcd233/aris-mem-api/internal/config"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/cache"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/pool"
@@ -61,7 +63,10 @@ var startServerCmd = &cobra.Command{
 			middleware.LogMiddleware(),
 		)
 
-		router.RegisterDocsRouter()
+
+		if config.Env != enum.EnvProduction {
+			router.RegisterDocsRouter()
+		}
 		router.RegisterAPIRouter()
 
 		lo.Must0(app.Listen(fmt.Sprintf("%s:%s", host, port)))

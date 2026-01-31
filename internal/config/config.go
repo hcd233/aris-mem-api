@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/spf13/viper"
 )
 
@@ -201,6 +202,10 @@ var (
 	// PoolQueueSize int 协程池任务队列大小
 	//	@update 2026-01-31 03:26:08
 	PoolQueueSize int
+
+	// Env string 环境
+	//	@update 2026-01-31 15:20:42 
+	Env enum.Env
 )
 
 func init() {
@@ -210,6 +215,8 @@ func init() {
 func initEnvironment() {
 	config := viper.New()
 	config.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	config.SetDefault("env", enum.EnvProduction)
 
 	config.SetDefault("read.timeout", 10*time.Second)
 	config.SetDefault("write.timeout", 5*time.Minute)
