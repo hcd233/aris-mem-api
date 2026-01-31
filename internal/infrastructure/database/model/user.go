@@ -21,7 +21,7 @@ type User struct {
 	Avatar       string          `json:"avatar" gorm:"column:avatar;not null;comment:头像"`
 	Permission   enum.Permission `json:"permission" gorm:"column:permission;not null;default:'reader';comment:权限"`
 	LastLogin    time.Time       `json:"last_login" gorm:"column:last_login;comment:最后登录时间"`
-	GithubBindID string          `json:"-" gorm:"unique;comment:Github绑定ID"`
-	// QQBindID     string     `json:"-" gorm:"unique;comment:QQ绑定ID"`
-	GoogleBindID string `json:"-" gorm:"unique;comment:Google绑定ID"`
+	GithubBindID string          `json:"-" gorm:"comment:Github绑定ID"`
+	// QQBindID     string     `json:"-" gorm:"comment:QQ绑定ID"`
+	GoogleBindID string `json:"-" gorm:"comment:Google绑定ID"`
 }
