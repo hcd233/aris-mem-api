@@ -63,7 +63,6 @@ var startServerCmd = &cobra.Command{
 			middleware.LogMiddleware(),
 		)
 
-
 		if config.Env != enum.EnvProduction {
 			router.RegisterDocsRouter()
 		}

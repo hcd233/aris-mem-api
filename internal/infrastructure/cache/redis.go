@@ -16,8 +16,6 @@ import (
 
 var rdb *redis.Client
 
-const redisDB = 0
-
 // GetRedisClient 获取Redis客户端
 //
 //	return *redis.Client
@@ -35,10 +33,10 @@ func InitCache() {
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", config.RedisHost, config.RedisPort),
 		Password: config.RedisPassword,
-		DB:       redisDB,
+		DB:       config.RedisDB,
 	})
 
 	_ = lo.Must1(rdb.Ping(context.Background()).Result())
 
-	logger.Logger().Info("[Cache] Connected to Redis database", zap.String("host", config.RedisHost), zap.String("port", config.RedisPort), zap.Int("db", redisDB))
+	logger.Logger().Info("[Cache] Connected to Redis database", zap.String("host", config.RedisHost), zap.String("port", config.RedisPort), zap.Int("db", config.RedisDB))
 }

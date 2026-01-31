@@ -98,6 +98,9 @@ var (
 	// RedisPassword string Redis密码
 	RedisPassword string
 
+	// RedisDB int Redis数据库
+	RedisDB int
+
 	// MinioEndpoint string Minio Endpoint
 	MinioEndpoint string
 
@@ -204,7 +207,7 @@ var (
 	PoolQueueSize int
 
 	// Env string 环境
-	//	@update 2026-01-31 15:20:42 
+	//	@update 2026-01-31 15:20:42
 	Env enum.Env
 )
 
@@ -261,6 +264,7 @@ func initEnvironment() {
 	RedisHost = config.GetString("redis.host")
 	RedisPort = config.GetString("redis.port")
 	RedisPassword = config.GetString("redis.password")
+	RedisDB = config.GetInt("redis.db")
 
 	MinioEndpoint = config.GetString("minio.endpoint")
 	MinioTLS = config.GetBool("minio.tls")
