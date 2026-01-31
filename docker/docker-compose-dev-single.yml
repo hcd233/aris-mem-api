@@ -6,9 +6,9 @@ networks:
 
 services:
 
-  aris-mem-db-migrate:
+  aris-mem-db-migrate-dev:
     image: ghcr.io/hcd233/aris-mem-api:master # aris-mem-api:latest
-    container_name: aris-mem-db-migrate
+    container_name: aris-mem-db-migrate-dev
     restart: no
     networks:
       - 1panel-network
@@ -16,9 +16,9 @@ services:
       - ../env/api.env
     command: ["/app/aris-mem-api", "database", "migrate"]
 
-  aris-mem-api:
+  aris-mem-api-dev:
     image: ghcr.io/hcd233/aris-mem-api:master # aris-mem-api:latest
-    container_name: aris-mem-api
+    container_name: aris-mem-api-dev
     restart: always
     networks:
       - 1panel-network
@@ -27,7 +27,7 @@ services:
     env_file:
       - ../env/api.env
     depends_on:
-      aris-mem-db-migrate:
+      aris-mem-db-migrate-dev:
         condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8080"]
@@ -37,4 +37,4 @@ services:
 
     command: ["/app/aris-mem-api", "server", "start", "--host", "0.0.0.0", "--port", "8080"]
 
-# docker compose -f docker/docker-compose-without-middlewares.yml up -d
+# docker compose -f docker/docker-compose-dev-single.yml up -d
