@@ -13,7 +13,7 @@ services:
     networks:
       - 1panel-network
     env_file:
-      - ../env/api.env
+      - ../env/api-dev.env
     command: ["/app/aris-mem-api", "database", "migrate"]
 
   aris-mem-api-dev:
