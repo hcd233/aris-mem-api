@@ -97,12 +97,13 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArtic
 
 	// 创建文章
 	article := &dbmodel.Article{
-		UserID:  userID,
-		Title:   req.Body.Title,
-		Slug:    slug,
-		Content: req.Body.Content,
-		Images:  req.Body.Images,
-		Status:  enum.ArticleStatusPublished,
+		UserID:      userID,
+		Title:       req.Body.Title,
+		Slug:        slug,
+		Content:     req.Body.Content,
+		Images:      req.Body.Images,
+		Status:      enum.ArticleStatusPublished,
+		PublishedAt: time.Now(),
 	}
 
 	err := db.Transaction(func(tx *gorm.DB) error {
