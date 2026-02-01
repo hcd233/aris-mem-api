@@ -19,7 +19,7 @@ func initImageRouter(imageGroup huma.API) {
 	huma.Register(imageGroup, huma.Operation{
 		OperationID: "uploadImage",
 		Method:      http.MethodPost,
-		Path:        "/",
+		Path:        "",
 		Summary:     "UploadImage",
 		Description: "Upload an image. Returns presigned URL of the uploaded image.",
 		Tags:        []string{"Image"},

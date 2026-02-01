@@ -18,7 +18,7 @@ func initArticleRouter(articleGroup huma.API) {
 	huma.Register(articleGroup, huma.Operation{
 		OperationID: "createArticle",
 		Method:      http.MethodPost,
-		Path:        "/",
+		Path:        "",
 		Summary:     "CreateArticle",
 		Description: "Create a new article with auto-generated slug and tag extraction",
 		Tags:        []string{"Article"},
@@ -42,7 +42,7 @@ func initArticleRouter(articleGroup huma.API) {
 	huma.Register(articleGroup, huma.Operation{
 		OperationID: "updateArticle",
 		Method:      http.MethodPatch,
-		Path:        "/",
+		Path:        "",
 		Summary:     "UpdateArticle",
 		Description: "Update article fields",
 		Tags:        []string{"Article"},
@@ -54,7 +54,7 @@ func initArticleRouter(articleGroup huma.API) {
 	huma.Register(articleGroup, huma.Operation{
 		OperationID: "deleteArticle",
 		Method:      http.MethodDelete,
-		Path:        "/",
+		Path:        "",
 		Summary:     "DeleteArticle",
 		Description: "Delete article and its tag associations",
 		Tags:        []string{"Article"},
@@ -66,7 +66,7 @@ func initArticleRouter(articleGroup huma.API) {
 	huma.Register(articleGroup, huma.Operation{
 		OperationID: "getArticle",
 		Method:      http.MethodGet,
-		Path:        "/",
+		Path:        "",
 		Summary:     "GetArticle",
 		Description: "Get article details by slug. Non-owner can only view published articles, owner can view all.",
 		Tags:        []string{"Article"},

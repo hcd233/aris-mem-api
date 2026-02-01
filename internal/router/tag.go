@@ -30,7 +30,7 @@ func initTagRouter(tagGroup huma.API) {
 	huma.Register(tagGroup, huma.Operation{
 		OperationID: "deleteTag",
 		Method:      http.MethodDelete,
-		Path:        "/",
+		Path:        "",
 		Summary:     "DeleteTag",
 		Description: "Delete tag and its article associations",
 		Tags:        []string{"Tag"},

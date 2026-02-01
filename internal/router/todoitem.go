@@ -18,7 +18,7 @@ func initTodoItemRouter(todoItemGroup huma.API) {
 	huma.Register(todoItemGroup, huma.Operation{
 		OperationID: "createTodoItems",
 		Method:      http.MethodPost,
-		Path:        "/",
+		Path:        "",
 		Summary:     "CreateTodoItems",
 		Description: "Create todo items",
 		Tags:        []string{"TodoItem"},
@@ -42,7 +42,7 @@ func initTodoItemRouter(todoItemGroup huma.API) {
 	huma.Register(todoItemGroup, huma.Operation{
 		OperationID: "updateTodoItem",
 		Method:      http.MethodPatch,
-		Path:        "/",
+		Path:        "",
 		Summary:     "UpdateTodoItem",
 		Description: "Patch update todo item fields",
 		Tags:        []string{"TodoItem"},
@@ -54,7 +54,7 @@ func initTodoItemRouter(todoItemGroup huma.API) {
 	huma.Register(todoItemGroup, huma.Operation{
 		OperationID: "deleteTodoItem",
 		Method:      http.MethodDelete,
-		Path:        "/",
+		Path:        "",
 		Summary:     "DeleteTodoItem",
 		Description: "Delete todo item",
 		Tags:        []string{"TodoItem"},
