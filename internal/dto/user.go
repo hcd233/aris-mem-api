@@ -34,11 +34,11 @@ type DetailedUser struct {
 	User
 }
 
-// GetCurUserRsp represents the response containing the current user's detailed information
+// GetCurrentUserRsp represents the response containing the current user's detailed information
 //
 //	author centonhuang
 //	update 2025-01-04 21:00:59
-type GetCurUserRsp struct {
+type GetCurrentUserRsp struct {
 	CommonRsp
 	User *DetailedUser `json:"user" doc:"Complete user information including permissions"`
 }

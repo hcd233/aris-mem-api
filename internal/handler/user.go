@@ -13,7 +13,7 @@ import (
 //	author centonhuang
 //	update 2025-01-04 15:56:20
 type UserHandler interface {
-	HandleGetCurUser(ctx context.Context, req *dto.EmptyReq) (*dto.HTTPResponse[*dto.GetCurUserRsp], error)
+	HandleGetCurUser(ctx context.Context, req *dto.EmptyReq) (*dto.HTTPResponse[*dto.GetCurrentUserRsp], error)
 	HandleUpdateUser(ctx context.Context, req *dto.UpdateUserReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
 	HandleApproveUser(ctx context.Context, req *dto.ApproveUserReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
 	HandleListUsers(ctx context.Context, req *dto.ListUsersReq) (*dto.HTTPResponse[*dto.ListUsersRsp], error)
@@ -34,8 +34,8 @@ func NewUserHandler() UserHandler {
 	}
 }
 
-func (h *userHandler) HandleGetCurUser(ctx context.Context, req *dto.EmptyReq) (*dto.HTTPResponse[*dto.GetCurUserRsp], error) {
-	return util.WrapHTTPResponse(h.svc.GetCurUser(ctx, req))
+func (h *userHandler) HandleGetCurUser(ctx context.Context, req *dto.EmptyReq) (*dto.HTTPResponse[*dto.GetCurrentUserRsp], error) {
+	return util.WrapHTTPResponse(h.svc.GetCurrentUser(ctx, req))
 }
 
 func (h *userHandler) HandleUpdateUser(ctx context.Context, req *dto.UpdateUserReq) (*dto.HTTPResponse[*dto.EmptyRsp], error) {

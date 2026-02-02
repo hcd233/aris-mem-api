@@ -23,7 +23,7 @@ import (
 //	author centonhuang
 //	update 2025-01-04 21:04:00
 type UserService interface {
-	GetCurUser(ctx context.Context, req *dto.EmptyReq) (rsp *dto.GetCurUserRsp, err error)
+	GetCurrentUser(ctx context.Context, req *dto.EmptyReq) (rsp *dto.GetCurrentUserRsp, err error)
 	UpdateUser(ctx context.Context, req *dto.UpdateUserReq) (rsp *dto.EmptyRsp, err error)
 	ApproveUser(ctx context.Context, req *dto.ApproveUserReq) (rsp *dto.EmptyRsp, err error)
 	ListUsers(ctx context.Context, req *dto.ListUsersReq) (rsp *dto.ListUsersRsp, err error)
@@ -44,7 +44,7 @@ func NewUserService() UserService {
 	}
 }
 
-// GetCurUser 获取当前用户信息
+// GetCurrentUser 获取当前用户信息
 //
 //	@receiver s *userService
 //	@param ctx context.Context
@@ -53,8 +53,8 @@ func NewUserService() UserService {
 //	@return error
 //	@author centonhuang
 //	@update 2025-11-11 04:59:13
-func (s *userService) GetCurUser(ctx context.Context, _ *dto.EmptyReq) (rsp *dto.GetCurUserRsp, err error) {
-	rsp = &dto.GetCurUserRsp{}
+func (s *userService) GetCurrentUser(ctx context.Context, _ *dto.EmptyReq) (rsp *dto.GetCurrentUserRsp, err error) {
+	rsp = &dto.GetCurrentUserRsp{}
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
@@ -148,6 +148,7 @@ func (s *userService) ApproveUser(ctx context.Context, req *dto.ApproveUserReq) 
 	}
 
 	if user.Permission != enum.PermissionPending {
+		logger.Info("[UserService] user is not pending", zap.Uint("userID", req.Body.UserID), zap.String("permission", string(user.Permission)))
 		rsp.Error = constant.ErrBadRequest
 		return rsp, nil
 	}

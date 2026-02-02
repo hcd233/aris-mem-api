@@ -41,7 +41,7 @@ func NewAPIClient() *APIClient {
 }
 
 // GetCurrentUser retrieves current user information
-func (c *APIClient) GetCurrentUser(accessToken string) (*dto.GetCurUserRsp, error) {
+func (c *APIClient) GetCurrentUser(accessToken string) (*dto.GetCurrentUserRsp, error) {
 	url := fmt.Sprintf("%s/api/v1/user/current", c.baseURL)
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -71,7 +71,7 @@ func (c *APIClient) GetCurrentUser(accessToken string) (*dto.GetCurUserRsp, erro
 		return nil, fmt.Errorf("request failed with status: %d, body: %s", resp.StatusCode, string(body))
 	}
 
-	var result dto.GetCurUserRsp
+	var result dto.GetCurrentUserRsp
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
