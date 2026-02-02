@@ -24,7 +24,7 @@ func initUserRouter(userGroup huma.API) {
 		Security: []map[string][]string{
 			{"jwtAuth": {}},
 		},
-	}, userHandler.HandleGetCurUser)
+	}, userHandler.HandleGetCurrentUser)
 
 	huma.Register(userGroup, huma.Operation{
 		OperationID: "updateUser",
