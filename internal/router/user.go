@@ -38,4 +38,17 @@ func initUserRouter(userGroup huma.API) {
 		},
 		Middlewares: huma.Middlewares{middleware.LimitUserPermissionMiddleware("updateUser", enum.PermissionUser)},
 	}, userHandler.HandleUpdateUser)
+
+	huma.Register(userGroup, huma.Operation{
+		OperationID: "approveUser",
+		Method:      http.MethodPost,
+		Path:        "/approve",
+		Summary:     "ApproveUser",
+		Description: "Approve a pending user and promote them to user permission",
+		Tags:        []string{"User"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+		Middlewares: huma.Middlewares{middleware.LimitUserPermissionMiddleware("approveUser", enum.PermissionAdmin)},
+	}, userHandler.HandleApproveUser)
 }

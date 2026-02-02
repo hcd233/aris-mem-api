@@ -55,7 +55,6 @@ type GetCosTempCredentialRsp struct {
 //	@author centonhuang
 //	@update 2026-01-31 18:00:00
 type CosTempCredential struct {
-
 	// SecretID string SecretId 临时密钥 SecretId
 	//	@update 2026-01-31 06:14:03
 	SecretID string `json:"secretId" doc:"临时密钥 SecretId"`

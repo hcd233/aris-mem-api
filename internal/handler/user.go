@@ -15,6 +15,7 @@ import (
 type UserHandler interface {
 	HandleGetCurUser(ctx context.Context, req *dto.EmptyReq) (*dto.HTTPResponse[*dto.GetCurUserRsp], error)
 	HandleUpdateUser(ctx context.Context, req *dto.UpdateUserReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
+	HandleApproveUser(ctx context.Context, req *dto.ApproveUserReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
 }
 
 type userHandler struct {
@@ -38,4 +39,8 @@ func (h *userHandler) HandleGetCurUser(ctx context.Context, req *dto.EmptyReq) (
 
 func (h *userHandler) HandleUpdateUser(ctx context.Context, req *dto.UpdateUserReq) (*dto.HTTPResponse[*dto.EmptyRsp], error) {
 	return util.WrapHTTPResponse(h.svc.UpdateUser(ctx, req))
+}
+
+func (h *userHandler) HandleApproveUser(ctx context.Context, req *dto.ApproveUserReq) (*dto.HTTPResponse[*dto.EmptyRsp], error) {
+	return util.WrapHTTPResponse(h.svc.ApproveUser(ctx, req))
 }

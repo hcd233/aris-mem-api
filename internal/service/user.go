@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/dto"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/dao"
@@ -22,6 +23,7 @@ import (
 type UserService interface {
 	GetCurUser(ctx context.Context, req *dto.EmptyReq) (rsp *dto.GetCurUserRsp, err error)
 	UpdateUser(ctx context.Context, req *dto.UpdateUserReq) (rsp *dto.EmptyRsp, err error)
+	ApproveUser(ctx context.Context, req *dto.ApproveUserReq) (rsp *dto.EmptyRsp, err error)
 }
 
 type userService struct {
@@ -103,6 +105,54 @@ func (s *userService) UpdateUser(ctx context.Context, req *dto.UpdateUserReq) (*
 		"avatar": req.Body.User.Avatar,
 	}); err != nil {
 		logger.Error("[UserService] failed to update user", zap.Error(err))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
+	return rsp, nil
+}
+
+// ApproveUser approves a pending user and promotes them to user permission
+//
+//	@receiver s *userService
+//	@param ctx context.Context
+//	@param req *dto.ApproveUserReq
+//	@return *dto.EmptyRsp
+//	@return error
+//	@author centonhuang
+//	@update 2026-02-02 10:00:00
+func (s *userService) ApproveUser(ctx context.Context, req *dto.ApproveUserReq) (*dto.EmptyRsp, error) {
+	rsp := &dto.EmptyRsp{}
+
+	if req == nil || req.Body == nil || req.Body.UserID == 0 {
+		rsp.Error = constant.ErrBadRequest
+		return rsp, nil
+	}
+
+	logger := logger.WithCtx(ctx)
+	db := database.GetDBInstance(ctx)
+
+	user, err := s.userDAO.Get(db, &model.User{ID: req.Body.UserID}, []string{"id", "permission"})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Error("[UserService] user not found")
+			rsp.Error = constant.ErrDataNotExists
+			return rsp, nil
+		}
+		logger.Error("[UserService] failed to get user by id", zap.Error(err))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
+	if user.Permission != enum.PermissionPending {
+		rsp.Error = constant.ErrBadRequest
+		return rsp, nil
+	}
+
+	if err := s.userDAO.Update(db, &model.User{ID: req.Body.UserID}, map[string]interface{}{
+		"permission": enum.PermissionUser,
+	}); err != nil {
+		logger.Error("[UserService] failed to approve user", zap.Error(err))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}

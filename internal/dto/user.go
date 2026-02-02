@@ -56,3 +56,19 @@ type UpdateUserReq struct {
 type UpdateUserReqBody struct {
 	User *UpdatedUser `json:"user" required:"true" doc:"User information to update"`
 }
+
+// ApproveUserReq represents a request to approve a pending user
+//
+//	author centonhuang
+//	update 2026-02-02 10:00:00
+type ApproveUserReq struct {
+	Body *ApproveUserReqBody `json:"body" doc:"Request body containing user ID to approve"`
+}
+
+// ApproveUserReqBody contains the user ID for approval
+//
+//	author centonhuang
+//	update 2026-02-02 10:00:00
+type ApproveUserReqBody struct {
+	UserID uint `json:"userId" required:"true" doc:"User ID to approve"`
+}
