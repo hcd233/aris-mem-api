@@ -68,8 +68,8 @@ type CreateArticleReq struct {
 //	@update 2026-01-31 10:00:00
 type CreateArticleReqBody struct {
 	Title   string   `json:"title" doc:"Title of the article"`
-	Content string   `json:"content" doc:"Content of the article"`
-	Images  []string `json:"images" doc:"Images of the article"`
+	Content string   `json:"content" maxLength:"16384" doc:"Content of the article"`
+	Images  []string `json:"images" maxItems:"16" doc:"Images of the article"`
 }
 
 // ListArticlesReq 获取文章列表请求
