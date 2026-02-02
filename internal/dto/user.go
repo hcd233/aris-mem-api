@@ -1,6 +1,8 @@
 // Package dto 用户DTO
 package dto
 
+import "github.com/hcd233/aris-mem-api/internal/common/model"
+
 // User 用户实体
 //
 //	@author centonhuang
@@ -55,6 +57,25 @@ type UpdateUserReq struct {
 //	update 2025-10-31 02:33:48
 type UpdateUserReqBody struct {
 	User *UpdatedUser `json:"user" required:"true" doc:"User information to update"`
+}
+
+// ListUsersReq represents a request to list users with pagination
+//
+//	author centonhuang
+//	update 2026-02-02 10:20:00
+type ListUsersReq struct {
+	model.CommonParam
+	SortField string `query:"sortField" enum:"id,createdAt,lastLogin,name,email" doc:"Sort field"`
+}
+
+// ListUsersRsp represents a response containing a list of users
+//
+//	author centonhuang
+//	update 2026-02-02 10:20:00
+type ListUsersRsp struct {
+	CommonRsp
+	Users    []*DetailedUser `json:"users" doc:"Users to list"`
+	PageInfo *model.PageInfo `json:"pageInfo" doc:"Page info"`
 }
 
 // ApproveUserReq represents a request to approve a pending user

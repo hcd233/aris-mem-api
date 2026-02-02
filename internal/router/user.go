@@ -51,4 +51,17 @@ func initUserRouter(userGroup huma.API) {
 		},
 		Middlewares: huma.Middlewares{middleware.LimitUserPermissionMiddleware("approveUser", enum.PermissionAdmin)},
 	}, userHandler.HandleApproveUser)
+
+	huma.Register(userGroup, huma.Operation{
+		OperationID: "listUsers",
+		Method:      http.MethodGet,
+		Path:        "/list",
+		Summary:     "ListUsers",
+		Description: "List users with pagination",
+		Tags:        []string{"User"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+		Middlewares: huma.Middlewares{middleware.LimitUserPermissionMiddleware("listUsers", enum.PermissionAdmin)},
+	}, userHandler.HandleListUsers)
 }

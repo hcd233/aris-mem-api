@@ -12,6 +12,8 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/dao"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/model"
 	"github.com/hcd233/aris-mem-api/internal/logger"
+	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -24,6 +26,7 @@ type UserService interface {
 	GetCurUser(ctx context.Context, req *dto.EmptyReq) (rsp *dto.GetCurUserRsp, err error)
 	UpdateUser(ctx context.Context, req *dto.UpdateUserReq) (rsp *dto.EmptyRsp, err error)
 	ApproveUser(ctx context.Context, req *dto.ApproveUserReq) (rsp *dto.EmptyRsp, err error)
+	ListUsers(ctx context.Context, req *dto.ListUsersReq) (rsp *dto.ListUsersRsp, err error)
 }
 
 type userService struct {
@@ -157,5 +160,66 @@ func (s *userService) ApproveUser(ctx context.Context, req *dto.ApproveUserReq) 
 		return rsp, nil
 	}
 
+	return rsp, nil
+}
+
+// ListUsers lists users with pagination
+//
+//	@receiver s *userService
+//	@param ctx context.Context
+//	@param req *dto.ListUsersReq
+//	@return *dto.ListUsersRsp
+//	@return error
+//	@author centonhuang
+//	@update 2026-02-02 10:20:00
+func (s *userService) ListUsers(ctx context.Context, req *dto.ListUsersReq) (*dto.ListUsersRsp, error) {
+	rsp := &dto.ListUsersRsp{}
+
+	if req.SortField == "" {
+		req.SortField = "id"
+	}
+
+	if req.Sort == "" {
+		req.Sort = enum.SortAsc
+	}
+
+	db := database.GetDBInstance(ctx)
+	logger := logger.WithCtx(ctx)
+
+	commonParam := &dao.CommonParam{
+		PageParam: dao.PageParam{
+			Page:     req.Page,
+			PageSize: req.PageSize,
+		},
+		QueryParam: dao.QueryParam{
+			Query:       req.Query,
+			QueryFields: []string{"name", "email"},
+		},
+		SortParam: dao.SortParam{
+			Sort:      req.Sort,
+			SortField: strcase.ToSnake(req.SortField),
+		},
+	}
+
+	users, pageInfo, err := s.userDAO.Paginate(db, &model.User{}, []string{"id", "name", "email", "avatar", "permission", "created_at", "last_login"}, commonParam)
+	if err != nil {
+		logger.Error("[UserService] failed to list users", zap.Error(err))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
+	rsp.Users = lo.Map(users, func(item *model.User, _ int) *dto.DetailedUser {
+		return &dto.DetailedUser{
+			User: dto.User{
+				ID:     item.ID,
+				Name:   item.Name,
+				Avatar: item.Avatar,
+			},
+			CreatedAt:  item.CreatedAt.Format(time.DateTime),
+			LastLogin:  item.LastLogin.Format(time.DateTime),
+			Permission: string(item.Permission),
+		}
+	})
+	rsp.PageInfo = pageInfo
 	return rsp, nil
 }
