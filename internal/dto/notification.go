@@ -17,8 +17,8 @@ type ListedNotification struct {
 	Sender    *User                   `json:"sender" doc:"Sender of the notification"`
 	Status    enum.NotificationStatus `json:"status" doc:"Status of the notification"`
 	Type      enum.NotificationType   `json:"type" doc:"Type of the notification"`
-	Article   *NotifiedArticle        `json:"article" doc:"Article of the notification"`
-	Comment   *NotifiedComment        `json:"comment" doc:"Comment of the notification"`
+	Article   *NotifiedArticle        `json:"article,omitempty" doc:"Article of the notification"`
+	Comment   *NotifiedComment        `json:"comment,omitempty" doc:"Comment of the notification"`
 	CreatedAt time.Time               `json:"createdAt" doc:"Created time of the notification"`
 }
 

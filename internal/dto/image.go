@@ -47,7 +47,7 @@ type ImageUploadTask struct {
 //	@update 2026-01-31 18:00:00
 type GetCosTempCredentialRsp struct {
 	CommonRsp
-	CosTempCredential *CosTempCredential `json:"cosTempCredential,omitempty" doc:"COS临时密钥信息"`
+	CosTempCredential *CosTempCredential `json:"cosTempCredential" doc:"COS临时密钥信息"`
 }
 
 // CosTempCredential COS临时密钥信息
@@ -82,7 +82,7 @@ type CosTempCredential struct {
 	StartTime int64 `json:"startTime" doc:"临时密钥开始时间戳(秒)"`
 	// RequestID string 请求ID
 	//	@update 2026-01-31 06:14:19
-	RequestID string `json:"requestId,omitempty" doc:"请求ID"`
+	RequestID string `json:"requestId" doc:"请求ID"`
 	// BucketName string Bucket名称
 	//	@update 2026-01-31 06:14:22
 	BucketName string `json:"bucketName" doc:"Bucket名称"`
