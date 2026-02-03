@@ -96,7 +96,6 @@ func (s *commentService) CreateComment(ctx context.Context, req *dto.CreateComme
 		UserID:    userID,
 		ParentID:  req.Body.ParentID,
 		Content:   req.Body.Content,
-		Images:    req.Body.Images,
 	}
 
 	err = s.commentDAO.Create(db, comment)
@@ -147,7 +146,7 @@ func (s *commentService) ListComments(ctx context.Context, req *dto.ListComments
 	}
 
 	comments, pageInfo, err := s.commentDAO.Paginate(db, &dbmodel.Comment{}, []string{
-		"id", "article_id", "user_id", "parent_id", "content", "images",
+		"id", "article_id", "user_id", "parent_id", "content",
 		"likes", "saves", "created_at", "updated_at",
 	}, commonParam)
 	if err != nil {
@@ -157,9 +156,9 @@ func (s *commentService) ListComments(ctx context.Context, req *dto.ListComments
 	}
 
 	// Get user info
-	userIDs := lo.Map(comments, func(item *dbmodel.Comment, _ int) uint {
+	userIDs := lo.Uniq(lo.Map(comments, func(item *dbmodel.Comment, _ int) uint {
 		return item.UserID
-	})
+	}))
 	users, err := s.userDAO.BatchGetByIDs(db, userIDs, []string{"id", "name", "avatar"})
 	if err != nil {
 		logger.Error("[CommentService] failed to get users", zap.Error(err), zap.Uints("userIDs", userIDs))
@@ -172,9 +171,9 @@ func (s *commentService) ListComments(ctx context.Context, req *dto.ListComments
 	})
 
 	// Get like/save status for current user
-	commentIDs := lo.Map(comments, func(item *dbmodel.Comment, _ int) uint {
+	commentIDs := lo.Uniq(lo.Map(comments, func(item *dbmodel.Comment, _ int) uint {
 		return item.ID
-	})
+	}))
 
 	likeActions, err := s.actionDAO.BatchGetByUserIDAndActionType(db, userID, "like", "comment", commentIDs, []string{"id", "entity_id"})
 	if err != nil {
@@ -205,7 +204,6 @@ func (s *commentService) ListComments(ctx context.Context, req *dto.ListComments
 		_, saved := savedCommentIDSet[item.ID]
 
 		return &dto.ListedComment{
-			ID:        item.ID,
 			ArticleID: item.ArticleID,
 			ParentID:  item.ParentID,
 			CreatedAt: item.CreatedAt,
@@ -220,8 +218,8 @@ func (s *commentService) ListComments(ctx context.Context, req *dto.ListComments
 				Avatar: user.Avatar,
 			},
 			Comment: dto.Comment{
+				ID:      item.ID,
 				Content: item.Content,
-				Images:  item.Images,
 			},
 		}
 	})

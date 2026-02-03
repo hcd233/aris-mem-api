@@ -11,8 +11,17 @@ import (
 //	author centonhuang
 //	update 2026-02-03 22:30:00
 type Comment struct {
-	Content string   `json:"content" doc:"Content of the comment"`
-	Images  []string `json:"images" doc:"Images of the comment"`
+	ID      uint   `json:"id" doc:"ID of the comment"`
+	Content string `json:"content" doc:"Content of the comment"`
+}
+
+// NotifiedComment 通知评论实体
+//
+//	@author centonhuang
+//	@update 2026-02-03 22:30:00
+type NotifiedComment struct {
+	Comment
+	CoverImage string `json:"coverImage" doc:"Cover image URL of the comment"`
 }
 
 // ListedComment listed comment entity
@@ -20,7 +29,6 @@ type Comment struct {
 //	author centonhuang
 //	update 2026-02-03 22:30:00
 type ListedComment struct {
-	ID        uint      `json:"id" doc:"ID of the comment"`
 	ArticleID uint      `json:"articleID" doc:"Article ID of the comment"`
 	ParentID  uint      `json:"parentID" doc:"Parent comment ID"`
 	CreatedAt time.Time `json:"createdAt" doc:"Created time of the comment"`

@@ -208,9 +208,9 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		return rsp, nil
 	}
 
-	userIDs := lo.Map(articles, func(item *dbmodel.Article, _ int) uint {
+	userIDs := lo.Uniq(lo.Map(articles, func(item *dbmodel.Article, _ int) uint {
 		return item.UserID
-	})
+	}))
 	users, err := s.userDAO.BatchGetByIDs(db, userIDs, []string{"id", "name", "avatar"})
 	if err != nil {
 		logger.Error("[ArticleService] failed to get users", zap.Error(err), zap.Uints("userIDs", userIDs))
@@ -222,9 +222,9 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		return item.ID, item
 	})
 
-	articleIDs := lo.Map(articles, func(item *dbmodel.Article, _ int) uint {
+	articleIDs := lo.Uniq(lo.Map(articles, func(item *dbmodel.Article, _ int) uint {
 		return item.ID
-	})
+	}))
 
 	actions, err := s.actionDAO.BatchGetByUserIDAndActionType(db, userID, enum.ActionTypeLike, enum.ActionEntityArticle, articleIDs, []string{"id", "entity_id"})
 	if err != nil {
@@ -239,7 +239,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 
 	// 组装文章列表并获取标签信息
 	rsp.Articles = lo.Map(articles, func(item *dbmodel.Article, _ int) *dto.ListedArticle {
-		user := userIDUserMap[item.UserID]
+		author := userIDUserMap[item.UserID]
 
 		// 为封面图片生成预签名 URL
 		coverImage := ""
@@ -249,16 +249,22 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 				logger.Warn("[ArticleService] failed to generate presigned URL for cover image",
 					zap.Error(err),
 					zap.String("coverImage", item.Images[0]))
+			} else {
+				coverImage = presignedURL.String()
+				coverImage = util.ToThumbnailURL(coverImage)
 			}
-			coverImage = presignedURL.String()
-			coverImage = util.ToThumbnailURL(coverImage)
 		}
 
 		_, liked := likedArticleIDSet[item.ID]
 
 		return &dto.ListedArticle{
-			ID:          item.ID,
-			Slug:        item.Slug,
+			ID:   item.ID,
+			Slug: item.Slug,
+			Author: &dto.User{
+				ID:     author.ID,
+				Name:   author.Name,
+				Avatar: author.Avatar,
+			},
 			CoverImage:  coverImage,
 			CreatedAt:   item.CreatedAt,
 			UpdatedAt:   item.UpdatedAt,
@@ -267,11 +273,6 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 			Liked:       liked,
 			Article: dto.Article{
 				Title: item.Title,
-				Author: &dto.User{
-					ID:     user.ID,
-					Name:   user.Name,
-					Avatar: user.Avatar,
-				},
 			},
 		}
 	})
@@ -557,8 +558,13 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 
 	// 组装响应
 	rsp.Article = &dto.DetailedArticle{
-		ID:          article.ID,
-		Slug:        article.Slug,
+		ID:   article.ID,
+		Slug: article.Slug,
+		Author: &dto.User{
+			ID:     author.ID,
+			Name:   author.Name,
+			Avatar: author.Avatar,
+		},
 		CreatedAt:   article.CreatedAt,
 		UpdatedAt:   article.UpdatedAt,
 		PublishedAt: article.PublishedAt,
@@ -584,11 +590,6 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 		}),
 		Article: dto.Article{
 			Title: article.Title,
-			Author: &dto.User{
-				ID:     author.ID,
-				Name:   author.Name,
-				Avatar: author.Avatar,
-			},
 		},
 	}
 

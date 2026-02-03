@@ -12,8 +12,28 @@ import (
 //	@author centonhuang
 //	@update 2026-01-29 17:00:00
 type Article struct {
-	Title  string `json:"title" doc:"Title of the article"`
-	Author *User  `json:"author" doc:"Author of the article"`
+	Title string `json:"title" doc:"Title of the article"`
+}
+
+// CreatedArticle 创建文章实体
+//
+//	@author centonhuang
+//	@update 2026-02-03 20:01:03
+type CreatedArticle struct {
+	Content string   `json:"content" maxLength:"16384" doc:"Content of the article"`
+	Images  []string `json:"images" maxItems:"16" doc:"Images of the article"`
+	Article
+}
+
+// NotifiedArticle 通知文章实体
+//
+//	@author centonhuang
+//	@update 2026-02-03 19:53:46
+type NotifiedArticle struct {
+	ID         uint   `json:"id" doc:"ID of the article"`
+	Slug       string `json:"slug" doc:"Slug of the article"`
+	CoverImage string `json:"coverImage" doc:"Cover image URL of the article"`
+	Article
 }
 
 // ListedArticle 详细文章实体
@@ -23,6 +43,7 @@ type Article struct {
 type ListedArticle struct {
 	ID          uint      `json:"id" doc:"ID of the article"`
 	Slug        string    `json:"slug" doc:"Slug of the article"`
+	Author      *User     `json:"author" doc:"Author of the article"`
 	CoverImage  string    `json:"coverImage" doc:"Cover image URL of the article"`
 	CreatedAt   time.Time `json:"createdAt" doc:"Created time of the article"`
 	UpdatedAt   time.Time `json:"updatedAt" doc:"Updated time of the article"`
@@ -39,6 +60,7 @@ type ListedArticle struct {
 type DetailedArticle struct {
 	ID          uint               `json:"id" doc:"ID of the article"`
 	Slug        string             `json:"slug" doc:"Slug of the article"`
+	Author      *User              `json:"author" doc:"Author of the article"`
 	Content     string             `json:"content" doc:"Content of the article"`
 	Images      []string           `json:"images" doc:"Images of the article"`
 	CreatedAt   time.Time          `json:"createdAt" doc:"Created time of the article"`
@@ -67,9 +89,7 @@ type CreateArticleReq struct {
 //	@author centonhuang
 //	@update 2026-01-31 10:00:00
 type CreateArticleReqBody struct {
-	Title   string   `json:"title" doc:"Title of the article"`
-	Content string   `json:"content" maxLength:"16384" doc:"Content of the article"`
-	Images  []string `json:"images" maxItems:"16" doc:"Images of the article"`
+	CreatedArticle
 }
 
 // ListArticlesReq 获取文章列表请求

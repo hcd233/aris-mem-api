@@ -1,14 +1,15 @@
 package dao
 
 var (
-	userDAOSingleton       *UserDAO
-	todoItemDAOSingleton   *TodoItemDAO
-	dialogDAOSingleton     *DialogDAO
-	tagDAOSingleton        *TagDAO
-	articleDAOSingleton    *ArticleDAO
-	articleTagDAOSingleton *ArticleTagDAO
-	actionDAOSingleton     *ActionDAO
-	commentDAOSingleton    *CommentDAO
+	userDAOSingleton         *UserDAO
+	todoItemDAOSingleton     *TodoItemDAO
+	dialogDAOSingleton       *DialogDAO
+	tagDAOSingleton          *TagDAO
+	articleDAOSingleton      *ArticleDAO
+	articleTagDAOSingleton   *ArticleTagDAO
+	actionDAOSingleton       *ActionDAO
+	commentDAOSingleton      *CommentDAO
+	notificationDAOSingleton *NotificationDAO
 )
 
 func init() {
@@ -20,6 +21,7 @@ func init() {
 	articleTagDAOSingleton = &ArticleTagDAO{}
 	actionDAOSingleton = &ActionDAO{}
 	commentDAOSingleton = &CommentDAO{}
+	notificationDAOSingleton = &NotificationDAO{}
 }
 
 // GetUserDAO 获取用户DAO
@@ -92,4 +94,13 @@ func GetActionDAO() *ActionDAO {
 //	update 2026-02-03 22:30:00
 func GetCommentDAO() *CommentDAO {
 	return commentDAOSingleton
+}
+
+// GetNotificationDAO Get notification DAO singleton instance
+//
+//	return *NotificationDAO
+//	author centonhuang
+//	update 2026-02-03 22:30:00
+func GetNotificationDAO() *NotificationDAO {
+	return notificationDAOSingleton
 }

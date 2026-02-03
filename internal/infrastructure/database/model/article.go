@@ -14,8 +14,8 @@ import (
 //	@update 2026-01-29 12:00:00
 type Article struct {
 	BaseModel
-	DeletedAt   int64              `json:"deleted_at" gorm:"column:deleted_at;uniqueIndex:uidx_slug_deleted_at;comment:删除时间，默认为0"`
 	ID          uint               `json:"id" gorm:"column:id;primary_key;auto_increment;comment:用户ID"`
+	DeletedAt   int64              `json:"deleted_at" gorm:"column:deleted_at;uniqueIndex:uidx_slug_deleted_at;comment:删除时间，默认为0"`
 	UserID      uint               `json:"user_id" gorm:"column:user_id;not null;comment:用户ID"`
 	Title       string             `json:"title" gorm:"column:title;not null;comment:标题"`
 	Slug        string             `json:"slug" gorm:"column:slug;not null;default:'';uniqueIndex:uidx_slug_deleted_at;comment:简写"`

@@ -74,4 +74,7 @@ func RegisterAPIRouter() {
 
 	imageGroup := huma.NewGroup(v1Group, "/image")
 	initImageRouter(imageGroup)
+
+	notificationGroup := huma.NewGroup(v1Group, "/notification")
+	initNotificationRouter(notificationGroup)
 }
