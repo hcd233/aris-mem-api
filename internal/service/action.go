@@ -40,9 +40,10 @@ type actionService struct {
 //	update 2026-02-03 22:30:00
 func NewActionService() ActionService {
 	return &actionService{
-		articleDAO: dao.GetArticleDAO(),
-		commentDAO: dao.GetCommentDAO(),
-		actionDAO:  dao.GetActionDAO(),
+		articleDAO:      dao.GetArticleDAO(),
+		commentDAO:      dao.GetCommentDAO(),
+		actionDAO:       dao.GetActionDAO(),
+		notificationDAO: dao.GetNotificationDAO(),
 	}
 }
 
