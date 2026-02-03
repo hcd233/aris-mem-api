@@ -96,7 +96,7 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 	}
 
 	notifications, pageInfo, err := s.notificationDAO.Paginate(db, &dbmodel.Notification{}, []string{
-		"id", "status", "created_at", "type", "entity_type", "entity_id",
+		"id", "status", "created_at", "type", "entity_type", "entity_id", "sender_id", "receiver_id",
 	}, commonParam)
 	if err != nil {
 		logger.Error("[NotificationService] failed to paginate notifications", zap.Error(err))

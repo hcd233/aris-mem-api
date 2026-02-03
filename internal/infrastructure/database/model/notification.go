@@ -9,7 +9,7 @@ import "github.com/hcd233/aris-mem-api/internal/common/enum"
 type Notification struct {
 	BaseModel
 	ID         uint                        `json:"id" gorm:"column:id;primary_key;auto_increment;comment:ID"`
-	SenderID   uint                        `json:"user_id" gorm:"column:user_id;not null;comment:用户ID"`
+	SenderID   uint                        `json:"sender_id" gorm:"column:sender_id;not null;comment:发送者ID"`
 	ReceiverID uint                        `json:"receiver_id" gorm:"column:receiver_id;not null;comment:接收者ID"`
 	Status     enum.NotificationStatus     `json:"status" gorm:"column:status;not null;comment:状态"`
 	Type       enum.NotificationType       `json:"type" gorm:"column:type;not null;comment:类型"`
