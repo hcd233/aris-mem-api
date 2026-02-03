@@ -26,4 +26,5 @@ var Models = []interface{}{
 	&Article{},
 	&ArticleTag{},
 	&Action{},
+	&Comment{},
 }
