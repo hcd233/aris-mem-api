@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/hcd233/aris-mem-api/internal/common/constant"
+	"github.com/hcd233/aris-mem-api/internal/common/enum"
 	"github.com/hcd233/aris-mem-api/internal/dto"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/dao"
@@ -27,10 +28,11 @@ type CommentService interface {
 }
 
 type commentService struct {
-	commentDAO *dao.CommentDAO
-	articleDAO *dao.ArticleDAO
-	userDAO    *dao.UserDAO
-	actionDAO  *dao.ActionDAO
+	commentDAO      *dao.CommentDAO
+	articleDAO      *dao.ArticleDAO
+	userDAO         *dao.UserDAO
+	actionDAO       *dao.ActionDAO
+	notificationDAO *dao.NotificationDAO
 }
 
 // NewCommentService create comment service
@@ -40,10 +42,11 @@ type commentService struct {
 //	update 2026-02-03 22:30:00
 func NewCommentService() CommentService {
 	return &commentService{
-		commentDAO: dao.GetCommentDAO(),
-		articleDAO: dao.GetArticleDAO(),
-		userDAO:    dao.GetUserDAO(),
-		actionDAO:  dao.GetActionDAO(),
+		commentDAO:      dao.GetCommentDAO(),
+		articleDAO:      dao.GetArticleDAO(),
+		userDAO:         dao.GetUserDAO(),
+		actionDAO:       dao.GetActionDAO(),
+		notificationDAO: dao.GetNotificationDAO(),
 	}
 }
 
@@ -65,7 +68,7 @@ func (s *commentService) CreateComment(ctx context.Context, req *dto.CreateComme
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
 	// Check if article exists
-	_, err := s.articleDAO.Get(db, &dbmodel.Article{ID: req.Body.ArticleID}, []string{"id"})
+	article, err := s.articleDAO.Get(db, &dbmodel.Article{ID: req.Body.ArticleID}, []string{"id", "user_id"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			rsp.Error = constant.ErrDataNotExists
@@ -76,9 +79,18 @@ func (s *commentService) CreateComment(ctx context.Context, req *dto.CreateComme
 		return rsp, nil
 	}
 
+	notification := &dbmodel.Notification{
+		SenderID:   userID,
+		ReceiverID: article.UserID,
+		Type:       enum.NotificationTypeComment,
+		EntityType: enum.NotificationEntityTypeArticle,
+		EntityID:   article.ID,
+		Status:     enum.NotificationStatusUnread,
+	}
+
 	// If parent comment ID is provided, check if it exists
 	if req.Body.ParentID > 0 {
-		_, err := s.commentDAO.Get(db, &dbmodel.Comment{ID: req.Body.ParentID}, []string{"id"})
+		comment, err := s.commentDAO.Get(db, &dbmodel.Comment{ID: req.Body.ParentID}, []string{"id", "user_id"})
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				rsp.Error = constant.ErrDataNotExists
@@ -88,6 +100,10 @@ func (s *commentService) CreateComment(ctx context.Context, req *dto.CreateComme
 			rsp.Error = constant.ErrInternalError
 			return rsp, nil
 		}
+		notification.ReceiverID = comment.UserID
+		notification.EntityType = enum.NotificationEntityTypeComment
+		notification.EntityID = comment.ID
+
 	}
 
 	// Create comment
@@ -103,6 +119,11 @@ func (s *commentService) CreateComment(ctx context.Context, req *dto.CreateComme
 		logger.Error("[CommentService] failed to create comment", zap.Error(err))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
+	}
+
+	err = s.notificationDAO.Create(db, notification)
+	if err != nil {
+		logger.Warn("[CommentService] failed to create notification", zap.Error(err), zap.Uint("articleID", req.Body.ArticleID))
 	}
 
 	return rsp, nil

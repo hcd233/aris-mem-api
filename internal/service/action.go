@@ -27,9 +27,10 @@ type ActionService interface {
 }
 
 type actionService struct {
-	articleDAO *dao.ArticleDAO
-	commentDAO *dao.CommentDAO
-	actionDAO  *dao.ActionDAO
+	articleDAO      *dao.ArticleDAO
+	commentDAO      *dao.CommentDAO
+	actionDAO       *dao.ActionDAO
+	notificationDAO *dao.NotificationDAO
 }
 
 // NewActionService create action service
@@ -55,9 +56,17 @@ func (s *actionService) Do(ctx context.Context, req *dto.ActionReq) (*dto.EmptyR
 
 	action := &model.Action{
 		UserID:     userID,
-		EntityType: enum.ActionEntityArticle,
+		EntityType: req.Body.EntityType,
 		EntityID:   req.Body.EntityID,
 		ActionType: req.Body.ActionType,
+	}
+
+	notification := &model.Notification{
+		SenderID:   userID,
+		Type:       enum.NotificationType(req.Body.ActionType),
+		EntityType: enum.NotificationEntityType(req.Body.EntityType),
+		EntityID:   req.Body.EntityID,
+		Status:     enum.NotificationStatusUnread,
 	}
 
 	_, err := s.actionDAO.Get(db, action, []string{"id"})
@@ -78,7 +87,7 @@ func (s *actionService) Do(ctx context.Context, req *dto.ActionReq) (*dto.EmptyR
 	)
 	switch req.Body.EntityType {
 	case enum.ActionEntityArticle:
-		article, err = s.articleDAO.Get(db, &model.Article{ID: req.Body.EntityID}, []string{"id", "likes", "saves"})
+		article, err = s.articleDAO.Get(db, &model.Article{ID: req.Body.EntityID}, []string{"id", "user_id", "likes", "saves"})
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				rsp.Error = constant.ErrDataNotExists
@@ -96,8 +105,10 @@ func (s *actionService) Do(ctx context.Context, req *dto.ActionReq) (*dto.EmptyR
 			updateFields["saves"] = lo.ToPtr(article.Saves + 1)
 		}
 
+		notification.ReceiverID = article.UserID
+
 	case enum.ActionEntityComment:
-		comment, err = s.commentDAO.Get(db, &model.Comment{ID: req.Body.EntityID}, []string{"id", "likes", "saves"})
+		comment, err = s.commentDAO.Get(db, &model.Comment{ID: req.Body.EntityID}, []string{"id", "user_id", "likes", "saves"})
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				rsp.Error = constant.ErrDataNotExists
@@ -114,6 +125,8 @@ func (s *actionService) Do(ctx context.Context, req *dto.ActionReq) (*dto.EmptyR
 		case enum.ActionTypeSave:
 			updateFields["saves"] = lo.ToPtr(comment.Saves + 1)
 		}
+
+		notification.ReceiverID = comment.UserID
 
 	default:
 		logger.Error("[ActionService] invalid entity type", zap.String("entityType", string(req.Body.EntityType)))
@@ -140,10 +153,15 @@ func (s *actionService) Do(ctx context.Context, req *dto.ActionReq) (*dto.EmptyR
 			logger.Error("[ActionService] failed to create action", zap.Error(err), zap.Uint("entityID", req.Body.EntityID), zap.String("entityType", string(req.Body.EntityType)))
 			return err
 		}
-		return nil
+		return err
 	})
 	if err != nil {
 		rsp.Error = constant.ErrInternalError
+	}
+
+	err = s.notificationDAO.Create(db, notification)
+	if err != nil {
+		logger.Warn("[ActionService] failed to create notification", zap.Error(err), zap.Uint("entityID", req.Body.EntityID), zap.String("entityType", string(req.Body.EntityType)))
 	}
 
 	return rsp, nil
