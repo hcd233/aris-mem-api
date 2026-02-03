@@ -174,7 +174,7 @@ func (s *imageService) GetCosTempCredential(ctx context.Context, _ *dto.EmptyReq
 		var credential dto.CosTempCredential
 		if err := json.Unmarshal([]byte(cachedData), &credential); err == nil {
 			// 检查是否即将过期（剩余时间小于1/4时重新申请）
-			if credential.ExpiredTime-time.Now().Unix() > int64(1/4*float64(config.CosSTSDuration)) {
+			if credential.ExpiredTime-time.Now().Unix() > int64(1.0/4*float64(config.CosSTSDuration)) {
 				logger.Info("[ImageService] return cached credential", zap.Uint("userID", userID))
 				rsp.CosTempCredential = &credential
 				return rsp, nil

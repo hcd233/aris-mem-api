@@ -8,6 +8,7 @@ var (
 	articleDAOSingleton    *ArticleDAO
 	articleTagDAOSingleton *ArticleTagDAO
 	actionDAOSingleton     *ActionDAO
+	commentDAOSingleton    *CommentDAO
 )
 
 func init() {
@@ -18,6 +19,7 @@ func init() {
 	articleDAOSingleton = &ArticleDAO{}
 	articleTagDAOSingleton = &ArticleTagDAO{}
 	actionDAOSingleton = &ActionDAO{}
+	commentDAOSingleton = &CommentDAO{}
 }
 
 // GetUserDAO 获取用户DAO
@@ -81,4 +83,13 @@ func GetArticleTagDAO() *ArticleTagDAO {
 //	update 2026-01-30 21:00:00
 func GetActionDAO() *ActionDAO {
 	return actionDAOSingleton
+}
+
+// GetCommentDAO get comment DAO
+//
+//	return *CommentDAO
+//	author centonhuang
+//	update 2026-02-03 22:30:00
+func GetCommentDAO() *CommentDAO {
+	return commentDAOSingleton
 }

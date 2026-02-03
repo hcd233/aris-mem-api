@@ -69,6 +69,9 @@ func RegisterAPIRouter() {
 	articleGroup := huma.NewGroup(v1Group, "/article")
 	initArticleRouter(articleGroup)
 
+	commentGroup := huma.NewGroup(v1Group, "/comment")
+	initCommentRouter(commentGroup)
+
 	imageGroup := huma.NewGroup(v1Group, "/image")
 	initImageRouter(imageGroup)
 }
