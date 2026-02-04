@@ -25,7 +25,7 @@ func LogMiddleware() fiber.Handler {
 
 		err := c.Next()
 
-		logger := logger.WithFCtx(c)
+		l := logger.WithFCtx(c)
 
 		latency := time.Since(start)
 
@@ -43,7 +43,7 @@ func LogMiddleware() fiber.Handler {
 			request := make(map[string]interface{})
 			if reqBody := c.Body(); reqBody != nil {
 				if err := sonic.Unmarshal(reqBody, &request); err != nil {
-					logger.Warn("[LogMiddleware] unmarshal request error", zap.ByteString("request", reqBody), zap.Error(err))
+					l.Warn("[LogMiddleware] unmarshal request error", zap.ByteString("request", reqBody), zap.Error(err))
 				}
 			}
 			fields = append(fields, zap.Dict("request", lo.MapToSlice(request, func(key string, value interface{}) zap.Field {
@@ -58,7 +58,7 @@ func LogMiddleware() fiber.Handler {
 			response := make(map[string]interface{})
 			if respBody := c.Response().Body(); respBody != nil {
 				if err := sonic.Unmarshal(respBody, &response); err != nil {
-					logger.Warn("[LogMiddleware] unmarshal response error", zap.ByteString("response", respBody), zap.Error(err))
+					l.Warn("[LogMiddleware] unmarshal response error", zap.ByteString("response", respBody), zap.Error(err))
 				}
 			}
 			fields = append(fields, zap.Dict("response", lo.MapToSlice(response, func(key string, value interface{}) zap.Field {
@@ -66,11 +66,12 @@ func LogMiddleware() fiber.Handler {
 			})...))
 		}
 
+		l = logger.WithCtx(c.Context())
 		if err != nil {
 			fields = append([]zap.Field{zap.Error(err)}, fields...)
-			logger.Error("[LogMiddleware] error", fields...)
+			l.Error("[LogMiddleware] error", fields...)
 		} else {
-			logger.Info("[LogMiddleware] info", fields...)
+			l.Info("[LogMiddleware] info", fields...)
 		}
 
 		return err
