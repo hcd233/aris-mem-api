@@ -66,7 +66,7 @@ func LogMiddleware() fiber.Handler {
 			})...))
 		}
 
-		l = logger.WithCtx(c.Context())
+		l = logger.WithFCtx(c)
 		if err != nil {
 			fields = append([]zap.Field{zap.Error(err)}, fields...)
 			l.Error("[LogMiddleware] error", fields...)
