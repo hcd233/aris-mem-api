@@ -155,11 +155,6 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}
-	if err != nil {
-		logger.Error("[NotificationService] failed to get comment articles", zap.Error(err), zap.Uints("articleIDs", articleIDs))
-		rsp.Error = constant.ErrInternalError
-		return rsp, nil
-	}
 
 	articleIDArticleMap := lo.SliceToMap(articles, func(item *dbmodel.Article) (uint, *dbmodel.Article) {
 		return item.ID, item

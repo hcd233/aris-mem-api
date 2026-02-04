@@ -1,8 +1,6 @@
 package dto
 
 import (
-	"context"
-
 	"github.com/danielgtaylor/huma/v2"
 )
 
@@ -29,16 +27,6 @@ type UploadImageReqBody struct {
 type UploadImageRsp struct {
 	CommonRsp
 	ImageName string `json:"imageName" doc:"Name of the uploaded image"`
-}
-
-// ImageUploadTask 图片上传任务
-//
-//	@author centonhuang
-//	@update 2026-01-31 16:00:00
-type ImageUploadTask struct {
-	Ctx       context.Context
-	ImageName string
-	ImageData []byte
 }
 
 // GetCosTempCredentialRsp 获取COS临时密钥响应

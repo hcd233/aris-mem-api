@@ -138,8 +138,7 @@ func (s *imageService) UploadImage(ctx context.Context, req *dto.UploadImageReq)
 
 	// 提交到全局协程池异步上传
 	poolMgr := pool.GetPoolManager()
-	err = poolMgr.SubmitImageUploadTask(task)
-	if err != nil {
+	if err := poolMgr.SubmitImageUploadTask(task); err != nil {
 		logger.Error("[ImageService] failed to submit image upload task", zap.Error(err), zap.String("imageName", imageName))
 		rsp.Error = constant.ErrInvalidFile
 		return rsp, nil

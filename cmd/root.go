@@ -4,11 +4,11 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/hcd233/aris-mem-api/internal/logger"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -23,8 +23,7 @@ var rootCmd = &cobra.Command{
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
-		msg := fmt.Sprintf("[Command] failed to execute command: %v", err)
-		logger.Logger().Error(msg)
+		logger.Logger().Error("[Command] failed to execute command", zap.Error(err))
 		os.Exit(1)
 	}
 }

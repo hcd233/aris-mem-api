@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -13,9 +14,11 @@ import (
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/dao"
 	"github.com/hcd233/aris-mem-api/internal/infrastructure/database/model"
+	"github.com/hcd233/aris-mem-api/internal/infrastructure/pool"
 	objdao "github.com/hcd233/aris-mem-api/internal/infrastructure/storage/obj_dao"
 	"github.com/hcd233/aris-mem-api/internal/jwt"
 	"github.com/hcd233/aris-mem-api/internal/logger"
+	"github.com/samber/lo"
 
 	"github.com/hcd233/aris-mem-api/internal/oauth2"
 	"github.com/hcd233/aris-mem-api/internal/util"
@@ -212,6 +215,43 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dt
 		}
 		logger.Info("[Oauth2Service] audio dir created", zap.String("platform", req.Body.Platform))
 
+		// 查询前5个管理员用户
+		var adminUsers []*model.User
+		adminUsers, _, err := s.userDAO.Paginate(db, &model.User{Permission: enum.PermissionAdmin}, []string{"id", "email", "name"}, &dao.CommonParam{
+			PageParam: dao.PageParam{
+				Page:     1,
+				PageSize: 5,
+			},
+		})
+		if err != nil {
+			logger.Warn("[Oauth2Service] failed to get admin users for notification",
+				zap.Error(err))
+		} else if len(adminUsers) > 0 {
+
+			adminEmails := lo.Map(adminUsers, func(item *model.User, _ int) string {
+				return item.Email
+			})
+			if len(adminEmails) > 0 {
+				// 构建邮件内容
+				subject := fmt.Sprintf("New User Registration: %s", user.Name)
+				htmlBody := fmt.Sprintf(constant.NewUserRegistrationEmailTemplate, user.Name, user.Email, user.Avatar, user.CreatedAt.Format(time.RFC3339), user.ID, config.ServerEndpoint)
+
+				task := &dto.EmailSendTask{
+					Ctx:      util.CopyContextValues(ctx),
+					Emails:   adminEmails,
+					Subject:  subject,
+					HTMLBody: htmlBody,
+				}
+
+				poolManager := pool.GetPoolManager()
+				// 提交邮件通知任务
+				if err := poolManager.SubmitEmailSendTask(task); err != nil {
+					logger.Warn("[Oauth2Service] failed to submit email notification task",
+						zap.Error(err),
+						zap.Uint("newUserID", user.ID))
+				}
+			}
+		}
 	}
 
 	accessToken, err := s.accessTokenSigner.EncodeToken(user.ID)

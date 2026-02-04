@@ -5,6 +5,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-mem-api/internal/api"
+	"github.com/hcd233/aris-mem-api/internal/common/constant"
 )
 
 // RegisterDocsRouter 注册文档路由
@@ -14,23 +15,7 @@ import (
 func RegisterDocsRouter() {
 	app := api.GetFiberApp()
 	app.Get("/docs", func(c *fiber.Ctx) error {
-		html := `<!doctype html>
-<html>
-  <head>
-    <title>Aris Mem API Reference</title>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1" />
-  </head>
-  <body>
-    <script
-      id="api-reference"
-      data-url="/openapi.json"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
-  </body>
-</html>`
-		return c.Type("html").SendString(html)
+		return c.Type("html").SendString(constant.DocumentationTemplate)
 	})
 }
 
