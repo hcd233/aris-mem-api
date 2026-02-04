@@ -22,12 +22,11 @@ func RecoverMiddleware() fiber.Handler {
 		defer func() {
 			if r := recover(); r != nil {
 				logger.WithFCtx(c).Error("[Panic Recovery] recovered panic", zap.Any("error", r), zap.ByteString("stack", debug.Stack()))
+				rsp := dto.CommonRsp{
+					Error: constant.ErrInternalError,
+				}
+				lo.Must0(c.JSON(lo.Must1(util.WrapHTTPResponse(rsp, nil))))
 			}
-			rsp := dto.CommonRsp{
-				Error: constant.ErrInternalError,
-			}
-			lo.Must0(c.JSON(lo.Must1(util.WrapHTTPResponse(rsp, nil))))
-			return
 		}()
 		return c.Next()
 	}
