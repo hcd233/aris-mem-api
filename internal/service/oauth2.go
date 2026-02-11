@@ -143,6 +143,11 @@ func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackReq) (*dt
 
 	thirdPartyID := userInfo.GetID()
 	userName, email, avatar := userInfo.GetName(), userInfo.GetEmail(), userInfo.GetAvatar()
+	if thirdPartyID == "" || thirdPartyID == "0" {
+		logger.Error("[Oauth2Service] invalid third party id", zap.String("platform", req.Body.Platform), zap.String("thirdPartyID", thirdPartyID))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
 
 	var user *model.User
 	switch req.Body.Platform {
