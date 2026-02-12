@@ -268,7 +268,7 @@ func (s *notificationService) AckNotification(ctx context.Context, req *dto.AckN
 	db := database.GetDBInstance(ctx)
 
 	// Check if notification exists and belongs to current user
-	notification, err := s.notificationDAO.Get(db, &dbmodel.Notification{ID: req.ID}, []string{"id", "user_id", "status"})
+	notification, err := s.notificationDAO.Get(db, &dbmodel.Notification{ID: req.ID}, []string{"id", "receiver_id", "status"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			rsp.Error = constant.ErrDataNotExists
