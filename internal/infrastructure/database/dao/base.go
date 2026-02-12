@@ -84,8 +84,8 @@ func (dao *baseDAO[ModelT]) Update(db *gorm.DB, data *ModelT, info map[string]in
 //	return Delete
 //	author centonhuang
 //	update 2024-10-17 02:52:33
-func (dao *baseDAO[ModelT]) Delete(db *gorm.DB, data *ModelT) (err error) {
-	err = db.Model(data).Update("deleted_at", time.Now().UTC().Unix()).Error
+func (dao *baseDAO[ModelT]) Delete(db *gorm.DB, where *ModelT) (err error) {
+	err = db.Where(where).Update("deleted_at", time.Now().UTC().Unix()).Error
 	return
 }
 
