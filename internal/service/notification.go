@@ -26,7 +26,7 @@ import (
 type NotificationService interface {
 	ListNotifications(ctx context.Context, req *dto.ListNotificationsReq) (rsp *dto.ListNotificationsRsp, err error)
 	AckNotification(ctx context.Context, req *dto.AckNotificationReq) (rsp *dto.EmptyRsp, err error)
-	CountNotifications(ctx context.Context, req *dto.CountNotificationsReq) (rsp *dto.CountRsp, err error)
+	CountNotifications(ctx context.Context, req *dto.EmptyReq) (rsp *dto.CountRsp, err error)
 }
 
 type notificationService struct {
@@ -97,8 +97,8 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 	}
 
 	// Filter by type if provided
-	if req.Type != "" {
-		commonParam.FilterParam.FieldValueMap["type"] = req.Type
+	if req.Category != "" {
+		commonParam.FilterParam.FieldValueMap["category"] = req.Category
 	}
 
 	notifications, pageInfo, err := s.notificationDAO.Paginate(db, &dbmodel.Notification{}, []string{
@@ -315,7 +315,14 @@ func (s *notificationService) AckNotification(ctx context.Context, req *dto.AckN
 //	return *CountNotificationsRsp
 //	author centonhuang
 //	update 2026-02-12 15:00:00
-func (s *notificationService) CountNotifications(ctx context.Context, req *dto.CountNotificationsReq) (*dto.CountRsp, error) {
+//	@receiver s *notificationService
+//	@param ctx
+//	@param req
+//	@return *dto.CountRsp
+//	@return error
+//	@author centonhuang
+//	@update 2026-02-12 18:39:42
+func (s *notificationService) CountNotifications(ctx context.Context, _ *dto.EmptyReq) (*dto.CountRsp, error) {
 	rsp := &dto.CountRsp{}
 
 	db := database.GetDBInstance(ctx)
@@ -325,8 +332,6 @@ func (s *notificationService) CountNotifications(ctx context.Context, req *dto.C
 	// Build where condition
 	where := &dbmodel.Notification{
 		ReceiverID: userID,
-		Type:       req.Type,
-		Status:     req.Status,
 	}
 
 	// Count notifications for the user

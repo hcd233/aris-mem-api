@@ -15,7 +15,7 @@ import (
 type NotificationHandler interface {
 	HandleListNotifications(ctx context.Context, req *dto.ListNotificationsReq) (*dto.HTTPResponse[*dto.ListNotificationsRsp], error)
 	HandleAckNotification(ctx context.Context, req *dto.AckNotificationReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
-	HandleCountNotifications(ctx context.Context, req *dto.CountNotificationsReq) (*dto.HTTPResponse[*dto.CountRsp], error)
+	HandleCountNotifications(ctx context.Context, req *dto.EmptyReq) (*dto.HTTPResponse[*dto.CountRsp], error)
 }
 
 type notificationHandler struct {
@@ -41,6 +41,6 @@ func (h *notificationHandler) HandleAckNotification(ctx context.Context, req *dt
 	return util.WrapHTTPResponse(h.svc.AckNotification(ctx, req))
 }
 
-func (h *notificationHandler) HandleCountNotifications(ctx context.Context, req *dto.CountNotificationsReq) (*dto.HTTPResponse[*dto.CountRsp], error) {
+func (h *notificationHandler) HandleCountNotifications(ctx context.Context, req *dto.EmptyReq) (*dto.HTTPResponse[*dto.CountRsp], error) {
 	return util.WrapHTTPResponse(h.svc.CountNotifications(ctx, req))
 }
