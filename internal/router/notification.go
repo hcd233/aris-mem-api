@@ -20,7 +20,7 @@ func initNotificationRouter(notificationGroup huma.API) {
 		Method:      http.MethodGet,
 		Path:        "/list",
 		Summary:     "ListNotifications",
-		Description: "List user notifications with pagination and status filter",
+		Description: "List user notifications with pagination, status filter, and type filter (comment/like/save)",
 		Tags:        []string{"Notification"},
 		Security: []map[string][]string{
 			{"jwtAuth": {}},
@@ -44,7 +44,7 @@ func initNotificationRouter(notificationGroup huma.API) {
 		Method:      http.MethodGet,
 		Path:        "/count",
 		Summary:     "CountNotifications",
-		Description: "Count user notifications with optional status filter",
+		Description: "Count user notifications with optional status and type filters",
 		Tags:        []string{"Notification"},
 		Security: []map[string][]string{
 			{"jwtAuth": {}},

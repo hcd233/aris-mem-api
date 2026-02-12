@@ -35,9 +35,10 @@ type ListNotificationsReq struct {
 // NotificationFilterParam Notification filter parameters
 //
 //	author centonhuang
-//	update 2026-02-03 22:30:00
+//	update 2026-02-12 16:00:00
 type NotificationFilterParam struct {
 	Status enum.NotificationStatus `query:"status" enum:"unread,read" doc:"Filter by status (unread/read), empty for all"`
+	Type   enum.NotificationType   `query:"type" enum:"comment,like,save" doc:"Filter by type (comment/like/save), empty for all"`
 }
 
 // ListNotificationsRsp List notifications response

@@ -96,6 +96,11 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 		commonParam.FilterParam.FieldValueMap["status"] = req.Status
 	}
 
+	// Filter by type if provided
+	if req.Type != "" {
+		commonParam.FilterParam.FieldValueMap["type"] = req.Type
+	}
+
 	notifications, pageInfo, err := s.notificationDAO.Paginate(db, &dbmodel.Notification{}, []string{
 		"id", "status", "created_at", "type", "entity_type", "entity_id", "sender_id", "receiver_id",
 	}, commonParam)
@@ -320,11 +325,8 @@ func (s *notificationService) CountNotifications(ctx context.Context, req *dto.C
 	// Build where condition
 	where := &dbmodel.Notification{
 		ReceiverID: userID,
-	}
-
-	// Filter by status if provided
-	if req.Status != "" {
-		where.Status = req.Status
+		Type:       req.Type,
+		Status:     req.Status,
 	}
 
 	// Count notifications for the user
