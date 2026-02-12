@@ -24,7 +24,7 @@ type RedirectResponse struct {
 //	@author centonhuang
 //	@update 2025-11-08 04:20:42
 type SSEResponse struct {
-	DataType enum.SSEDataType `json:"dataType" doc:"Data type"`
-	Status   enum.SSEStatus   `json:"status" doc:"Status"`
+	DataType enum.SSEDataType `json:"dataType" enum:"message,error,heartbeat,none" doc:"Data type"`
+	Status   enum.SSEStatus   `json:"status" enum:"start,streaming,error,end" doc:"Status"`
 	Data     any              `json:"data" doc:"Data"`
 }

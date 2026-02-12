@@ -66,7 +66,7 @@ type DetailedArticle struct {
 	CreatedAt   time.Time          `json:"createdAt" doc:"Created time of the article"`
 	UpdatedAt   time.Time          `json:"updatedAt" doc:"Updated time of the article"`
 	PublishedAt time.Time          `json:"publishedAt" doc:"Published time of the article"`
-	Status      enum.ArticleStatus `json:"status" doc:"Status of the article"`
+	Status      enum.ArticleStatus `json:"status" enum:"published,hidden" doc:"Status of the article"`
 	Tags        []*DetailedTag     `json:"tags" doc:"Tags of the article"`
 	Likes       uint               `json:"likes" doc:"Likes of the article"`
 	Saves       uint               `json:"saves" doc:"Saves of the article"`
@@ -135,7 +135,7 @@ type UpdateArticleReq struct {
 //	@update 2026-01-31 10:00:00
 type UpdateArticleReqBody struct {
 	ID      uint               `json:"id" doc:"ID of the article"`
-	Status  enum.ArticleStatus `json:"status" doc:"Status of the article"`
+	Status  enum.ArticleStatus `json:"status" enum:"published,hidden" doc:"Status of the article"`
 	Title   string             `json:"title" doc:"Title of the article"`
 	Content string             `json:"content" doc:"Content of the article"`
 	Images  []string           `json:"images" doc:"Images of the article"`

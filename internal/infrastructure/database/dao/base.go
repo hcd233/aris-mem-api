@@ -199,7 +199,7 @@ func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, where *ModelT, fields []string
 //	@author centonhuang
 //	@update 2026-02-12 14:48:14
 func (dao *baseDAO[ModelT]) Count(db *gorm.DB, where *ModelT, param *FilterParam) (count int64, err error) {
-	sql := db.Model(where).Where("deleted_at = 0")
+	sql := db.Where(where).Where("deleted_at = 0")
 
 	for field, value := range param.FieldValueMap {
 		if value == nil {

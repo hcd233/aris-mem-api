@@ -160,9 +160,11 @@ func (s *actionService) Do(ctx context.Context, req *dto.ActionReq) (*dto.EmptyR
 		rsp.Error = constant.ErrInternalError
 	}
 
-	err = s.notificationDAO.Create(db, notification)
-	if err != nil {
-		logger.Warn("[ActionService] failed to create notification", zap.Error(err), zap.Uint("entityID", req.Body.EntityID), zap.String("entityType", string(req.Body.EntityType)))
+	if notification.ReceiverID != notification.SenderID {
+		err = s.notificationDAO.Create(db, notification)
+		if err != nil {
+			logger.Warn("[ActionService] failed to create notification", zap.Error(err), zap.Uint("entityID", req.Body.EntityID), zap.String("entityType", string(req.Body.EntityType)))
+		}
 	}
 
 	return rsp, nil
