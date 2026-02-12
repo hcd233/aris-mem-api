@@ -26,7 +26,7 @@ import (
 type NotificationService interface {
 	ListNotifications(ctx context.Context, req *dto.ListNotificationsReq) (rsp *dto.ListNotificationsRsp, err error)
 	AckNotification(ctx context.Context, req *dto.AckNotificationReq) (rsp *dto.EmptyRsp, err error)
-	CountNotifications(ctx context.Context, req *dto.EmptyReq) (rsp *dto.CountRsp, err error)
+	CountNotifications(ctx context.Context, req *dto.CountNotificationsReq) (rsp *dto.CountRsp, err error)
 }
 
 type notificationService struct {
@@ -71,6 +71,11 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 		req.Sort = enum.SortDesc
 	}
 
+	where := &dbmodel.Notification{
+		ReceiverID: userID,
+		Status:     req.Status,
+	}
+
 	commonParam := &dao.CommonParam{
 		PageParam: dao.PageParam{
 			Page:     req.Page,
@@ -85,23 +90,15 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 			SortField: strcase.ToSnake(req.SortField),
 		},
 		FilterParam: dao.FilterParam{
-			FieldValueMap: map[string]any{
-				"receiver_id": userID,
-			},
+			FieldValueMap: map[string]any{},
 		},
 	}
 
-	// Filter by status if provided
-	if req.Status != "" {
-		commonParam.FilterParam.FieldValueMap["status"] = req.Status
-	}
-
-	// Filter by type if provided
 	if req.Category != "" {
 		commonParam.FilterParam.FieldValueMap["category"] = req.Category
 	}
 
-	notifications, pageInfo, err := s.notificationDAO.Paginate(db, &dbmodel.Notification{}, []string{
+	notifications, pageInfo, err := s.notificationDAO.Paginate(db, where, []string{
 		"id", "status", "created_at", "type", "entity_type", "entity_id", "sender_id", "receiver_id",
 	}, commonParam)
 	if err != nil {
@@ -322,7 +319,7 @@ func (s *notificationService) AckNotification(ctx context.Context, req *dto.AckN
 //	@return error
 //	@author centonhuang
 //	@update 2026-02-12 18:39:42
-func (s *notificationService) CountNotifications(ctx context.Context, _ *dto.EmptyReq) (*dto.CountRsp, error) {
+func (s *notificationService) CountNotifications(ctx context.Context, req *dto.CountNotificationsReq) (*dto.CountRsp, error) {
 	rsp := &dto.CountRsp{}
 
 	db := database.GetDBInstance(ctx)
@@ -332,10 +329,17 @@ func (s *notificationService) CountNotifications(ctx context.Context, _ *dto.Emp
 	// Build where condition
 	where := &dbmodel.Notification{
 		ReceiverID: userID,
+		Status:     req.Status,
+	}
+
+	param := &dao.FilterParam{
+		FieldValueMap: map[string]any{
+			"category": req.Category,
+		},
 	}
 
 	// Count notifications for the user
-	count, err := s.notificationDAO.Count(db, where)
+	count, err := s.notificationDAO.Count(db, where, param)
 	if err != nil {
 		logger.Error("[NotificationService] failed to count notifications", zap.Error(err), zap.Uint("userID", userID))
 		rsp.Error = constant.ErrInternalError

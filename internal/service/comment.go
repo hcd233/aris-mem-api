@@ -318,7 +318,7 @@ func (s *commentService) CountComments(ctx context.Context, req *dto.CountCommen
 	logger := logger.WithCtx(ctx)
 
 	// Count comments for the article
-	count, err := s.commentDAO.Count(db, &dbmodel.Comment{ArticleID: req.ArticleID})
+	count, err := s.commentDAO.Count(db, &dbmodel.Comment{ArticleID: req.ArticleID}, nil)
 	if err != nil {
 		logger.Error("[CommentService] failed to count comments", zap.Error(err), zap.Uint("articleID", req.ArticleID))
 		rsp.Error = constant.ErrInternalError

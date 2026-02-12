@@ -84,3 +84,40 @@ func (dao *NotificationDAO) Paginate(db *gorm.DB, where *dbmodel.Notification, f
 
 	return
 }
+
+// Count Count notifications
+//
+//	@receiver dao *NotificationDAO
+//	@param db
+//	@param where
+//	@param param
+//	@return count
+//	@return err
+//	@author centonhuang
+//	@update 2026-02-12 19:19:25
+func (dao *NotificationDAO) Count(db *gorm.DB, where *dbmodel.Notification, param *FilterParam) (count int64, err error) {
+	sql := db.Model(where).Where("deleted_at = 0")
+
+	category, ok := param.FieldValueMap["category"].(enum.NotificationCategory)
+	if ok && category != "" {
+		switch category {
+		case enum.NotificationCategoryLikeAndSave:
+			sql = sql.Where("type IN (?)", []enum.NotificationType{enum.NotificationTypeLike, enum.NotificationTypeSave})
+		case enum.NotificationCategoryCommentAndAt:
+			sql = sql.Where("type IN (?)", []enum.NotificationType{enum.NotificationTypeComment, enum.NotificationTypeAt})
+		}
+	}
+
+	delete(param.FieldValueMap, "category")
+
+	for field, value := range param.FieldValueMap {
+		if value == nil {
+			sql = sql.Where(field + " IS NULL")
+		} else {
+			sql = sql.Where(field+" = ?", value)
+		}
+	}
+
+	err = sql.Count(&count).Error
+	return
+}

@@ -198,7 +198,16 @@ func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, where *ModelT, fields []string
 //	@return Count
 //	@author centonhuang
 //	@update 2026-02-12 14:48:14
-func (dao *baseDAO[ModelT]) Count(db *gorm.DB, where *ModelT) (count int64, err error) {
-	err = db.Model(where).Where("deleted_at = 0").Count(&count).Error
+func (dao *baseDAO[ModelT]) Count(db *gorm.DB, where *ModelT, param *FilterParam) (count int64, err error) {
+	sql := db.Model(where).Where("deleted_at = 0")
+
+	for field, value := range param.FieldValueMap {
+		if value == nil {
+			sql = sql.Where(field + " IS NULL")
+		} else {
+			sql = sql.Where(field+" = ?", value)
+		}
+	}
+	err = sql.Count(&count).Error
 	return
 }

@@ -58,3 +58,12 @@ type ListNotificationsRsp struct {
 type AckNotificationReq struct {
 	ID uint `json:"id" query:"id" required:"true" minimum:"1" doc:"ID of the notification to acknowledge"`
 }
+
+// CountNotificationsReq Count notifications request
+//
+//	@author centonhuang
+//	@update 2026-02-12 19:14:48
+type CountNotificationsReq struct {
+	Status   enum.NotificationStatus   `query:"status" enum:"unread,read" doc:"Filter by status (unread/read), empty for all"`
+	Category enum.NotificationCategory `query:"category" enum:"like_and_save,comment_and_at" doc:"Filter by category (like_and_save/comment_and_at), empty for all"`
+}

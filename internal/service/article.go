@@ -176,6 +176,8 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		},
 	}
 
+	where := &dbmodel.Article{}
+
 	if req.TagSlug != "" {
 		_, err := s.tagDAO.Get(db, &dbmodel.Tag{Slug: req.TagSlug}, []string{"id"})
 		if err != nil {
@@ -191,14 +193,14 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 	}
 
 	if req.UserID != userID {
-		commonParam.FilterParam.FieldValueMap["status"] = enum.ArticleStatusPublished
+		where.Status = enum.ArticleStatusPublished
 	}
 
 	if req.UserID != 0 {
-		commonParam.FilterParam.FieldValueMap["user_id"] = req.UserID
+		where.UserID = req.UserID
 	}
 
-	articles, pageInfo, err := s.articleDAO.Paginate(db, &dbmodel.Article{}, []string{
+	articles, pageInfo, err := s.articleDAO.Paginate(db, where, []string{
 		"id", "created_at", "updated_at", "published_at",
 		"user_id", "title", "slug", "content", "images", "status", "likes",
 	}, commonParam)
