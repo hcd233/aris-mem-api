@@ -135,6 +135,7 @@ func (s *tagService) DeleteTag(ctx context.Context, req *dto.DeleteTagReq) (*dto
 	// 检查当前用户是否有权限删除（只有管理员可以删除标签）
 	permission := ctx.Value(constant.CtxKeyPermission).(enum.Permission)
 	if permission != enum.PermissionAdmin {
+		logger.Error("[TagService] user not allowed to delete tag", zap.Uint("tagID", req.ID), zap.Uint("userID", userID))
 		rsp.Error = constant.ErrNoPermission
 		return rsp, nil
 	}

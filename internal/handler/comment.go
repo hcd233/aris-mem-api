@@ -16,6 +16,7 @@ type CommentHandler interface {
 	HandleCreateComment(ctx context.Context, req *dto.CreateCommentReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
 	HandleListComments(ctx context.Context, req *dto.ListCommentsReq) (*dto.HTTPResponse[*dto.ListCommentsRsp], error)
 	HandleDeleteComment(ctx context.Context, req *dto.DeleteCommentReq) (*dto.HTTPResponse[*dto.EmptyRsp], error)
+	HandleCountComments(ctx context.Context, req *dto.CountCommentsReq) (*dto.HTTPResponse[*dto.CountCommentsRsp], error)
 }
 
 type commentHandler struct {
@@ -43,4 +44,8 @@ func (h *commentHandler) HandleListComments(ctx context.Context, req *dto.ListCo
 
 func (h *commentHandler) HandleDeleteComment(ctx context.Context, req *dto.DeleteCommentReq) (*dto.HTTPResponse[*dto.EmptyRsp], error) {
 	return util.WrapHTTPResponse(h.svc.DeleteComment(ctx, req))
+}
+
+func (h *commentHandler) HandleCountComments(ctx context.Context, req *dto.CountCommentsReq) (*dto.HTTPResponse[*dto.CountCommentsRsp], error) {
+	return util.WrapHTTPResponse(h.svc.CountComments(ctx, req))
 }

@@ -25,6 +25,7 @@ type CommentService interface {
 	CreateComment(ctx context.Context, req *dto.CreateCommentReq) (rsp *dto.EmptyRsp, err error)
 	ListComments(ctx context.Context, req *dto.ListCommentsReq) (rsp *dto.ListCommentsRsp, err error)
 	DeleteComment(ctx context.Context, req *dto.DeleteCommentReq) (rsp *dto.EmptyRsp, err error)
+	CountComments(ctx context.Context, req *dto.CountCommentsReq) (rsp *dto.CountCommentsRsp, err error)
 }
 
 type commentService struct {
@@ -278,16 +279,52 @@ func (s *commentService) DeleteComment(ctx context.Context, req *dto.DeleteComme
 	}
 
 	if comment.UserID != userID {
+		logger.Error("[CommentService] user not allowed to delete comment", zap.Uint("commentID", req.ID), zap.Uint("userID", userID))
 		rsp.Error = constant.ErrNoPermission
 		return rsp, nil
 	}
 
-	err = s.commentDAO.Delete(db, &dbmodel.Comment{ID: req.ID})
+	err = db.Transaction(func(tx *gorm.DB) error {
+		err := s.commentDAO.Delete(tx, &dbmodel.Comment{ID: req.ID})
+		if err != nil {
+			return err
+		}
+		err = s.commentDAO.Delete(tx, &dbmodel.Comment{ParentID: req.ID})
+		return err
+	})
 	if err != nil {
 		logger.Error("[CommentService] failed to delete comment", zap.Error(err), zap.Uint("commentID", req.ID))
 		rsp.Error = constant.ErrInternalError
 		return rsp, nil
 	}
 
+	return rsp, nil
+}
+
+// CountComments count comments for an article
+//
+//	return *CountCommentsRsp
+//	author centonhuang
+//	update 2026-02-12 14:50:00
+func (s *commentService) CountComments(ctx context.Context, req *dto.CountCommentsReq) (*dto.CountCommentsRsp, error) {
+	rsp := &dto.CountCommentsRsp{}
+
+	if req == nil || req.ArticleID == 0 {
+		rsp.Error = constant.ErrBadRequest
+		return rsp, nil
+	}
+
+	db := database.GetDBInstance(ctx)
+	logger := logger.WithCtx(ctx)
+
+	// Count comments for the article
+	count, err := s.commentDAO.Count(db, &dbmodel.Comment{ArticleID: req.ArticleID})
+	if err != nil {
+		logger.Error("[CommentService] failed to count comments", zap.Error(err), zap.Uint("articleID", req.ArticleID))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
+	rsp.Count = count
 	return rsp, nil
 }

@@ -310,6 +310,7 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArtic
 	}
 
 	if article.UserID != userID {
+		logger.Error("[ArticleService] user not allowed to update article", zap.Uint("articleID", req.Body.ID), zap.Uint("userID", userID))
 		rsp.Error = constant.ErrNoPermission
 		return rsp, nil
 	}
@@ -424,6 +425,7 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *dto.DeleteArtic
 	}
 
 	if article.UserID != userID {
+		logger.Error("[ArticleService] user not allowed to delete article", zap.Uint("articleID", req.ID), zap.Uint("userID", userID))
 		rsp.Error = constant.ErrNoPermission
 		return rsp, nil
 	}

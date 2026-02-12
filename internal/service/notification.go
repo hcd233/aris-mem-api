@@ -269,6 +269,7 @@ func (s *notificationService) AckNotification(ctx context.Context, req *dto.AckN
 
 	// Check permission
 	if notification.ReceiverID != userID {
+		logger.Error("[NotificationService] user not allowed to acknowledge notification", zap.Uint("notificationID", req.ID), zap.Uint("userID", userID))
 		rsp.Error = constant.ErrNoPermission
 		return rsp, nil
 	}

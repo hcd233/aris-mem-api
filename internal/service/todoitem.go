@@ -174,6 +174,7 @@ func (s *todoItemService) UpdateTodoItem(ctx context.Context, req *dto.UpdateTod
 	}
 
 	if existing.UserID != userID {
+		logger.Error("[TodoItemService] user not allowed to update todo item", zap.Uint("todoItemID", todoItem.ID), zap.Uint("userID", userID))
 		rsp.Error = constant.ErrNoPermission
 		return rsp, nil
 	}
@@ -231,6 +232,7 @@ func (s *todoItemService) DeleteTodoItem(ctx context.Context, req *dto.DeleteTod
 	}
 
 	if todoItem.UserID != userID {
+		logger.Error("[TodoItemService] user not allowed to delete todo item", zap.Uint("todoItemID", req.ID), zap.Uint("userID", userID))
 		rsp.Error = constant.ErrNoPermission
 		return rsp, nil
 	}

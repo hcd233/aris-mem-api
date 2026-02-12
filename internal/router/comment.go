@@ -50,4 +50,16 @@ func initCommentRouter(commentGroup huma.API) {
 			{"jwtAuth": {}},
 		},
 	}, commentHandler.HandleDeleteComment)
+
+	huma.Register(commentGroup, huma.Operation{
+		OperationID: "countComments",
+		Method:      http.MethodGet,
+		Path:        "/count",
+		Summary:     "CountComments",
+		Description: "Count comments for an article",
+		Tags:        []string{"Comment"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, commentHandler.HandleCountComments)
 }

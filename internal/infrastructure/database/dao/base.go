@@ -149,7 +149,7 @@ func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, where *ModelT, fields []string
 
 	for field, value := range param.FieldValueMap {
 		if value == nil {
-			sql = sql.Where(field+" IS NULL")
+			sql = sql.Where(field + " IS NULL")
 		} else {
 			sql = sql.Where(field+" = ?", value)
 		}
@@ -189,5 +189,16 @@ func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, where *ModelT, fields []string
 
 	err = sql.Limit(limit).Offset(offset).Find(&data).Error
 
+	return
+}
+
+// func Count 统计
+//
+//	@param dao
+//	@return Count
+//	@author centonhuang
+//	@update 2026-02-12 14:48:14
+func (dao *baseDAO[ModelT]) Count(db *gorm.DB, where *ModelT) (count int64, err error) {
+	err = db.Model(where).Where("deleted_at = 0").Count(&count).Error
 	return
 }
