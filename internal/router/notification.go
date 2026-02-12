@@ -38,4 +38,16 @@ func initNotificationRouter(notificationGroup huma.API) {
 			{"jwtAuth": {}},
 		},
 	}, notificationHandler.HandleAckNotification)
+
+	huma.Register(notificationGroup, huma.Operation{
+		OperationID: "countNotifications",
+		Method:      http.MethodGet,
+		Path:        "/count",
+		Summary:     "CountNotifications",
+		Description: "Count user notifications with optional status filter",
+		Tags:        []string{"Notification"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, notificationHandler.HandleCountNotifications)
 }

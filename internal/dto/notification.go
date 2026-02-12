@@ -57,3 +57,11 @@ type ListNotificationsRsp struct {
 type AckNotificationReq struct {
 	ID uint `json:"id" query:"id" required:"true" minimum:"1" doc:"ID of the notification to acknowledge"`
 }
+
+// CountNotificationsReq Count notifications request
+//
+//	author centonhuang
+//	update 2026-02-12 15:00:00
+type CountNotificationsReq struct {
+	NotificationFilterParam
+}

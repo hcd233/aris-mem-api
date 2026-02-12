@@ -25,7 +25,7 @@ type CommentService interface {
 	CreateComment(ctx context.Context, req *dto.CreateCommentReq) (rsp *dto.EmptyRsp, err error)
 	ListComments(ctx context.Context, req *dto.ListCommentsReq) (rsp *dto.ListCommentsRsp, err error)
 	DeleteComment(ctx context.Context, req *dto.DeleteCommentReq) (rsp *dto.EmptyRsp, err error)
-	CountComments(ctx context.Context, req *dto.CountCommentsReq) (rsp *dto.CountCommentsRsp, err error)
+	CountComments(ctx context.Context, req *dto.CountCommentsReq) (rsp *dto.CountRsp, err error)
 }
 
 type commentService struct {
@@ -306,8 +306,8 @@ func (s *commentService) DeleteComment(ctx context.Context, req *dto.DeleteComme
 //	return *CountCommentsRsp
 //	author centonhuang
 //	update 2026-02-12 14:50:00
-func (s *commentService) CountComments(ctx context.Context, req *dto.CountCommentsReq) (*dto.CountCommentsRsp, error) {
-	rsp := &dto.CountCommentsRsp{}
+func (s *commentService) CountComments(ctx context.Context, req *dto.CountCommentsReq) (*dto.CountRsp, error) {
+	rsp := &dto.CountRsp{}
 
 	if req == nil || req.ArticleID == 0 {
 		rsp.Error = constant.ErrBadRequest

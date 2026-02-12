@@ -26,6 +26,7 @@ import (
 type NotificationService interface {
 	ListNotifications(ctx context.Context, req *dto.ListNotificationsReq) (rsp *dto.ListNotificationsRsp, err error)
 	AckNotification(ctx context.Context, req *dto.AckNotificationReq) (rsp *dto.EmptyRsp, err error)
+	CountNotifications(ctx context.Context, req *dto.CountNotificationsReq) (rsp *dto.CountRsp, err error)
 }
 
 type notificationService struct {
@@ -171,52 +172,8 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 			notifiedArticle *dto.NotifiedArticle
 			notifiedComment *dto.NotifiedComment
 		)
-
 		sender := userIDUserMap[item.SenderID]
 
-		switch item.EntityType {
-		case enum.NotificationEntityTypeArticle:
-			article := articleIDArticleMap[item.EntityID]
-			coverImage := ""
-			if len(article.Images) > 0 {
-				presignedURL, err := s.imageObjDAO.PresignObject(ctx, article.UserID, article.Images[0])
-				if err != nil {
-					logger.Warn("[ArticleService] failed to generate presigned URL for cover image",
-						zap.Error(err),
-						zap.String("coverImage", article.Images[0]))
-				} else {
-					coverImage = presignedURL.String()
-					coverImage = util.ToThumbnailURL(coverImage)
-				}
-			}
-			notifiedArticle = &dto.NotifiedArticle{
-				ID:         article.ID,
-				Slug:       article.Slug,
-				CoverImage: coverImage,
-			}
-		case enum.NotificationEntityTypeComment:
-			comment := commentIDCommentMap[item.EntityID]
-			article := articleIDCommentArticleMap[comment.ArticleID]
-			coverImage := ""
-			if len(article.Images) > 0 {
-				presignedURL, err := s.imageObjDAO.PresignObject(ctx, article.UserID, article.Images[0])
-				if err != nil {
-					logger.Warn("[ArticleService] failed to generate presigned URL for cover image",
-						zap.Error(err),
-						zap.String("coverImage", article.Images[0]))
-				} else {
-					coverImage = presignedURL.String()
-					coverImage = util.ToThumbnailURL(coverImage)
-				}
-			}
-			notifiedComment = &dto.NotifiedComment{
-				Comment: dto.Comment{
-					ID:      comment.ID,
-					Content: comment.Content,
-				},
-				CoverImage: coverImage,
-			}
-		}
 		listedNotification := &dto.ListedNotification{
 			ID: item.ID,
 			Sender: &dto.User{
@@ -226,11 +183,66 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 			},
 			Status:    item.Status,
 			Type:      item.Type,
+			CreatedAt: item.CreatedAt,
 			Article:   notifiedArticle,
 			Comment:   notifiedComment,
-			CreatedAt: item.CreatedAt,
 		}
 
+		switch item.EntityType {
+		case enum.NotificationEntityTypeArticle:
+			article, ok := articleIDArticleMap[item.EntityID]
+			if !ok {
+				logger.Warn("[NotificationService] article not found for notification", zap.Uint("notificationID", item.ID), zap.Uint("articleID", item.EntityID))
+				return listedNotification
+			}
+			coverImage := ""
+			if len(article.Images) > 0 {
+				presignedURL, err := s.imageObjDAO.PresignObject(ctx, article.UserID, article.Images[0])
+				if err != nil {
+					logger.Warn("[ArticleService] failed to generate presigned URL for cover image",
+						zap.Error(err),
+						zap.String("coverImage", article.Images[0]))
+				} else {
+					coverImage = presignedURL.String()
+					coverImage = util.ToThumbnailURL(coverImage)
+				}
+			}
+			listedNotification.Article = &dto.NotifiedArticle{
+				ID:         article.ID,
+				Slug:       article.Slug,
+				CoverImage: coverImage,
+			}
+		case enum.NotificationEntityTypeComment:
+			comment, ok := commentIDCommentMap[item.EntityID]
+			if !ok {
+				logger.Warn("[NotificationService] comment not found for notification", zap.Uint("notificationID", item.ID), zap.Uint("commentID", item.EntityID))
+				return listedNotification
+			}
+			article, ok := articleIDCommentArticleMap[comment.ArticleID]
+			if !ok {
+				logger.Warn("[NotificationService] article not found for comment notification", zap.Uint("notificationID", item.ID), zap.Uint("articleID", comment.ArticleID))
+				return listedNotification
+			}
+			coverImage := ""
+			if len(article.Images) > 0 {
+				presignedURL, err := s.imageObjDAO.PresignObject(ctx, article.UserID, article.Images[0])
+				if err != nil {
+					logger.Warn("[ArticleService] failed to generate presigned URL for cover image",
+						zap.Error(err),
+						zap.String("coverImage", article.Images[0]))
+				} else {
+					coverImage = presignedURL.String()
+					coverImage = util.ToThumbnailURL(coverImage)
+				}
+			}
+			listedNotification.Comment = &dto.NotifiedComment{
+				Comment: dto.Comment{
+					ID:      comment.ID,
+					Content: comment.Content,
+				},
+				CoverImage: coverImage,
+			}
+		}
 		return listedNotification
 	})
 	rsp.PageInfo = pageInfo
@@ -290,5 +302,39 @@ func (s *notificationService) AckNotification(ctx context.Context, req *dto.AckN
 		return rsp, nil
 	}
 
+	return rsp, nil
+}
+
+// CountNotifications Count user notifications
+//
+//	return *CountNotificationsRsp
+//	author centonhuang
+//	update 2026-02-12 15:00:00
+func (s *notificationService) CountNotifications(ctx context.Context, req *dto.CountNotificationsReq) (*dto.CountRsp, error) {
+	rsp := &dto.CountRsp{}
+
+	db := database.GetDBInstance(ctx)
+	logger := logger.WithCtx(ctx)
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	// Build where condition
+	where := &dbmodel.Notification{
+		ReceiverID: userID,
+	}
+
+	// Filter by status if provided
+	if req.Status != "" {
+		where.Status = req.Status
+	}
+
+	// Count notifications for the user
+	count, err := s.notificationDAO.Count(db, where)
+	if err != nil {
+		logger.Error("[NotificationService] failed to count notifications", zap.Error(err), zap.Uint("userID", userID))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
+	rsp.Count = count
 	return rsp, nil
 }

@@ -104,12 +104,3 @@ type DeleteCommentReq struct {
 type CountCommentsReq struct {
 	ArticleID uint `query:"articleID" required:"true" minimum:"1" doc:"Article ID to count comments for"`
 }
-
-// CountCommentsRsp count comments response
-//
-//	author centonhuang
-//	update 2026-02-12 14:50:00
-type CountCommentsRsp struct {
-	CommonRsp
-	Count int64 `json:"count" doc:"Total count of comments for the article"`
-}

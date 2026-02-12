@@ -23,3 +23,12 @@ type EmptyReq struct{}
 type EmptyRsp struct {
 	CommonRsp
 }
+
+// CountRsp 通用计数响应
+//
+//	author centonhuang
+//	update 2026-02-12 15:00:00
+type CountRsp struct {
+	CommonRsp
+	Count int64 `json:"count" doc:"Total count"`
+}
