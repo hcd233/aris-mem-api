@@ -80,13 +80,11 @@ func (s *commentService) CreateComment(ctx context.Context, req *dto.CreateComme
 		return rsp, nil
 	}
 
-	notifications := []*dbmodel.Notification{
-		{
-			SenderID:   userID,
-			ReceiverID: article.UserID,
-			Type:       enum.NotificationTypeComment,
-			Status:     enum.NotificationStatusUnread,
-		},
+	notification := &dbmodel.Notification{
+		SenderID:   userID,
+		ReceiverID: article.UserID,
+		Type:       enum.NotificationTypeComment,
+		Status:     enum.NotificationStatusUnread,
 	}
 
 	// If parent comment ID is provided, check if it exists
@@ -101,12 +99,7 @@ func (s *commentService) CreateComment(ctx context.Context, req *dto.CreateComme
 			rsp.Error = constant.ErrInternalError
 			return rsp, nil
 		}
-		notifications = append(notifications, &dbmodel.Notification{
-			SenderID:   userID,
-			ReceiverID: comment.UserID,
-			Type:       enum.NotificationTypeComment,
-			Status:     enum.NotificationStatusUnread,
-		})
+		notification.ReceiverID = comment.UserID
 
 	}
 
@@ -125,19 +118,11 @@ func (s *commentService) CreateComment(ctx context.Context, req *dto.CreateComme
 		return rsp, nil
 	}
 
-	err = db.Transaction(func(tx *gorm.DB) error {
-		for _, notification := range notifications {
-			notification.EntityType = enum.NotificationEntityTypeComment
-			notification.EntityID = comment.ID
-			err = s.notificationDAO.Create(tx, notification)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+	notification.EntityType = enum.NotificationEntityTypeComment
+	notification.EntityID = comment.ID
+	err = s.notificationDAO.Create(db, notification)
 	if err != nil {
-		logger.Warn("[CommentService] failed to create notifications", zap.Error(err))
+		logger.Warn("[CommentService] failed to create notification", zap.Error(err))
 	}
 	return rsp, nil
 }
