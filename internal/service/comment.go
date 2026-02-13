@@ -120,9 +120,11 @@ func (s *commentService) CreateComment(ctx context.Context, req *dto.CreateComme
 
 	notification.EntityType = enum.NotificationEntityTypeComment
 	notification.EntityID = comment.ID
-	err = s.notificationDAO.Create(db, notification)
-	if err != nil {
-		logger.Warn("[CommentService] failed to create notification", zap.Error(err))
+	if notification.ReceiverID != notification.SenderID {
+		err = s.notificationDAO.Create(db, notification)
+		if err != nil {
+			logger.Warn("[CommentService] failed to create notification", zap.Error(err))
+		}
 	}
 	return rsp, nil
 }
@@ -315,7 +317,7 @@ func (s *commentService) CountComments(ctx context.Context, req *dto.CountCommen
 	logger := logger.WithCtx(ctx)
 
 	// Count comments for the article
-	count, err := s.commentDAO.Count(db, &dbmodel.Comment{ArticleID: req.ArticleID}, nil)
+	count, err := s.commentDAO.Count(db, &dbmodel.Comment{ArticleID: req.ArticleID}, &dao.FilterParam{})
 	if err != nil {
 		logger.Error("[CommentService] failed to count comments", zap.Error(err), zap.Uint("articleID", req.ArticleID))
 		rsp.Error = constant.ErrInternalError
