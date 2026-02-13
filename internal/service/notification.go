@@ -237,16 +237,9 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 				logger.Warn("[NotificationService] comment not found for notification", zap.Uint("notificationID", item.ID), zap.Uint("commentID", item.EntityID))
 				return listedNotification
 			}
-			parentComment, ok := parentCommentIDCommentMap[comment.ParentID]
-			if !ok {
-				logger.Warn("[NotificationService] parent comment not found for comment notification", zap.Uint("notificationID", item.ID), zap.Uint("parentCommentID", comment.ParentID))
-				return listedNotification
-			}
-			article, ok := articleIDCommentArticleMap[comment.ArticleID]
-			if !ok {
-				logger.Warn("[NotificationService] article not found for comment notification", zap.Uint("notificationID", item.ID), zap.Uint("articleID", comment.ArticleID))
-				return listedNotification
-			}
+			article := articleIDCommentArticleMap[comment.ArticleID]
+			parentComment := parentCommentIDCommentMap[comment.ParentID]
+
 			coverImage := ""
 			if len(article.Images) > 0 {
 				presignedURL, err := s.imageObjDAO.PresignObject(ctx, article.UserID, article.Images[0])
@@ -264,16 +257,20 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 					ID:      comment.ID,
 					Content: comment.Content,
 				},
-				RepliedComment: &dto.Comment{
-					ID:      parentComment.ID,
-					Content: parentComment.Content,
-				},
-				RepliedArticle: &dto.Article{
+			}
+			if article != nil {
+				listedNotification.Comment.RepliedArticle = &dto.Article{
 					ID:    article.ID,
 					Slug:  article.Slug,
 					Title: article.Title,
-				},
-				CoverImage: coverImage,
+				}
+				listedNotification.Comment.CoverImage = coverImage
+			}
+			if parentComment != nil {
+				listedNotification.Comment.RepliedComment = &dto.Comment{
+					ID:      parentComment.ID,
+					Content: parentComment.Content,
+				}
 			}
 		}
 		return listedNotification
