@@ -96,7 +96,7 @@ func (dao *NotificationDAO) Paginate(db *gorm.DB, where *dbmodel.Notification, f
 //	@author centonhuang
 //	@update 2026-02-12 19:19:25
 func (dao *NotificationDAO) Count(db *gorm.DB, where *dbmodel.Notification, param *FilterParam) (count int64, err error) {
-	sql := db.Where(where).Where("deleted_at = 0")
+	sql := db.Model(where).Where(where).Where("deleted_at = 0")
 
 	category, ok := param.FieldValueMap["category"].(enum.NotificationCategory)
 	if ok && category != "" {
