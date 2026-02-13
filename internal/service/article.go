@@ -260,8 +260,6 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 		_, liked := likedArticleIDSet[item.ID]
 
 		return &dto.ListedArticle{
-			ID:   item.ID,
-			Slug: item.Slug,
 			Author: &dto.User{
 				ID:     author.ID,
 				Name:   author.Name,
@@ -274,6 +272,8 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticles
 			Likes:       item.Likes,
 			Liked:       liked,
 			Article: dto.Article{
+				ID:    item.ID,
+				Slug:  item.Slug,
 				Title: item.Title,
 			},
 		}
@@ -562,8 +562,6 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 
 	// 组装响应
 	rsp.Article = &dto.DetailedArticle{
-		ID:   article.ID,
-		Slug: article.Slug,
 		Author: &dto.User{
 			ID:     author.ID,
 			Name:   author.Name,
@@ -593,6 +591,8 @@ func (s *articleService) GetArticle(ctx context.Context, req *dto.GetArticleReq)
 			}
 		}),
 		Article: dto.Article{
+			ID:    article.ID,
+			Slug:  article.Slug,
 			Title: article.Title,
 		},
 	}

@@ -21,7 +21,9 @@ type Comment struct {
 //	@update 2026-02-03 22:30:00
 type NotifiedComment struct {
 	Comment
-	CoverImage string `json:"coverImage" doc:"Cover image URL of the comment"`
+	RepliedComment *Comment `json:"repliedComment,omitempty" doc:"Replied comment"`
+	RepliedArticle *Article `json:"repliedArticle" doc:"Replied article"`
+	CoverImage     string   `json:"coverImage" doc:"Cover image URL of the comment"`
 }
 
 // ListedComment listed comment entity

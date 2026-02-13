@@ -141,7 +141,7 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 		return rsp, nil
 	}
 
-	comments, err := s.commentDAO.BatchGetByIDs(db, commentIDs, []string{"id", "content", "article_id"})
+	comments, err := s.commentDAO.BatchGetByIDs(db, commentIDs, []string{"id", "content", "article_id", "parent_id"})
 	if err != nil {
 		logger.Error("[NotificationService] failed to get comments", zap.Error(err), zap.Uints("commentIDs", commentIDs))
 		rsp.Error = constant.ErrInternalError
@@ -152,7 +152,18 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 		return item.ArticleID
 	}))
 
-	commentArticles, err := s.articleDAO.BatchGetByIDs(db, articleIDs, []string{"id", "images"})
+	parentCommentIDs := lo.Uniq(lo.Map(comments, func(item *dbmodel.Comment, _ int) uint {
+		return item.ParentID
+	}))
+
+	parentComments, err := s.commentDAO.BatchGetByIDs(db, parentCommentIDs, []string{"id", "content"})
+	if err != nil {
+		logger.Error("[NotificationService] failed to get parent comments", zap.Error(err), zap.Uints("parentCommentIDs", parentCommentIDs))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
+	commentArticles, err := s.articleDAO.BatchGetByIDs(db, articleIDs, []string{"id", "images", "slug", "title"})
 	if err != nil {
 		logger.Error("[NotificationService] failed to get comment articles", zap.Error(err), zap.Uints("articleIDs", articleIDs))
 		rsp.Error = constant.ErrInternalError
@@ -163,6 +174,9 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 		return item.ID, item
 	})
 	commentIDCommentMap := lo.SliceToMap(comments, func(item *dbmodel.Comment) (uint, *dbmodel.Comment) {
+		return item.ID, item
+	})
+	parentCommentIDCommentMap := lo.SliceToMap(parentComments, func(item *dbmodel.Comment) (uint, *dbmodel.Comment) {
 		return item.ID, item
 	})
 	articleIDCommentArticleMap := lo.SliceToMap(commentArticles, func(item *dbmodel.Article) (uint, *dbmodel.Article) {
@@ -210,14 +224,22 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 				}
 			}
 			listedNotification.Article = &dto.NotifiedArticle{
-				ID:         article.ID,
-				Slug:       article.Slug,
 				CoverImage: coverImage,
+				Article: dto.Article{
+					ID:    article.ID,
+					Slug:  article.Slug,
+					Title: article.Title,
+				},
 			}
 		case enum.NotificationEntityTypeComment:
 			comment, ok := commentIDCommentMap[item.EntityID]
 			if !ok {
 				logger.Warn("[NotificationService] comment not found for notification", zap.Uint("notificationID", item.ID), zap.Uint("commentID", item.EntityID))
+				return listedNotification
+			}
+			parentComment, ok := parentCommentIDCommentMap[comment.ParentID]
+			if !ok {
+				logger.Warn("[NotificationService] parent comment not found for comment notification", zap.Uint("notificationID", item.ID), zap.Uint("parentCommentID", comment.ParentID))
 				return listedNotification
 			}
 			article, ok := articleIDCommentArticleMap[comment.ArticleID]
@@ -241,6 +263,15 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 				Comment: dto.Comment{
 					ID:      comment.ID,
 					Content: comment.Content,
+				},
+				RepliedComment: &dto.Comment{
+					ID:      parentComment.ID,
+					Content: parentComment.Content,
+				},
+				RepliedArticle: &dto.Article{
+					ID:    article.ID,
+					Slug:  article.Slug,
+					Title: article.Title,
 				},
 				CoverImage: coverImage,
 			}

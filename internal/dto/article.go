@@ -12,6 +12,8 @@ import (
 //	@author centonhuang
 //	@update 2026-01-29 17:00:00
 type Article struct {
+	ID    uint   `json:"id" doc:"ID of the article"`
+	Slug  string `json:"slug" doc:"Slug of the article"`
 	Title string `json:"title" doc:"Title of the article"`
 }
 
@@ -20,9 +22,9 @@ type Article struct {
 //	@author centonhuang
 //	@update 2026-02-03 20:01:03
 type CreatedArticle struct {
+	Title   string   `json:"title" doc:"Title of the article"`
 	Content string   `json:"content" maxLength:"16384" doc:"Content of the article"`
 	Images  []string `json:"images" maxItems:"16" doc:"Images of the article"`
-	Article
 }
 
 // NotifiedArticle 通知文章实体
@@ -30,8 +32,6 @@ type CreatedArticle struct {
 //	@author centonhuang
 //	@update 2026-02-03 19:53:46
 type NotifiedArticle struct {
-	ID         uint   `json:"id" doc:"ID of the article"`
-	Slug       string `json:"slug" doc:"Slug of the article"`
 	CoverImage string `json:"coverImage" doc:"Cover image URL of the article"`
 	Article
 }
@@ -41,8 +41,6 @@ type NotifiedArticle struct {
 //	@author centonhuang
 //	@update 2026-01-29 12:00:00
 type ListedArticle struct {
-	ID          uint      `json:"id" doc:"ID of the article"`
-	Slug        string    `json:"slug" doc:"Slug of the article"`
 	Author      *User     `json:"author" doc:"Author of the article"`
 	CoverImage  string    `json:"coverImage" doc:"Cover image URL of the article"`
 	CreatedAt   time.Time `json:"createdAt" doc:"Created time of the article"`
@@ -58,8 +56,6 @@ type ListedArticle struct {
 //	@author centonhuang
 //	@update 2026-01-29 11:00:50
 type DetailedArticle struct {
-	ID          uint               `json:"id" doc:"ID of the article"`
-	Slug        string             `json:"slug" doc:"Slug of the article"`
 	Author      *User              `json:"author" doc:"Author of the article"`
 	Content     string             `json:"content" doc:"Content of the article"`
 	Images      []string           `json:"images" doc:"Images of the article"`
