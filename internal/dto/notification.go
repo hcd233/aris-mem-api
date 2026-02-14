@@ -38,7 +38,7 @@ type ListNotificationsReq struct {
 //	update 2026-02-12 16:00:00
 type NotificationFilterParam struct {
 	Status   enum.NotificationStatus   `query:"status" enum:"unread,read" doc:"Filter by status (unread/read), empty for all"`
-	Category enum.NotificationCategory `query:"category" enum:"like_and_save,comment_and_at" doc:"Filter by category (like_and_save/comment_and_at), empty for all"`
+	Category enum.NotificationCategory `query:"category" enum:"likeAndSave,commentAndAt" doc:"Filter by category (likeAndSave/commentAndAt), empty for all"`
 }
 
 // ListNotificationsRsp List notifications response
@@ -65,5 +65,5 @@ type AckNotificationReq struct {
 //	@update 2026-02-12 19:14:48
 type CountNotificationsReq struct {
 	Status   enum.NotificationStatus   `query:"status" enum:"unread,read" doc:"Filter by status (unread/read), empty for all"`
-	Category enum.NotificationCategory `query:"category" enum:"like_and_save,comment_and_at" doc:"Filter by category (like_and_save/comment_and_at), empty for all"`
+	Category enum.NotificationCategory `query:"category" enum:"likeAndSave,commentAndAt" doc:"Filter by category (likeAndSave/commentAndAt), empty for all"`
 }

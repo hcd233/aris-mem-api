@@ -71,10 +71,10 @@ const (
 	// NotificationCategoryLikeAndSave 点赞和收藏
 	//	@author centonhuang
 	//	@update 2026-02-12 16:00:00
-	NotificationCategoryLikeAndSave NotificationCategory = "like_and_save"
+	NotificationCategoryLikeAndSave NotificationCategory = "likeAndSave"
 
 	// NotificationCategoryCommentAndAt 评论和@
 	//	@author centonhuang
 	//	@update 2026-02-12 16:00:00
-	NotificationCategoryCommentAndAt NotificationCategory = "comment_and_at"
+	NotificationCategoryCommentAndAt NotificationCategory = "commentAndAt"
 )
