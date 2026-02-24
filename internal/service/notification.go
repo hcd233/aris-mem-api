@@ -33,6 +33,7 @@ type notificationService struct {
 	userDAO         *dao.UserDAO
 	articleDAO      *dao.ArticleDAO
 	commentDAO      *dao.CommentDAO
+	actionDAO       *dao.ActionDAO
 	notificationDAO *dao.NotificationDAO
 	imageObjDAO     objdao.ObjDAO
 }
@@ -48,6 +49,7 @@ func NewNotificationService() NotificationService {
 		userDAO:         dao.GetUserDAO(),
 		articleDAO:      dao.GetArticleDAO(),
 		commentDAO:      dao.GetCommentDAO(),
+		actionDAO:       dao.GetActionDAO(),
 		imageObjDAO:     objdao.GetImageObjDAO(),
 	}
 }
@@ -148,6 +150,13 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 		return rsp, nil
 	}
 
+	commentActions, err := s.actionDAO.BatchGetByUserIDAndActionType(db, userID, enum.ActionTypeLike, enum.ActionEntityComment, commentIDs, []string{"id", "entity_id"})
+	if err != nil {
+		logger.Error("[NotificationService] failed to get comment actions", zap.Error(err), zap.Uints("commentIDs", commentIDs))
+		rsp.Error = constant.ErrInternalError
+		return rsp, nil
+	}
+
 	articleIDs = lo.Uniq(lo.Map(comments, func(item *dbmodel.Comment, _ int) uint {
 		return item.ArticleID
 	}))
@@ -175,6 +184,9 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 	})
 	commentIDCommentMap := lo.SliceToMap(comments, func(item *dbmodel.Comment) (uint, *dbmodel.Comment) {
 		return item.ID, item
+	})
+	commentIDLikedMap := lo.SliceToMap(commentActions, func(item *dbmodel.Action) (uint, struct{}) {
+		return item.EntityID, struct{}{}
 	})
 	parentCommentIDCommentMap := lo.SliceToMap(parentComments, func(item *dbmodel.Comment) (uint, *dbmodel.Comment) {
 		return item.ID, item
@@ -240,6 +252,8 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 			article := articleIDCommentArticleMap[comment.ArticleID]
 			parentComment := parentCommentIDCommentMap[comment.ParentID]
 
+			_, liked := commentIDLikedMap[comment.ID]
+
 			coverImage := ""
 			if len(article.Images) > 0 {
 				presignedURL, err := s.imageObjDAO.PresignObject(ctx, article.UserID, article.Images[0])
@@ -253,6 +267,7 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 				}
 			}
 			listedNotification.Comment = &dto.NotifiedComment{
+				Liked: liked,
 				Comment: dto.Comment{
 					ID:      comment.ID,
 					Content: comment.Content,

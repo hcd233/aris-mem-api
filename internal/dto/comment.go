@@ -20,10 +20,11 @@ type Comment struct {
 //	@author centonhuang
 //	@update 2026-02-03 22:30:00
 type NotifiedComment struct {
-	Comment
+	Liked          bool     `json:"liked" doc:"Whether the current user has liked the comment"`
 	RepliedComment *Comment `json:"repliedComment,omitempty" doc:"Replied comment"`
 	RepliedArticle *Article `json:"repliedArticle" doc:"Replied article"`
 	CoverImage     string   `json:"coverImage" doc:"Cover image URL of the comment"`
+	Comment
 }
 
 // ListedComment listed comment entity
