@@ -32,6 +32,7 @@ type NotifiedComment struct {
 //	author centonhuang
 //	update 2026-02-03 22:30:00
 type ListedComment struct {
+	RootID    uint      `json:"rootID" doc:"Root comment ID"`
 	ArticleID uint      `json:"articleID" doc:"Article ID of the comment"`
 	ParentID  uint      `json:"parentID" doc:"Parent comment ID"`
 	CreatedAt time.Time `json:"createdAt" doc:"Created time of the comment"`
@@ -50,7 +51,7 @@ type ListedComment struct {
 //	update 2026-02-03 22:30:00
 type CommentFilterParam struct {
 	ArticleID uint `query:"articleID" required:"true" minimum:"1" doc:"Article ID to filter"`
-	ParentID  uint `query:"parentID" doc:"Parent comment ID to filter"`
+	RootID    uint `query:"rootID" doc:"Root comment ID to filter"`
 }
 
 // CreateCommentReq create comment request

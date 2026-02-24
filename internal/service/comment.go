@@ -87,9 +87,11 @@ func (s *commentService) CreateComment(ctx context.Context, req *dto.CreateComme
 		Status:     enum.NotificationStatusUnread,
 	}
 
+	rootID := req.Body.ParentID
+
 	// If parent comment ID is provided, check if it exists
 	if req.Body.ParentID > 0 {
-		comment, err := s.commentDAO.Get(db, &dbmodel.Comment{ID: req.Body.ParentID}, []string{"id", "user_id"})
+		comment, err := s.commentDAO.Get(db, &dbmodel.Comment{ID: req.Body.ParentID}, []string{"id", "user_id", "root_id"})
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				rsp.Error = constant.ErrDataNotExists
@@ -100,13 +102,16 @@ func (s *commentService) CreateComment(ctx context.Context, req *dto.CreateComme
 			return rsp, nil
 		}
 		notification.ReceiverID = comment.UserID
-
+		if rootID > 0 {
+			rootID = comment.RootID
+		}
 	}
 
 	// Create comment
 	comment := &dbmodel.Comment{
 		ArticleID: req.Body.ArticleID,
 		UserID:    userID,
+		RootID:    rootID,
 		ParentID:  req.Body.ParentID,
 		Content:   req.Body.Content,
 	}
@@ -162,12 +167,12 @@ func (s *commentService) ListComments(ctx context.Context, req *dto.ListComments
 		},
 	}
 
-	if req.ParentID > 0 {
-		commonParam.FilterParam.FieldValueMap["parent_id"] = lo.ToPtr(req.ParentID)
+	if req.RootID > 0 {
+		commonParam.FilterParam.FieldValueMap["root_id"] = lo.ToPtr(req.RootID)
 	}
 
 	comments, pageInfo, err := s.commentDAO.Paginate(db, &dbmodel.Comment{}, []string{
-		"id", "article_id", "user_id", "parent_id", "content",
+		"id", "article_id", "user_id", "root_id", "parent_id", "content",
 		"likes", "saves", "created_at", "updated_at",
 	}, commonParam)
 	if err != nil {
@@ -225,6 +230,7 @@ func (s *commentService) ListComments(ctx context.Context, req *dto.ListComments
 		_, saved := savedCommentIDSet[item.ID]
 
 		return &dto.ListedComment{
+			RootID:    item.RootID,
 			ArticleID: item.ArticleID,
 			ParentID:  item.ParentID,
 			CreatedAt: item.CreatedAt,
