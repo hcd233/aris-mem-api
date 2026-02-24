@@ -163,7 +163,7 @@ func (s *notificationService) ListNotifications(ctx context.Context, req *dto.Li
 		return rsp, nil
 	}
 
-	commentArticles, err := s.articleDAO.BatchGetByIDs(db, articleIDs, []string{"id", "images", "slug", "title"})
+	commentArticles, err := s.articleDAO.BatchGetByIDs(db, articleIDs, []string{"id", "title", "slug", "user_id", "images"})
 	if err != nil {
 		logger.Error("[NotificationService] failed to get comment articles", zap.Error(err), zap.Uints("articleIDs", articleIDs))
 		rsp.Error = constant.ErrInternalError
