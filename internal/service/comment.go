@@ -102,7 +102,7 @@ func (s *commentService) CreateComment(ctx context.Context, req *dto.CreateComme
 			return rsp, nil
 		}
 		notification.ReceiverID = comment.UserID
-		if rootID > 0 {
+		if comment.RootID > 0 {
 			rootID = comment.RootID
 		}
 	}
