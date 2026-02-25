@@ -162,7 +162,7 @@ func (s *commentService) ListComments(ctx context.Context, req *dto.ListComments
 		FilterParam: dao.FilterParam{
 			FieldValueMap: map[string]any{
 				"article_id": req.ArticleID,
-				"parent_id":  nil,
+				"root_id":  nil,
 			},
 		},
 	}
