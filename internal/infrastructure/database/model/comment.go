@@ -9,7 +9,7 @@ type Comment struct {
 	ID        uint   `json:"id" gorm:"column:id;primary_key;auto_increment;comment:ID"`
 	ArticleID uint   `json:"article_id" gorm:"column:article_id;not null;comment:文章ID"`
 	UserID    uint   `json:"user_id" gorm:"column:user_id;not null;comment:用户ID"`
-	RootID    uint   `json:"root_id" gorm:"column:root_id;not null;comment:根评论ID"`
+	RootID    uint   `json:"root_id" gorm:"column:root_id;default:null;comment:根评论ID"`
 	ParentID  uint   `json:"parent_id" gorm:"column:parent_id;default:null;comment:父评论ID"`
 	Content   string `json:"content" gorm:"column:content;not null;comment:内容"`
 	Likes     uint   `json:"likes" gorm:"column:likes;not null;default:0;comment:点赞数"`
