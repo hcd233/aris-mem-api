@@ -4,7 +4,7 @@ go 1.25.1
 
 require (
 	github.com/alitto/pond/v2 v2.6.0
-	github.com/cloudwego/eino v0.5.14
+	github.com/cloudwego/eino v0.7.37
 	github.com/cloudwego/eino-ext/components/model/openai v0.1.4
 	github.com/danielgtaylor/huma/v2 v2.34.1
 	github.com/gofiber/contrib/fgprof v1.0.4
@@ -35,7 +35,7 @@ require (
 	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/clbanning/mxj v1.8.4 // indirect
 	github.com/cloudwego/eino-ext/libs/acl/openai v0.1.1 // indirect
-	github.com/eino-contrib/jsonschema v1.0.2 // indirect
+	github.com/eino-contrib/jsonschema v1.0.3 // indirect
 	github.com/evanphx/json-patch v0.5.2 // indirect
 	github.com/felixge/fgprof v0.9.5 // indirect
 	github.com/getkin/kin-openapi v0.118.0 // indirect
