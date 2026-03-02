@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/cloudwego/eino/adk"
+	"github.com/cloudwego/eino/adk/prebuilt/deep"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/compose"
@@ -24,10 +25,20 @@ const (
 //	@author centonhuang
 //	@update 2025-11-08 05:13:07
 func NewTodoAgent(ctx context.Context, chatModel model.ToolCallingChatModel, tools []tool.BaseTool) (adk.Agent, error) {
-	return adk.NewChatModelAgent(ctx, &adk.ChatModelAgentConfig{
+	// return adk.NewChatModelAgent(ctx, &adk.ChatModelAgentConfig{
+	// 	Name:        todoAgentName,
+	// 	Description: todoAgentDescription,
+	// 	Model:       chatModel,
+	// 	ToolsConfig: adk.ToolsConfig{
+	// 		ToolsNodeConfig: compose.ToolsNodeConfig{
+	// 			Tools: tools,
+	// 		},
+	// 	},
+	// })
+	return deep.New(ctx, &deep.Config{
 		Name:        todoAgentName,
 		Description: todoAgentDescription,
-		Model:       chatModel,
+		ChatModel:   chatModel,
 		ToolsConfig: adk.ToolsConfig{
 			ToolsNodeConfig: compose.ToolsNodeConfig{
 				Tools: tools,
