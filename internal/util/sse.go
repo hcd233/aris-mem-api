@@ -50,6 +50,7 @@ func WrapADKIterSSE(ctx context.Context, iter *adk.AsyncIterator[*adk.AgentEvent
 			fCtx.Set("Cache-Control", "no-cache")
 			fCtx.Set("Connection", "keep-alive")
 			fCtx.Set("Transfer-Encoding", "chunked")
+			fCtx.Set("X-Accel-Buffering", "no")
 
 			fCtx.Response().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
 				newDialog := &dbmodel.Dialog{
@@ -179,6 +180,7 @@ func WrapErrorSSE(ctx context.Context, err *model.Error) (rsp *huma.StreamRespon
 			fCtx.Set("Cache-Control", "no-cache")
 			fCtx.Set("Connection", "keep-alive")
 			fCtx.Set("Transfer-Encoding", "chunked")
+			fCtx.Set("X-Accel-Buffering", "no")
 
 			fCtx.Response().SetBodyStreamWriter(fasthttp.StreamWriter(func(w *bufio.Writer) {
 				writeSSEErrorResponse(ctx, w, err)
